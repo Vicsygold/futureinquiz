@@ -119,9 +119,11 @@ function allAttempts(classId) {
 
 // ---------- Admin credentials (hashed) ----------
 // Stored format: "scrypt$<N>$<saltBase64>$<hashBase64>"
+const cleanVal = (s) => String(s || '').trim().replace(/^["']|["']$/g, '');
+
 function verifyPassword(password, stored) {
   try {
-    const [algo, n, salt, hash] = String(stored).split('$');
+    const [algo, n, salt, hash] = cleanVal(stored).split('$');
     if (algo !== 'scrypt') return false;
     const expected = Buffer.from(hash, 'base64');
     const actual = crypto.scryptSync(String(password), Buffer.from(salt, 'base64'), expected.length,
@@ -133,7 +135,7 @@ function verifyPassword(password, stored) {
 }
 function loadAdmin() {
   if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD_HASH) {
-    return { username: process.env.ADMIN_USERNAME, passwordHash: process.env.ADMIN_PASSWORD_HASH };
+    return { username: cleanVal(process.env.ADMIN_USERNAME), passwordHash: cleanVal(process.env.ADMIN_PASSWORD_HASH) };
   }
   try { return JSON.parse(fs.readFileSync(ADMIN_FILE, 'utf8')); } catch { return null; }
 }
@@ -281,13 +283,17 @@ async function adminLogin(req, res) {
   const ip = clientIp(req);
   if (lockedOut(ip)) return sendJson(res, 429, { error: 'Too many wrong attempts. Please wait 15 minutes and try again.' });
   const admin = loadAdmin();
-  if (!admin) return sendJson(res, 503, { error: 'The admin account has not been set up on the server yet.' });
+  if (!admin) {
+    console.warn('[AUTH] Admin login failed: no admin account configured. Ensure ADMIN_USERNAME and ADMIN_PASSWORD_HASH are set in environment variables.');
+    return sendJson(res, 503, { error: 'The admin account has not been set up on the server yet. Please verify that ADMIN_USERNAME and ADMIN_PASSWORD_HASH are set in your Render Environment settings.' });
+  }
   const body = await readBody(req, 5_000);
   const username = clean(body.username, 100);
-  const userOk = username.toLowerCase() === String(admin.username).toLowerCase();
+  const userOk = username.toLowerCase() === cleanVal(admin.username).toLowerCase();
   const passOk = verifyPassword(String(body.password || ''), userOk ? admin.passwordHash : DUMMY_HASH);
   if (!userOk || !passOk) {
     noteFailure(ip);
+    console.warn(`[AUTH] Failed login for user "${username}" from IP ${ip}. userOk=${userOk}, passOk=${passOk}`);
     return sendJson(res, 401, { error: 'Wrong username or password.' });
   }
   failures.delete(ip);
