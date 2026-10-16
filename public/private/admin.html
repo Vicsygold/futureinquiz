@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>FutureIN Quiz Admin</title>
+<link rel="icon" href="/logo.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@600;700;800&family=Poppins:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/brand.css">
+<script src="/api.js"></script>
+<style id="page-css">
+  .a-login { max-width: 420px; width: 100%; margin: 4vh auto 0; }
+  .a-grid { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 860px) { .a-grid { grid-template-columns: minmax(0, 1fr); } }
+  .a-aside { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 84px); display: grid; gap: 6px; }
+  .a-aside h3 { padding: 0 6px 6px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; font-family: var(--body); }
+  .a-classes { display: grid; gap: 4px; }
+  @media (max-width: 860px) {
+    .a-aside { position: static; }
+    .a-classes { display: flex; overflow-x: auto; padding-bottom: 6px; }
+    .a-class { flex: 0 0 auto; min-width: 150px; }
+  }
+  .a-class { text-align: left; font: inherit; color: var(--ink); background: transparent; border: 1px solid transparent; border-radius: 14px; padding: 10px 12px; cursor: pointer; display: grid; gap: 4px; }
+  .a-class:hover { background: var(--surface); }
+  .a-class.on { background: var(--surface-2); border-color: var(--violet-deep); }
+  .a-class .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .a-class .nm { font-weight: 600; }
+  .a-class .meta { color: var(--muted); font-size: 12px; }
+  .a-main { display: grid; gap: 16px; min-width: 0; }
+  .a-tabs { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; }
+  .a-head { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: flex-start; }
+  .a-head h1 { margin: 0 0 6px; }
+  .a-head .acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .a-link { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--night); border: 1px dashed var(--line-2); border-radius: 14px; padding: 10px 12px; }
+  .a-link code { font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 14px; color: var(--yellow); overflow-wrap: anywhere; flex: 1 1 220px; min-width: 0; }
+  .a-import { display: grid; gap: 12px; }
+  .a-import .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .a-file { position: relative; overflow: hidden; }
+  .a-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .a-msg { border-radius: 14px; padding: 12px 14px; background: rgba(155, 77, 255, .1); border: 1px solid rgba(155, 77, 255, .35); }
+  .a-msg.bad { background: rgba(255, 123, 107, .08); border-color: rgba(255, 123, 107, .4); }
+  .a-qs { display: grid; gap: 12px; }
+  .a-q { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 10px; }
+  .a-q.needs { border-color: var(--bad); }
+  .a-q .qh { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .a-q .qn { font-family: var(--display); font-weight: 600; color: var(--violet); }
+  .a-q .tools { display: flex; gap: 6px; }
+  .a-opt { display: flex; gap: 8px; align-items: center; }
+  .a-opt input[type=text] { padding: 9px 12px; }
+  .a-opt label.correct { flex: none; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
+  .a-opt label.correct:has(input:checked) { color: var(--night); background: var(--good); border-color: var(--good); font-weight: 600; }
+  .a-opt input[type=radio] { width: auto; margin: 0; accent-color: var(--night); }
+  .a-opt .lt { flex: none; width: 26px; text-align: center; font-weight: 700; color: var(--muted); font-family: var(--display); }
+  .a-savebar { position: sticky; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); z-index: 4; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;
+    background: var(--bar); color: var(--bar-ink); border-radius: 18px; padding: 12px 14px 12px 18px; box-shadow: 0 12px 40px rgba(5, 0, 20, .55); }
+  .a-savebar .ghost { color: var(--bar-ink); border-color: #c9c5dc; }
+  .a-savebar .ghost:hover { border-color: var(--bar-ink); }
+  .a-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 640px) { .a-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .a-stat { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px; }
+  .a-stat .n { font-family: var(--display); font-weight: 700; letter-spacing: -.03em; font-size: 30px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .a-stat .k { color: var(--muted); font-size: 14px; }
+  .a-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; align-items: center; }
+  .a-controls input { flex: 1 1 200px; width: auto; padding: 9px 14px; }
+  .a-controls select { flex: 0 1 220px; width: auto; padding: 9px 14px; }
+  .a-help { color: var(--muted); font-size: 14px; line-height: 1.6; }
+  .a-help pre { background: var(--night); border: 1px solid var(--line); border-radius: 12px; padding: 12px; color: var(--ink); font-size: 13px; overflow-x: auto; margin: 8px 0 0; }
+  details.a-help summary { cursor: pointer; color: var(--violet); font-weight: 600; }
+  #q_err:empty { display: none; }
+  .a-tabs .seg { max-width: 100%; overflow-x: auto; }
+  .a-tabs .seg button { white-space: nowrap; }
+  .a-empty { text-align: center; padding: 28px 16px; color: var(--muted); border: 1px dashed var(--line-2); border-radius: 18px; }
+</style>
+</head>
+<body>
+<!--APP START-->
+<header class="topbar"><div class="in">
+  <span class="logo"><img src="/logo.png" alt="FutureIN"><span class="sep"></span><span class="label">Quiz Admin</span></span>
+  <div class="bar-actions" id="a_userbar" hidden><span id="a_who"></span><button class="btn-navy" id="a_logout" type="button">Sign out</button></div>
+</div></header>
+
+<main class="wrap" id="adminApp">
+  <!-- Sign in -->
+  <div class="card a-login" id="a_login" hidden>
+    <span class="pill" style="margin-bottom:14px">✦ Staff only</span>
+    <h1>Admin <span class="in-violet">sign in</span></h1>
+    <p class="sub">Sign in to manage quiz questions and see results.</p>
+    <form id="a_loginForm" novalidate>
+      <div class="field"><label for="a_user">Username</label><input id="a_user" autocomplete="username"></div>
+      <div class="field"><label for="a_pass">Password</label><input id="a_pass" type="password" autocomplete="current-password"></div>
+      <div class="err" id="a_loginErr" role="alert"></div>
+      <button class="primary wide" type="submit" id="a_loginBtn">Sign in</button>
+    </form>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="a-grid" id="a_dash" hidden>
+    <aside class="a-aside">
+      <h3>Classes</h3>
+      <div class="a-classes" id="a_classList"></div>
+    </aside>
+
+    <div class="a-main">
+      <div class="a-tabs">
+        <div class="seg">
+          <button type="button" class="on" data-tab="questions">Questions</button>
+          <button type="button" data-tab="results">Scoreboard</button>
+          <button type="button" data-tab="links">Children's links</button>
+        </div>
+      </div>
+
+      <!-- QUESTIONS -->
+      <section id="t_questions" class="a-main">
+        <div class="a-head">
+          <div>
+            <h1 id="q_title">Year 1</h1>
+            <span class="chip" id="q_status"></span>
+          </div>
+          <div class="acts">
+            <button class="primary" id="q_publish" type="button">Publish quiz</button>
+          </div>
+        </div>
+        <div class="err" id="q_err" role="alert" style="margin:0"></div>
+
+        <div class="a-link">
+          <span class="muted small">Link for this class</span>
+          <code id="q_link"></code>
+          <button class="ghost sm" type="button" id="q_copy">Copy link</button>
+        </div>
+
+        <div class="panel a-import">
+          <div><h3>Add questions from a file</h3>
+            <p class="a-help" style="margin:4px 0 0">Upload a <b>.html</b> page, a text file, a CSV from Excel, or paste the questions straight in. You can check and fix everything before saving.</p></div>
+          <div class="row">
+            <span class="ghost a-file" role="button">Upload file<input type="file" id="q_file" accept=".html,.htm,.txt,.csv,.json,text/html,text/plain,text/csv,application/json"></span>
+            <button class="ghost" type="button" id="q_pasteToggle">Paste questions</button>
+            <a class="ghost sm" href="/question-template.csv" download style="text-decoration:none">CSV template</a>
+            <a class="ghost sm" href="/question-sample.html" download style="text-decoration:none">HTML sample</a>
+          </div>
+          <div id="q_pasteBox" hidden style="display:grid;gap:10px">
+            <textarea id="q_paste" rows="8" placeholder="1. What does CPU stand for?&#10;A. Central Processing Unit&#10;B. Computer Power Unit&#10;C. Central Print Unit&#10;Answer: A"></textarea>
+            <div><button class="primary sm" type="button" id="q_pasteRead">Read questions</button></div>
+          </div>
+          <div class="a-msg" id="q_importMsg" hidden></div>
+          <details class="a-help">
+            <summary>How to write questions in a file</summary>
+            Number each question, put each option on its own line starting with A, B, C…, then the answer.
+            Instead of an Answer line you can put * after the correct option. In Word or Google Docs, type them like this and save as <b>Web page (.html)</b> or <b>Plain text (.txt)</b>.
+<pre>1. Which part of the computer is its "brain"?
+A. Monitor
+B. CPU
+C. Keyboard
+D. Mouse
+Answer: B
+
+2. What does AI stand for?
+A. Automatic Internet
+B. Artificial Intelligence *
+C. Apple Interface</pre>
+            For a CSV or Excel sheet use the columns: <b>question, A, B, C, D, E, F, answer</b> (answer is the letter).
+          </details>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <h3 id="q_countTitle">Questions</h3>
+          <button class="ghost sm" type="button" id="q_add">+ Add a question</button>
+        </div>
+        <div class="a-qs" id="q_list"></div>
+
+        <div class="a-savebar" id="q_savebar" hidden>
+          <span id="q_saveMsg" style="font-weight:600">You have unsaved changes.</span>
+          <span style="display:flex;gap:8px">
+            <button class="ghost sm" type="button" id="q_discard">Discard</button>
+            <button class="btn-navy" type="button" id="q_save">Save questions</button>
+          </span>
+        </div>
+      </section>
+
+      <!-- RESULTS -->
+      <section id="t_results" class="a-main" hidden>
+        <div class="a-head">
+          <div><h1>Score<span class="in-violet">board</span></h1>
+            <div class="muted small">Most correct answers first. Ties go to the faster child. Repeat attempts keep the child's best.</div></div>
+          <div class="acts">
+            <select id="r_class" style="width:auto"></select>
+            <button class="ghost sm" type="button" id="r_csv">Download CSV</button>
+          </div>
+        </div>
+        <div class="a-stats">
+          <div class="a-stat"><div class="n" id="r_children">0</div><div class="k">Children</div></div>
+          <div class="a-stat"><div class="n" id="r_schools">0</div><div class="k">Schools</div></div>
+          <div class="a-stat"><div class="n" id="r_attempts">0</div><div class="k">Quizzes taken</div></div>
+          <div class="a-stat"><div class="n" id="r_avg">–</div><div class="k">Average score</div></div>
+        </div>
+        <div class="panel">
+          <div class="a-controls">
+            <div class="seg"><button type="button" class="on" id="r_tRank">Ranking</button><button type="button" id="r_tAll">All attempts</button></div>
+            <input type="search" id="r_q" placeholder="Search name or school">
+            <select id="r_school"><option value="">All schools</option></select>
+          </div>
+          <div class="tablewrap"><table><thead id="r_head"></thead><tbody id="r_body"></tbody></table></div>
+          <div class="empty-note" id="r_empty" hidden>No results yet.</div>
+          <div class="muted small" id="r_updated" style="margin-top:10px"></div>
+        </div>
+      </section>
+
+      <!-- LINKS -->
+      <section id="t_links" class="a-main" hidden>
+        <div><h1>Children's <span class="in-violet">links</span></h1>
+          <p class="sub" style="margin:0">Send a class its own link, or send the general link and children choose their class. Only published classes show questions.</p></div>
+        <div class="a-link"><span class="muted small">General link</span><code id="l_general"></code><button class="ghost sm" type="button" data-copy="general">Copy link</button></div>
+        <div class="panel tablewrap"><table><thead><tr><th>Class</th><th>Status</th><th>Link</th><th></th></tr></thead><tbody id="l_body"></tbody></table></div>
+      </section>
+    </div>
+  </div>
+</main>
+<!--APP END-->
+
+<script id="page-js">
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const LETTERS = 'ABCDEF';
+  let classes = [], sel = null, tab = 'questions';
+  let qs = [], savedJson = '[]', published = false, pendingImport = null;
+  let rView = 'rank', rRows = [], rAll = [], rTimer = null;
+
+  const base = () => (window.QUIZ_BASE_URL || location.origin);
+  const linkFor = (id) => base() + '/quiz/' + id;
+  const clsLabel = (id) => (classes.find((c) => c.id === id) || {}).label || id;
+  const fmtTime = (ms) => { const s = ms / 1000; return s < 60 ? s.toFixed(1) + 's' : Math.floor(s / 60) + 'm ' + String(Math.round(s % 60)).padStart(2, '0') + 's'; };
+  const fmtDate = (t) => new Date(t).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const dirty = () => JSON.stringify(qs) !== savedJson;
+
+  async function copy(text, btn) {
+    try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied'; }
+    catch (e) { const r = document.createRange(); const code = btn.parentElement.querySelector('code'); if (code) { r.selectNodeContents(code); getSelection().removeAllRanges(); getSelection().addRange(r); } btn.textContent = 'Press Ctrl+C'; }
+    setTimeout(() => { btn.textContent = 'Copy link'; }, 1800);
+  }
+
+  /* ---------- Sign in ---------- */
+  async function boot() {
+    try {
+      const me = await api('GET', '/api/admin/me');
+      enter(me.username);
+    } catch (e) { $('a_login').hidden = false; }
+  }
+  $('a_loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $('a_loginErr').textContent = '';
+    const username = $('a_user').value.trim(), password = $('a_pass').value;
+    if (!username || !password) return void ($('a_loginErr').textContent = 'Type your username and password.');
+    $('a_loginBtn').disabled = true;
+    try { const d = await api('POST', '/api/admin/login', { username, password }); $('a_pass').value = ''; enter(d.username); }
+    catch (err) { $('a_loginErr').textContent = err.message; }
+    finally { $('a_loginBtn').disabled = false; }
+  });
+  $('a_logout').onclick = async () => {
+    if (dirty() && !$('q_savebar').dataset.warned) { $('q_savebar').dataset.warned = '1'; $('q_saveMsg').textContent = 'Save or discard your changes, then sign out.'; return; }
+    try { await api('POST', '/api/admin/logout'); } catch (e) {}
+    location.reload();
+  };
+  function signedOut() { $('a_dash').hidden = true; $('a_userbar').hidden = true; $('a_login').hidden = false; $('a_loginErr').textContent = 'You were signed out. Please sign in again.'; }
+
+  async function enter(username) {
+    $('a_login').hidden = true; $('a_dash').hidden = false; $('a_userbar').hidden = false;
+    $('a_who').textContent = 'Signed in as ' + username;
+    await refreshClasses();
+    selectClass(classes[0].id);
+  }
+
+  /* ---------- Classes ---------- */
+  function statusOf(c) { return c.published ? ['live', 'Live'] : c.questions ? ['draft', 'Draft'] : ['empty', 'No questions']; }
+  async function refreshClasses() {
+    try { classes = (await api('GET', '/api/admin/classes')).classes; }
+    catch (e) { if (e.status === 401) return signedOut(); throw e; }
+    drawClassList(); drawLinks(); fillResultClasses();
+  }
+  function drawClassList() {
+    const box = $('a_classList'); box.innerHTML = '';
+    classes.forEach((c) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'a-class' + (c.id === sel ? ' on' : '');
+      const [cls, txt] = statusOf(c);
+      b.innerHTML = '<span class="row"><span class="nm"></span><span class="chip ' + cls + '"></span></span><span class="meta"></span>';
+      b.querySelector('.nm').textContent = c.label;
+      b.querySelector('.chip').textContent = txt;
+      b.querySelector('.meta').textContent = c.questions + ' question' + (c.questions === 1 ? '' : 's') + ' · ' + c.attempts + ' result' + (c.attempts === 1 ? '' : 's');
+      b.onclick = () => selectClass(c.id);
+      box.appendChild(b);
+    });
+  }
+  async function selectClass(id) {
+    if (id === sel && tab !== 'results') return;
+    if (dirty()) { $('q_saveMsg').textContent = 'Save or discard your changes before switching class.'; $('q_savebar').hidden = false; setTab('questions'); return; }
+    sel = id; pendingImport = null; $('q_importMsg').hidden = true; $('q_err').textContent = '';
+    drawClassList();
+    if (tab === 'results') { $('r_class').value = id; loadResults(); }
+    try {
+      const d = await api('GET', '/api/admin/classes/' + id + '/questions');
+      qs = d.questions.map((x) => ({ text: x.text, options: x.options.slice(), answer: x.answer }));
+      savedJson = JSON.stringify(qs); published = d.published;
+    } catch (e) { if (e.status === 401) return signedOut(); $('q_err').textContent = e.message; qs = []; savedJson = '[]'; }
+    drawQuestionsHead(); drawQuestions();
+  }
+
+  /* ---------- Tabs ---------- */
+  function setTab(t) {
+    tab = t;
+    document.querySelectorAll('.a-tabs .seg button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
+    $('t_questions').hidden = t !== 'questions'; $('t_results').hidden = t !== 'results'; $('t_links').hidden = t !== 'links';
+    clearInterval(rTimer);
+    if (t === 'results') { if (!$('r_class').value && sel) $('r_class').value = sel; loadResults(); rTimer = setInterval(loadResults, 20000); }
+  }
+  document.querySelectorAll('.a-tabs .seg button').forEach((b) => { b.onclick = () => setTab(b.dataset.tab); });
+
+  /* ---------- Questions editor ---------- */
+  function drawQuestionsHead() {
+    const c = classes.find((x) => x.id === sel);
+    $('q_title').textContent = c.label;
+    const st = $('q_status');
+    st.className = 'chip ' + (published ? 'live' : qs.length ? 'draft' : 'empty');
+    st.textContent = published ? 'Live — children can take this quiz' : (savedJson !== '[]' ? 'Draft — not visible to children' : 'No questions yet');
+    $('q_publish').textContent = published ? 'Unpublish' : 'Publish quiz';
+    $('q_publish').className = published ? 'ghost' : 'primary';
+    $('q_link').textContent = linkFor(sel);
+  }
+  function drawQuestions() {
+    const list = $('q_list'); list.innerHTML = '';
+    $('q_countTitle').textContent = qs.length + ' question' + (qs.length === 1 ? '' : 's');
+    if (!qs.length) {
+      const e = document.createElement('div'); e.className = 'a-empty';
+      e.textContent = 'No questions for ' + clsLabel(sel) + ' yet. Upload a file, paste questions, or add them one by one.';
+      list.appendChild(e);
+    }
+    qs.forEach((q, i) => {
+      const card = document.createElement('div'); card.className = 'a-q' + (problem(q) ? ' needs' : '');
+      const head = document.createElement('div'); head.className = 'qh';
+      const n = document.createElement('span'); n.className = 'qn'; n.textContent = 'Question ' + (i + 1);
+      const tools = document.createElement('span'); tools.className = 'tools';
+      tools.append(iconBtn('↑', 'Move up', i === 0, () => { [qs[i - 1], qs[i]] = [qs[i], qs[i - 1]]; changed(true); }),
+        iconBtn('↓', 'Move down', i === qs.length - 1, () => { [qs[i + 1], qs[i]] = [qs[i], qs[i + 1]]; changed(true); }),
+        iconBtn('✕', 'Delete question', false, () => { qs.splice(i, 1); changed(true); }));
+      head.append(n, tools);
+      const ta = document.createElement('textarea'); ta.rows = 2; ta.value = q.text; ta.placeholder = 'Type the question'; ta.id = 'q_text_' + i;
+      ta.setAttribute('aria-label', 'Question ' + (i + 1));
+      ta.oninput = () => { q.text = ta.value; changed(false); card.classList.toggle('needs', !!problem(q)); };
+      card.append(head, ta);
+      q.options.forEach((o, k) => {
+        const row = document.createElement('div'); row.className = 'a-opt';
+        const lt = document.createElement('span'); lt.className = 'lt'; lt.textContent = LETTERS[k];
+        const inp = document.createElement('input'); inp.type = 'text'; inp.value = o; inp.placeholder = 'Option ' + LETTERS[k]; inp.id = 'q_opt_' + i + '_' + k;
+        inp.oninput = () => { q.options[k] = inp.value; changed(false); card.classList.toggle('needs', !!problem(q)); };
+        const lab = document.createElement('label'); lab.className = 'correct';
+        const r = document.createElement('input'); r.type = 'radio'; r.name = 'ans_' + i; r.checked = q.answer === k;
+        r.onchange = () => { q.answer = k; changed(true); };
+        lab.append(r, document.createTextNode('Correct'));
+        row.append(lt, inp, lab);
+        if (q.options.length > 2) row.append(iconBtn('✕', 'Remove option', false, () => {
+          q.options.splice(k, 1);
+          if (q.answer === k) q.answer = null; else if (q.answer > k) q.answer--;
+          changed(true);
+        }));
+        card.appendChild(row);
+      });
+      const msg = problem(q);
+      const foot = document.createElement('div'); foot.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap';
+      const warn = document.createElement('span'); warn.className = 'small'; warn.style.color = 'var(--bad)'; warn.textContent = msg || '';
+      const addOpt = document.createElement('button'); addOpt.type = 'button'; addOpt.className = 'ghost sm'; addOpt.textContent = '+ Add option';
+      addOpt.disabled = q.options.length >= 6; addOpt.onclick = () => { q.options.push(''); changed(true); };
+      foot.append(warn, addOpt); card.appendChild(foot);
+      list.appendChild(card);
+    });
+    $('q_savebar').hidden = !dirty();
+    if (dirty()) $('q_saveMsg').textContent = 'You have unsaved changes.';
+  }
+  function iconBtn(t, label, disabled, fn) { const b = document.createElement('button'); b.type = 'button'; b.className = 'iconbtn'; b.textContent = t; b.title = label; b.setAttribute('aria-label', label); b.disabled = disabled; b.onclick = fn; return b; }
+  function problem(q) {
+    if (!q.text.trim()) return 'Type the question.';
+    if (q.options.filter((o) => o.trim()).length < 2) return 'Add at least 2 options.';
+    if (q.answer === null || q.answer === undefined || !q.options[q.answer] || !q.options[q.answer].trim()) return 'Choose the correct answer.';
+    return '';
+  }
+  function changed(redraw) {
+    if (redraw) drawQuestions();
+    else { $('q_savebar').hidden = !dirty(); $('q_saveMsg').textContent = 'You have unsaved changes.'; }
+  }
+  $('q_add').onclick = () => {
+    qs.push({ text: '', options: ['', '', '', ''], answer: null }); changed(true);
+    const t = $('q_text_' + (qs.length - 1)); if (t) { t.scrollIntoView({ block: 'center' }); t.focus(); }
+  };
+  $('q_discard').onclick = () => { qs = JSON.parse(savedJson); delete $('q_savebar').dataset.warned; drawQuestions(); };
+
+  function cleanForSave() {
+    // Drop blank options, keeping the correct answer pointing at the same option.
+    return qs.map((q) => {
+      const keep = []; let ans = null;
+      q.options.forEach((o, k) => { if (o.trim()) { if (k === q.answer) ans = keep.length; keep.push(o.trim()); } });
+      return { text: q.text.trim(), options: keep, answer: ans };
+    });
+  }
+  async function save() {
+    const bad = qs.findIndex((q) => problem(q));
+    if (bad >= 0) {
+      $('q_saveMsg').textContent = 'Question ' + (bad + 1) + ': ' + problem(qs[bad]);
+      const t = $('q_text_' + bad); if (t) t.scrollIntoView({ block: 'center' });
+      return false;
+    }
+    $('q_save').disabled = true;
+    try {
+      const list = cleanForSave();
+      await api('PUT', '/api/admin/classes/' + sel + '/questions', { questions: list });
+      qs = list; savedJson = JSON.stringify(qs); delete $('q_savebar').dataset.warned;
+      if (!qs.length) published = false;
+      await refreshClasses(); drawQuestionsHead(); drawQuestions();
+      return true;
+    } catch (e) { if (e.status === 401) { signedOut(); return false; } $('q_saveMsg').textContent = e.message; return false; }
+    finally { $('q_save').disabled = false; }
+  }
+  $('q_save').onclick = save;
+
+  $('q_publish').onclick = async () => {
+    $('q_err').textContent = '';
+    if (!published) {
+      if (dirty() && !(await save())) return;
+      if (!qs.length) { $('q_err').textContent = 'Add questions to ' + clsLabel(sel) + ' before publishing.'; return; }
+    }
+    try {
+      const d = await api('POST', '/api/admin/classes/' + sel + '/publish', { published: !published });
+      published = d.published; await refreshClasses(); drawQuestionsHead();
+    } catch (e) { if (e.status === 401) return signedOut(); $('q_err').textContent = e.message; }
+  };
+  $('q_copy').onclick = (e) => copy(linkFor(sel), e.currentTarget);
+
+  /* ---------- Import (upload / paste) ---------- */
+  $('q_pasteToggle').onclick = () => { $('q_pasteBox').hidden = !$('q_pasteBox').hidden; if (!$('q_pasteBox').hidden) $('q_paste').focus(); };
+  $('q_pasteRead').onclick = () => handleImport(parseText($('q_paste').value), 'your pasted text');
+  $('q_file').onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    if (f.size > 2 * 1024 * 1024) return showImport('That file is larger than 2 MB. Please upload a smaller file.', true);
+    if (/\.docx?$/i.test(f.name)) return showImport('Word files can\'t be read directly. In Word choose File → Save As → Web Page (.html) or Plain Text (.txt), then upload that.', true);
+    const text = await f.text();
+    let res;
+    if (/\.json$/i.test(f.name)) res = parseJson(text);
+    else if (/\.csv$/i.test(f.name)) res = parseCsv(text);
+    else if (/\.html?$/i.test(f.name) || /<\s*(html|body|p|ol|li|div|table)\b/i.test(text)) res = parseHtml(text);
+    else res = parseText(text);
+    handleImport(res, f.name);
+  };
+  function showImport(html, bad) { const m = $('q_importMsg'); m.hidden = false; m.className = 'a-msg' + (bad ? ' bad' : ''); m.innerHTML = html; }
+  function handleImport(found, source) {
+    found = found.filter((q) => q.text || q.options.length);
+    if (!found.length) return showImport('No questions were found in ' + esc(source) + '. Check the format under “How to write questions in a file”.', true);
+    pendingImport = found;
+    const missing = found.filter((q) => problem(q)).length;
+    let html = '<b>Found ' + found.length + ' question' + (found.length === 1 ? '' : 's') + '</b> in ' + esc(source) + '.';
+    if (missing) html += ' ' + missing + ' need' + (missing === 1 ? 's' : '') + ' fixing (shown in red after you add them).';
+    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">';
+    if (qs.length) html += '<button class="primary sm" type="button" data-imp="add">Add to the ' + qs.length + ' existing</button><button class="ghost sm" type="button" data-imp="replace">Replace existing questions</button>';
+    else html += '<button class="primary sm" type="button" data-imp="add">Add these questions</button>';
+    html += '<button class="ghost sm" type="button" data-imp="cancel">Cancel</button></div>';
+    showImport(html, false);
+    $('q_importMsg').querySelectorAll('[data-imp]').forEach((b) => b.onclick = () => {
+      const mode = b.dataset.imp;
+      if (mode !== 'cancel') {
+        qs = mode === 'replace' ? pendingImport : qs.concat(pendingImport);
+        $('q_paste').value = ''; $('q_pasteBox').hidden = true;
+        changed(true);
+        showImport('Added. Check the questions below, then press <b>Save questions</b>.', false);
+      } else $('q_importMsg').hidden = true;
+      pendingImport = null;
+    });
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+  // Text format: numbered questions, lettered options, "Answer: B" or a * after the right option.
+  function parseText(text) {
+    const lines = String(text).replace(/\r/g, '').split('\n').map((l) => l.replace(/ /g, ' ').trim());
+    const out = []; let cur = null;
+    const reQ = /^(?:q(?:uestion)?\s*)?(\d{1,3})\s*[\.\):\-]\s*(.+)$/i;
+    const reOpt = /^\(?([a-f])\s*[\.\):\-]\s*(.+)$/i;
+    const reAns = /^(?:correct\s*)?(?:answer|ans)\s*(?:is)?\s*[:\-=]?\s*\(?([a-f])\b\)?(?:\s*[\.\):\-].*)?$/i;
+    const mark = /\s*(\*+|\(correct\)|✓|✔)\s*$/i, markStart = /^(\*+)\s*/;
+    const push = () => { if (cur) out.push(cur); cur = null; };
+    for (const line of lines) {
+      if (!line) continue;
+      let m;
+      if (cur && (m = line.match(reAns))) { cur.answer = LETTERS.indexOf(m[1].toUpperCase()); continue; }
+      const om = line.replace(markStart, '').match(reOpt);
+      if (cur && om) {
+        const idx = LETTERS.indexOf(om[1].toUpperCase());
+        if (idx === cur.options.length) {
+          let t = om[2]; const starred = mark.test(t) || markStart.test(line);
+          t = t.replace(mark, '').trim();
+          cur.options.push(t); if (starred) cur.answer = idx;
+          continue;
+        }
+      }
+      if ((m = line.match(reQ))) { push(); cur = { text: m[2].trim(), options: [], answer: null }; continue; }
+      if (cur && cur.options.length === 0) { cur.text += ' ' + line; continue; }
+      if (cur && cur.options.length >= 2) { push(); cur = { text: line, options: [], answer: null }; continue; }
+      // Lines before the first numbered question (titles, instructions) are skipped.
+    }
+    push();
+    return out.map((q) => ({ text: q.text.slice(0, 1000), options: q.options.slice(0, 6), answer: q.answer >= 0 && q.answer < q.options.length ? q.answer : null }));
+  }
+  function parseHtml(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    doc.querySelectorAll('script,style,head').forEach((n) => n.remove());
+    const rows = [...doc.querySelectorAll('tr')].map((tr) => [...tr.children].map((td) => td.textContent.trim()));
+    if (rows.length && rows.some((r) => r.length >= 4)) return rowsToQuestions(rows);
+    doc.querySelectorAll('ol').forEach((ol) => {
+      // Turn <ol><li> lists into numbered / lettered lines.
+      const lettered = /a/i.test(ol.getAttribute('type') || '') || (ol.closest('li') !== null);
+      [...ol.children].forEach((li, i) => { if (li.tagName === 'LI') li.insertBefore(doc.createTextNode((lettered ? LETTERS[i] : (i + 1)) + '. '), li.firstChild); });
+    });
+    doc.querySelectorAll('br').forEach((b) => b.replaceWith('\n'));
+    doc.querySelectorAll('p,div,li,h1,h2,h3,h4,h5,h6,tr,section,article').forEach((b) => { b.prepend('\n'); b.append('\n'); });
+    return parseText(doc.body ? doc.body.textContent : '');
+  }
+  function parseCsvRows(text) {
+    const rows = []; let row = [], f = '', q = false;
+    const t = String(text).replace(/^﻿/, '');
+    const delim = (t.split('\n')[0].match(/;/g) || []).length > (t.split('\n')[0].match(/,/g) || []).length ? ';' : ',';
+    for (let i = 0; i < t.length; i++) {
+      const c = t[i];
+      if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+      else if (c === '"') q = true;
+      else if (c === delim) { row.push(f); f = ''; }
+      else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+      else f += c;
+    }
+    if (f || row.length) { row.push(f); rows.push(row); }
+    return rows.map((r) => r.map((x) => x.trim())).filter((r) => r.some(Boolean));
+  }
+  function parseCsv(text) { return rowsToQuestions(parseCsvRows(text)); }
+  function rowsToQuestions(rows) {
+    let qi = 0, ai = -1, oi = null;
+    const h = rows[0].map((x) => x.toLowerCase());
+    if (h.some((x) => /question/.test(x))) {
+      qi = h.findIndex((x) => /question/.test(x));
+      ai = h.findIndex((x) => /^(answer|correct|correct answer|ans)$/.test(x));
+      oi = h.map((x, i) => (i !== qi && i !== ai && /^(option\s*)?[a-f]$|^option\s*\d$/.test(x)) ? i : -1).filter((i) => i >= 0);
+      rows = rows.slice(1);
+    }
+    return rows.map((r) => {
+      const ansCol = ai >= 0 ? ai : r.length - 1;
+      const optCols = oi && oi.length ? oi : r.map((_, i) => i).filter((i) => i !== qi && i !== ansCol);
+      const options = optCols.map((i) => r[i] || '').filter(Boolean).slice(0, 6);
+      return { text: r[qi] || '', options, answer: resolveAnswer(r[ansCol], options) };
+    });
+  }
+  function resolveAnswer(a, options) {
+    if (a === undefined || a === null) return null;
+    const s = String(a).trim();
+    if (/^[a-f]$/i.test(s)) { const i = LETTERS.indexOf(s.toUpperCase()); return i < options.length ? i : null; }
+    if (/^\d+$/.test(s)) { const i = Number(s) - 1; return i >= 0 && i < options.length ? i : null; }
+    const i = options.findIndex((o) => o.toLowerCase() === s.toLowerCase());
+    return i >= 0 ? i : null;
+  }
+  function parseJson(text) {
+    try {
+      let d = JSON.parse(text); if (!Array.isArray(d)) d = d.questions || [];
+      return d.map((x) => {
+        const options = (x.options || []).map(String).slice(0, 6);
+        const a = typeof x.answer === 'number' ? (x.answer >= 0 && x.answer < options.length ? x.answer : null) : resolveAnswer(x.answer, options);
+        return { text: String(x.question || x.text || ''), options, answer: a };
+      });
+    } catch (e) { return []; }
+  }
+
+  /* ---------- Scoreboard ---------- */
+  function fillResultClasses() {
+    const s = $('r_class'), cur = s.value;
+    s.innerHTML = '<option value="">All classes</option>';
+    classes.forEach((c) => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.label; s.appendChild(o); });
+    s.value = cur;
+  }
+  async function loadResults() {
+    const c = $('r_class').value; const qsx = c ? '?class=' + c : '';
+    try {
+      const [lb, all] = await Promise.all([api('GET', '/api/admin/leaderboard' + qsx), api('GET', '/api/admin/attempts' + qsx)]);
+      rRows = lb.rows; rAll = all.rows;
+      $('r_updated').textContent = 'Updated ' + new Date().toLocaleTimeString() + ' · refreshes every 20 seconds';
+      drawResults();
+    } catch (e) { if (e.status === 401) return signedOut(); $('r_updated').textContent = e.message; }
+  }
+  function rFilter(rows) {
+    const q = $('r_q').value.trim().toLowerCase(), s = $('r_school').value;
+    return rows.filter((r) => (!s || r.school.toLowerCase() === s) && (!q || (r.name + ' ' + r.school).toLowerCase().includes(q)));
+  }
+  function td(tr, v, cls) { const c = document.createElement('td'); if (cls) c.className = cls; if (v instanceof Node) c.appendChild(v); else c.textContent = v; tr.appendChild(c); return c; }
+  function drawResults() {
+    const allClasses = !$('r_class').value;
+    $('r_children').textContent = rRows.length;
+    $('r_schools').textContent = new Set(rRows.map((r) => r.school.toLowerCase())).size;
+    $('r_attempts').textContent = rAll.length;
+    $('r_avg').textContent = rRows.length ? Math.round(rRows.reduce((n, r) => n + r.score / r.total, 0) / rRows.length * 100) + '%' : '–';
+    const ss = $('r_school'), cur = ss.value;
+    const schools = [...new Map(rAll.map((a) => [a.school.toLowerCase(), a.school])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
+    ss.innerHTML = '<option value="">All schools</option>';
+    schools.forEach(([k, v]) => { const o = document.createElement('option'); o.value = k; o.textContent = v; ss.appendChild(o); });
+    ss.value = schools.some(([k]) => k === cur) ? cur : '';
+
+    const head = rView === 'rank' ? ['Rank', 'Name', 'School'] : ['Name', 'School'];
+    if (allClasses) head.push('Class');
+    head.push('Score', 'Time'); if (rView === 'rank') head.push('Attempts'); head.push('Finished');
+    $('r_head').innerHTML = '<tr>' + head.map((h) => '<th>' + h + '</th>').join('') + '</tr>';
+    const body = $('r_body'); body.innerHTML = '';
+    const rows = rFilter(rView === 'rank' ? rRows.map((r, i) => ({ ...r, rank: i + 1 })) : rAll);
+    rows.forEach((r) => {
+      const tr = document.createElement('tr');
+      if (rView === 'rank') {
+        if (r.rank <= 3) { const m = document.createElement('span'); m.className = 'medal'; m.style.background = ['var(--yellow)', 'var(--silver)', 'var(--bronze)'][r.rank - 1]; m.textContent = r.rank; td(tr, m); }
+        else td(tr, String(r.rank), 'num');
+      }
+      const nm = document.createDocumentFragment(); nm.append(r.name);
+      if (r.ex) { const t = document.createElement('span'); t.className = 'tag'; t.textContent = 'example'; nm.append(t); }
+      td(tr, nm); td(tr, r.school);
+      if (allClasses) td(tr, clsLabel(r.class_id));
+      td(tr, r.score + ' / ' + r.total, 'num'); td(tr, fmtTime(r.duration_ms), 'num');
+      if (rView === 'rank') td(tr, String(r.attempts_count), 'num');
+      td(tr, fmtDate(r.finished_at)).style.color = 'var(--muted)';
+      body.appendChild(tr);
+    });
+    $('r_empty').hidden = rows.length > 0;
+  }
+  $('r_class').onchange = loadResults; $('r_q').oninput = drawResults; $('r_school').onchange = drawResults;
+  $('r_tRank').onclick = () => { rView = 'rank'; $('r_tRank').classList.add('on'); $('r_tAll').classList.remove('on'); drawResults(); };
+  $('r_tAll').onclick = () => { rView = 'all'; $('r_tAll').classList.add('on'); $('r_tRank').classList.remove('on'); drawResults(); };
+  $('r_csv').onclick = () => {
+    const e = (v) => '"' + String(v).replace(/"/g, '""') + '"';
+    const lines = [['Rank', 'Name', 'School', 'Class', 'Score', 'Total', 'Percent', 'Time (seconds)', 'Attempts', 'Finished'].map(e).join(',')];
+    rRows.forEach((r, i) => lines.push([i + 1, r.name, r.school, clsLabel(r.class_id), r.score, r.total, Math.round(r.score / r.total * 100), (r.duration_ms / 1000).toFixed(1), r.attempts_count, new Date(r.finished_at).toISOString()].map(e).join(',')));
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\n')], { type: 'text/csv' }));
+    a.download = 'futurein-quiz-' + ($('r_class').value || 'all-classes') + '.csv'; a.click();
+  };
+
+  /* ---------- Links ---------- */
+  function drawLinks() {
+    $('l_general').textContent = base() + '/';
+    document.querySelector('[data-copy="general"]').onclick = (e) => copy(base() + '/', e.currentTarget);
+    const body = $('l_body'); body.innerHTML = '';
+    classes.forEach((c) => {
+      const tr = document.createElement('tr');
+      td(tr, c.label);
+      const [cls, txt] = statusOf(c); const chip = document.createElement('span'); chip.className = 'chip ' + cls; chip.textContent = txt; td(tr, chip);
+      const code = document.createElement('code'); code.textContent = linkFor(c.id); code.style.color = 'var(--yellow)'; td(tr, code);
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'ghost sm'; b.textContent = 'Copy link';
+      b.onclick = async () => { try { await navigator.clipboard.writeText(linkFor(c.id)); b.textContent = 'Copied'; } catch (e) { b.textContent = 'Select & copy'; } setTimeout(() => b.textContent = 'Copy link', 1800); };
+      td(tr, b); body.appendChild(tr);
+    });
+  }
+
+  window.addEventListener('beforeunload', (e) => { if (dirty()) { e.preventDefault(); e.returnValue = ''; } });
+  boot();
+})();
+</script>
+</body>
+</html>

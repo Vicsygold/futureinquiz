@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>FutureIN Quiz</title>
+<link rel="icon" href="/logo.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@600;700;800&family=Poppins:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/brand.css">
+<script src="/api.js"></script>
+<style id="page-css">
+  .child { max-width: 620px; width: 100%; margin: 0 auto; display: grid; gap: 16px; }
+  .c-top { display: flex; justify-content: space-between; color: var(--muted); font-weight: 600; margin-bottom: 10px; font-variant-numeric: tabular-nums; font-size: 15px; }
+  .c-top .timer { color: var(--yellow); }
+  .c-bar { height: 8px; background: var(--night); border-radius: 99px; overflow: hidden; margin-bottom: 24px; }
+  .c-bar > div { height: 100%; background: linear-gradient(90deg, var(--violet-deep), var(--violet)); width: 0; transition: width .3s; }
+  .c-opts { display: grid; gap: 10px; margin-bottom: 22px; }
+  .c-opt { display: flex; gap: 12px; align-items: center; text-align: left; font: inherit; font-size: 16px; padding: 13px 14px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--night); color: var(--ink); cursor: pointer; }
+  .c-opt:hover { border-color: var(--violet); }
+  .c-opt .l { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: var(--surface-2); color: var(--violet); font-family: var(--display); }
+  .c-opt.sel { border-color: var(--yellow); background: rgba(255, 198, 41, .1); }
+  .c-opt.sel .l { background: var(--yellow); color: var(--night); }
+  .c-nav { display: flex; gap: 10px; }
+  .c-nav .primary { flex: 1; }
+  .c-center { text-align: center; }
+  .c-big { font-family: var(--display); font-weight: 800; letter-spacing: -.04em; font-size: 76px; line-height: 1; color: var(--yellow); margin: 16px 0 8px; font-variant-numeric: tabular-nums; }
+  .c-notice-icon { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 14px; display: grid; place-items: center; background: rgba(255, 198, 41, .12); color: var(--yellow); font-size: 30px; }
+</style>
+</head>
+<body>
+<!--APP START-->
+<header class="topbar"><div class="in">
+  <span class="logo"><img src="/logo.png" alt="FutureIN"><span class="sep"></span><span class="label">Quiz</span></span>
+</div></header>
+
+<main class="wrap" id="childApp">
+  <section class="child">
+    <span class="pill">✦ Future Innovators Quiz</span>
+
+    <div class="card" id="c_start">
+      <h1>Are you a future <span class="in-violet">innovator?</span></h1>
+      <p class="kicker">Tech quiz for young innovators</p>
+      <p class="sub">Type your name, your school and your class, then start the quiz. Answer correctly and as fast as you can.</p>
+      <form id="c_form" autocomplete="off" novalidate>
+        <div class="field"><label for="c_name">Your full name</label><input id="c_name" maxlength="80" placeholder="e.g. Victor Adebayo"></div>
+        <div class="field"><label for="c_school">Your school</label><input id="c_school" maxlength="80" placeholder="e.g. Precious Stone School"></div>
+        <div class="field"><label for="c_class">Your class</label>
+          <select id="c_class"><option value="">Choose your class</option></select></div>
+        <div class="err" id="c_err" role="alert"></div>
+        <button class="primary wide" type="submit" id="c_go">Start quiz</button>
+      </form>
+    </div>
+
+    <div class="card c-center" id="c_none" hidden>
+      <div class="c-notice-icon">✦</div>
+      <h2>No quiz for <span id="c_noneClass"></span> yet</h2>
+      <p class="sub">There is no quiz for your class right now. Please check back later or ask your teacher.</p>
+      <button class="ghost" type="button" id="c_noneBack">Go back</button>
+    </div>
+
+    <div class="card" id="c_quiz" hidden>
+      <div class="c-top"><span id="c_counter"></span><span class="timer" id="c_timer">⏱ 0:00</span></div>
+      <div class="c-bar"><div id="c_progress"></div></div>
+      <h2 id="c_q"></h2>
+      <div class="c-opts" id="c_opts"></div>
+      <div class="err" id="c_qerr" role="alert"></div>
+      <div class="c-nav">
+        <button class="ghost" id="c_back" type="button">Back</button>
+        <button class="primary" id="c_next" type="button" disabled>Next</button>
+      </div>
+    </div>
+
+    <div class="card framed c-center" id="c_done" hidden>
+      <h1>Well done, <span id="c_doneName" class="in-violet"></span>!</h1>
+      <p class="c-big" id="c_doneScore"></p>
+      <p class="sub" id="c_doneTime"></p>
+      <button class="primary" id="c_again" type="button">Back to start</button>
+    </div>
+  </section>
+  <p class="foot">© Future Innovators Network (Future<span class="in-violet">IN</span>)</p>
+</main>
+<!--APP END-->
+
+<script id="page-js">
+(function () {
+  const $ = (id) => document.getElementById(id);
+  let st = null, tick = null, classes = [];
+
+  function show(id) { ['c_start', 'c_none', 'c_quiz', 'c_done'].forEach((c) => { $(c).hidden = c !== id; }); window.scrollTo(0, 0); }
+  const clock = (ms) => { const s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+
+  // A class link like /quiz/year-6 (or #year-6) picks the class for the child.
+  function presetClass() {
+    const m = location.pathname.match(/\/quiz\/([a-z0-9-]+)/i);
+    if (m) return m[1].toLowerCase();
+    const h = location.hash.replace('#', '').toLowerCase();
+    return /^(nursery-2|year-\d{1,2})$/.test(h) ? h : '';
+  }
+
+  async function loadClasses() {
+    try {
+      classes = (await api('GET', '/api/classes')).classes;
+      const sel = $('c_class');
+      classes.forEach((c) => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.label; sel.appendChild(o); });
+      const pre = presetClass();
+      if (classes.some((c) => c.id === pre)) sel.value = pre;
+    } catch (e) { $('c_err').textContent = e.message; }
+  }
+
+  $('c_form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = $('c_name').value.trim(), school = $('c_school').value.trim(), classId = $('c_class').value;
+    $('c_err').textContent = '';
+    if (name.length < 2) return void ($('c_err').textContent = 'Please type your name.');
+    if (school.length < 2) return void ($('c_err').textContent = 'Please type the name of your school.');
+    if (!classId) return void ($('c_err').textContent = 'Please choose your class.');
+    $('c_go').disabled = true;
+    try {
+      const d = await api('POST', '/api/start', { name, school, classId });
+      if (d.noQuiz) { $('c_noneClass').textContent = d.classLabel; show('c_none'); return; }
+      st = { id: d.attemptId, qs: d.questions, answers: new Array(d.questions.length).fill(null), i: 0, t0: Date.now(), name };
+      document.title = d.classLabel + ' Quiz · FutureIN';
+      show('c_quiz'); render();
+      clearInterval(tick);
+      tick = setInterval(() => { $('c_timer').textContent = '⏱ ' + clock(Date.now() - st.t0); }, 500);
+    } catch (err) { $('c_err').textContent = err.message; }
+    finally { $('c_go').disabled = false; }
+  });
+
+  function render() {
+    const q = st.qs[st.i];
+    $('c_counter').textContent = 'Question ' + (st.i + 1) + ' of ' + st.qs.length;
+    $('c_progress').style.width = (st.i / st.qs.length * 100) + '%';
+    $('c_q').textContent = q.question;
+    const box = $('c_opts'); box.innerHTML = '';
+    q.options.forEach((opt, k) => {
+      const b = document.createElement('button'); b.type = 'button';
+      b.className = 'c-opt' + (st.answers[st.i] === k ? ' sel' : '');
+      const l = document.createElement('span'); l.className = 'l'; l.textContent = 'ABCDEF'[k];
+      const t = document.createElement('span'); t.textContent = opt;
+      b.append(l, t);
+      b.onclick = () => { st.answers[st.i] = k; render(); };
+      box.appendChild(b);
+    });
+    $('c_back').style.visibility = st.i === 0 ? 'hidden' : 'visible';
+    $('c_next').disabled = st.answers[st.i] === null;
+    $('c_next').textContent = st.i === st.qs.length - 1 ? 'Finish' : 'Next';
+    $('c_qerr').textContent = '';
+  }
+
+  $('c_back').onclick = () => { if (st.i > 0) { st.i--; render(); } };
+  $('c_next').onclick = async () => {
+    if (st.i < st.qs.length - 1) { st.i++; render(); return; }
+    $('c_next').disabled = true;
+    try {
+      const d = await api('POST', '/api/submit', { attemptId: st.id, answers: st.answers });
+      clearInterval(tick);
+      $('c_doneName').textContent = st.name.split(' ')[0];
+      $('c_doneScore').textContent = d.score + ' / ' + d.total;
+      $('c_doneTime').textContent = 'You finished in ' + clock(d.durationMs) + '.';
+      show('c_done');
+    } catch (err) {
+      $('c_qerr').textContent = err.status === 0 ? 'No connection. Tap Finish again.' : err.message;
+      $('c_next').disabled = false;
+    }
+  };
+  function reset() { st = null; $('c_name').value = ''; $('c_school').value = ''; document.title = 'FutureIN Quiz'; show('c_start'); }
+  $('c_again').onclick = reset;
+  $('c_noneBack').onclick = () => show('c_start');
+
+  loadClasses();
+})();
+</script>
+</body>
+</html>

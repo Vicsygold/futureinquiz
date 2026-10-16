@@ -1,0 +1,13 @@
+{
+  "name": "futurein-quiz",
+  "version": "2.0.0",
+  "description": "FutureIN quiz platform: class quizzes for children with a private admin dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --no-warnings server.js",
+    "set-admin": "node scripts/set-admin.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}
