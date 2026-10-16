@@ -97,6 +97,39 @@ const q = {
   purgeOpenAttempts: db.prepare(`DELETE FROM attempts WHERE finished_at IS NULL AND started_at < ?`),
 };
 
+function seedNursery() {
+  try {
+    const existing = q.questionsFor.all('nursery-2');
+    if (existing.length === 0) {
+      const nurseryQs = [
+        { text: 'Find the computer!', options: ['Computer', 'Banana 🍌', 'Car 🚗'], answer: 0 },
+        { text: 'Which one is a computer?', options: ['Laptop', 'Teddy Bear 🧸', 'Football ⚽'], answer: 0 },
+        { text: 'A computer is a… machine!', options: ['Computer', 'Apple 🍎', 'Cat 🐱'], answer: 0 },
+        { text: 'Find the System Unit!', options: ['System Unit (Tower)', 'Monitor', 'Mouse'], answer: 0 },
+        { text: 'The brain of the computer?', options: ['System Unit (Tower)', 'Banana 🍌', 'Balloon 🎈'], answer: 0 },
+        { text: 'What makes the computer work?', options: ['System Unit (Tower)', 'Teddy Bear 🧸', 'Juice Cup 🥤'], answer: 0 },
+        { text: 'Find the Monitor!', options: ['Monitor', 'System Unit (Tower)', 'Mouse'], answer: 0 },
+        { text: 'We SEE pictures on the…', options: ['Monitor', 'Shoe 👟', 'Apple 🍎'], answer: 0 },
+        { text: 'A monitor looks like a…', options: ['Television 📺', 'Banana 🍌', 'Dog 🐶'], answer: 0 },
+        { text: 'Find the Power Button!', options: ['Power Button', 'Star ⭐', 'Heart ❤️'], answer: 0 },
+        { text: 'Press it to switch ON!', options: ['Power Button', 'Cookie 🍪', 'Football ⚽'], answer: 0 },
+        { text: 'The computer needs…', options: ['Electricity (Plug) ⚡', 'Water 💧', 'Ice Cream 🍦'], answer: 0 },
+        { text: 'Find the Mouse!', options: ['Computer Mouse', 'System Unit (Tower)', 'Monitor'], answer: 0 },
+        { text: 'Which mouse is for the computer?', options: ['Computer Mouse', 'Animal Mouse 🐭', 'Cheese 🧀'], answer: 0 },
+        { text: 'We CLICK with the…', options: ['Computer Mouse', 'Banana 🍌', 'Shoe 👟'], answer: 0 },
+      ];
+      db.exec('BEGIN');
+      nurseryQs.forEach((x, i) => q.insertQuestion.run('nursery-2', i, x.text, JSON.stringify(x.options), x.answer));
+      q.setPublished.run('nursery-2', 1, Date.now());
+      db.exec('COMMIT');
+    }
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+  }
+}
+seedNursery();
+
+
 // Best attempt per child (same name + school) within each class; ranked by score, then speed.
 function leaderboard(classId) {
   const where = classId ? `AND class_id = ?` : ``;
@@ -385,6 +418,7 @@ const server = http.createServer(async (req, res) => {
 
     if (lower === ADMIN_PATH) return sendFile(res, path.join(PUBLIC_DIR, 'private', 'admin.html'),
       { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' });
+    if (lower === '/nursery' || lower === '/quiz/nursery-2') return sendFile(res, path.join(PUBLIC_DIR, 'nursery.html'));
     if (lower === '/' || /^\/quiz\/[a-z0-9-]+$/.test(lower)) return sendFile(res, path.join(PUBLIC_DIR, 'index.html'));
     if (lower.startsWith('/private')) { res.writeHead(404); return res.end('Not found'); }
 

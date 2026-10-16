@@ -114,6 +114,10 @@
     if (name.length < 2) return void ($('c_err').textContent = 'Please type your name.');
     if (school.length < 2) return void ($('c_err').textContent = 'Please type the name of your school.');
     if (!classId) return void ($('c_err').textContent = 'Please choose your class.');
+    if (classId === 'nursery-2') {
+      location.href = '/quiz/nursery-2?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
+      return;
+    }
     $('c_go').disabled = true;
     try {
       const d = await api('POST', '/api/start', { name, school, classId });

@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Computer Fun Quiz · FutureIN</title>
+<link rel="icon" href="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="/api.js"></script>
+<style>
+  :root{
+    --bg1:#fff6d6; --bg2:#ffe0ec;
+    --ink:#2f2a4a; --soft:#6c6790;
+    --card:#ffffff; --line:#f0e6ff;
+    --pink:#ff6b9a; --blue:#4cb8ff; --green:#36c46b; --yellow:#ffc93c; --purple:#9b6bff; --orange:#ff9a3c;
+    --good:#36c46b; --bad:#ff6b6b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg1:#2a2550; --bg2:#3a2448; --ink:#fffaf0; --soft:#d6d0f5; --card:#fffdf7; --line:#4a4380;
+    }
+  }
+  :root[data-theme="dark"]{ --bg1:#2a2550; --bg2:#3a2448; --ink:#fffaf0; --soft:#d6d0f5; --card:#fffdf7; --line:#4a4380; }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; height:100%}
+  body{
+    font-family:'Fredoka', 'Comic Sans MS', system-ui, sans-serif;
+    color:var(--ink);
+    background: radial-gradient(circle at 15% 10%, var(--bg2) 0, transparent 45%),
+                radial-gradient(circle at 90% 90%, #d8f3ff 0, transparent 40%), var(--bg1);
+    background-color:var(--bg1);
+    min-height:100%;
+    overflow-x:hidden;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) body{ background: linear-gradient(160deg,var(--bg1),var(--bg2)); }
+  }
+  :root[data-theme="dark"] body{ background: linear-gradient(160deg,var(--bg1),var(--bg2)); }
+
+  /* floating background bubbles */
+  .bubbles span{position:fixed; border-radius:50%; opacity:.25; z-index:0; animation:float 9s ease-in-out infinite}
+  @keyframes float{50%{transform:translateY(-30px)}}
+
+  .wrap{position:relative; z-index:1; max-width:980px; margin:0 auto; padding:16px 16px 40px; min-height:100vh; display:flex; flex-direction:column}
+
+  /* ---------- top bar ---------- */
+  .top{display:flex; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap}
+  .lesson-tag{background:var(--purple); color:#fff; font-weight:600; padding:8px 16px; border-radius:999px; font-size:clamp(14px,2.4vw,20px); box-shadow:0 4px 0 #6f45d6}
+  .progress{display:flex; gap:4px; flex-wrap:wrap; justify-content:center}
+  .progress i{width:clamp(14px,2.6vw,24px); height:clamp(14px,2.6vw,24px); border-radius:50%; background:#fff; border:3px solid #e6dcff; display:grid; place-items:center; font-style:normal; font-size:clamp(10px,1.8vw,16px)}
+  .progress i.now{border-color:var(--pink); transform:scale(1.25)}
+  .progress i.done{background:var(--yellow); border-color:#f0a800}
+  .icon-btn{border:none; background:#fff; border-radius:50%; width:52px; height:52px; font-size:26px; cursor:pointer; box-shadow:0 4px 0 #e2d6ff}
+  .icon-btn:active{transform:translateY(3px); box-shadow:0 1px 0 #e2d6ff}
+
+  /* ---------- question ---------- */
+  .q-area{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:clamp(16px,3vh,32px); padding-top:16px}
+  .question{display:flex; align-items:center; gap:14px; background:var(--card); color:#2f2a4a; padding:14px 22px; border-radius:28px; box-shadow:0 6px 0 rgba(0,0,0,.08); max-width:100%}
+  .question h1{margin:0; font-size:clamp(24px,5.2vw,48px); line-height:1.15; text-align:center}
+  .question .hint{font-size:clamp(34px,6vw,58px)}
+  .say{flex:none; border:none; background:var(--blue); color:#fff; width:clamp(52px,8vw,70px); height:clamp(52px,8vw,70px); border-radius:50%; font-size:clamp(24px,4vw,34px); cursor:pointer; box-shadow:0 5px 0 #2a8fd1; animation:pulse 2s infinite}
+  .say:active{transform:translateY(4px); box-shadow:0 1px 0 #2a8fd1}
+  @keyframes pulse{50%{transform:scale(1.08)}}
+
+  .cards{display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(10px,2.5vw,28px); width:100%}
+  .card{
+    position:relative; aspect-ratio:1/1.08; border:none; cursor:pointer; padding:10px;
+    background:var(--card); border-radius:32px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    box-shadow:0 10px 0 var(--shade, #ffd1e1); border:5px solid var(--edge, #ffd1e1);
+    transition:transform .15s; animation:pop .5s backwards;
+  }
+  .card:nth-child(1){--edge:#ffc2d6; --shade:#ff9dbd; animation-delay:.05s}
+  .card:nth-child(2){--edge:#bfe6ff; --shade:#8fd0ff; animation-delay:.15s}
+  .card:nth-child(3){--edge:#ffe7a8; --shade:#ffd36b; animation-delay:.25s}
+  .card:hover{transform:translateY(-6px) rotate(-1deg)}
+  .card:active{transform:translateY(6px)}
+  .card svg{width:88%; height:auto; max-height:88%}
+  .card .emo{font-size:clamp(64px,15vw,150px); line-height:1}
+  @keyframes pop{from{transform:scale(.4); opacity:0}}
+  .card.right{--edge:var(--good); --shade:#23974f; animation:bounce .6s}
+  .card.right::after{content:"✔"; position:absolute; top:-18px; right:-12px; background:var(--good); color:#fff; width:56px; height:56px; border-radius:50%; display:grid; place-items:center; font-size:32px; box-shadow:0 4px 0 #23974f}
+  .card.wrong{animation:shake .5s; filter:grayscale(1) brightness(.9); --edge:#ddd; --shade:#ccc}
+  .card.fade{filter:grayscale(.9); transform:scale(.92)}
+  @keyframes bounce{30%{transform:scale(1.12)} 60%{transform:scale(.96)}}
+  @keyframes shake{20%,60%{transform:translateX(-12px)} 40%,80%{transform:translateX(12px)}}
+
+  .feedback{min-height:64px; font-size:clamp(26px,5vw,44px); font-weight:700; text-align:center}
+  .feedback.good{color:var(--green)}
+  .feedback.try{color:var(--orange)}
+
+  .next{border:none; background:var(--green); color:#fff; font-family:inherit; font-weight:700; font-size:clamp(24px,4.5vw,38px); padding:14px 44px; border-radius:999px; cursor:pointer; box-shadow:0 7px 0 #23974f; animation:pop .4s}
+  .next:active{transform:translateY(5px); box-shadow:0 2px 0 #23974f}
+  .hidden{display:none !important}
+
+  /* ---------- start + end screens ---------- */
+  .screen{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:18px}
+  .screen h1{font-size:clamp(38px,8vw,76px); margin:0; color:var(--pink); text-shadow:0 4px 0 #fff}
+  .screen p{font-size:clamp(20px,3.6vw,30px); margin:0; color:var(--soft)}
+  .mascot{width:clamp(180px,34vw,280px); animation:wobble 2.4s ease-in-out infinite}
+  @keyframes wobble{25%{transform:rotate(-5deg)} 75%{transform:rotate(5deg)}}
+  .big-btn{border:none; background:var(--pink); color:#fff; font-family:inherit; font-weight:700; font-size:clamp(28px,5vw,44px); padding:16px 56px; border-radius:999px; cursor:pointer; box-shadow:0 8px 0 #d6457a}
+  .big-btn:active{transform:translateY(6px); box-shadow:0 2px 0 #d6457a}
+  .stars-row{font-size:clamp(26px,5vw,44px); letter-spacing:2px; max-width:600px}
+  .topics{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
+  .topics span{background:#fff; color:#2f2a4a; padding:6px 14px; border-radius:999px; font-size:clamp(14px,2.4vw,18px); box-shadow:0 3px 0 #eadfff}
+
+  /* Form fields on start */
+  .child-info{display:flex; flex-direction:column; gap:10px; width:100%; max-width:380px; margin:8px auto}
+  .child-info input{
+    font-family:inherit; font-size:18px; padding:12px 18px; border-radius:18px;
+    border:3px solid var(--purple); background:#fff; color:#2f2a4a; outline:none; text-align:center;
+  }
+  .child-info input:focus{border-color:var(--pink); box-shadow:0 0 0 3px rgba(255,107,154,.3)}
+  .err-msg{color:var(--bad); font-weight:700; font-size:16px}
+
+  /* confetti */
+  .confetti{position:fixed; top:-30px; z-index:50; pointer-events:none; animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+  .nav-back{margin-top:14px; color:var(--soft); font-size:16px; text-decoration:none; font-weight:600}
+  .nav-back:hover{color:var(--pink)}
+
+  @media (max-width:520px){
+    .cards{gap:8px}
+    .card{border-radius:20px; border-width:4px; box-shadow:0 6px 0 var(--shade)}
+    .card.right::after{width:40px; height:40px; font-size:22px; top:-12px; right:-8px}
+    .question{padding:12px 14px; gap:10px}
+  }
+</style>
+</head>
+<body>
+<div class="bubbles" aria-hidden="true"></div>
+
+<div class="wrap">
+  <!-- START -->
+  <section id="start" class="screen">
+    <div class="mascot" id="mascotStart"></div>
+    <h1>Computer Fun Quiz!</h1>
+    <p>Look, listen and tap the right picture</p>
+    <div class="topics">
+      <span>🖥️ Computer</span><span>🧠 System Unit</span><span>📺 Monitor</span><span>🔘 Power Button</span><span>🖱️ Mouse</span>
+    </div>
+
+    <div class="child-info" id="infoBox">
+      <input id="childName" placeholder="Your name (e.g. Victor)" maxlength="60">
+      <input id="childSchool" placeholder="Your school" maxlength="80">
+      <div class="err-msg" id="nameErr"></div>
+    </div>
+
+    <button class="big-btn" id="startBtn">▶ Let's Play!</button>
+    <a href="/" class="nav-back">← Choose another class</a>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz" class="hidden" style="flex:1; display:flex; flex-direction:column">
+    <div class="top">
+      <div class="lesson-tag" id="lessonTag">Lesson 1</div>
+      <div class="progress" id="progress"></div>
+      <button class="icon-btn" id="soundBtn" title="Sound on/off">🔊</button>
+    </div>
+    <div class="q-area">
+      <div class="question">
+        <span class="hint" id="hint"></span>
+        <h1 id="qText"></h1>
+        <button class="say" id="sayBtn" title="Hear the question">🔈</button>
+      </div>
+      <div class="cards" id="cards"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next hidden" id="nextBtn">Next ▶</button>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="end" class="screen hidden">
+    <div style="font-size:clamp(90px,18vw,160px); animation:wobble 2s infinite">🏆</div>
+    <h1>Well Done!</h1>
+    <p id="endText"></p>
+    <div class="stars-row" id="endStars"></div>
+    <button class="big-btn" id="againBtn" style="margin-top:14px">🔁 Play Again</button>
+    <a href="/" class="nav-back" style="font-size:18px">← Back to Quiz Home</a>
+  </section>
+</div>
+
+<script>
+/* ================= PICTURES (drawn, so they work without internet) ================= */
+const powerIcon = (cx, cy, r, color) => `
+  <path d="M${cx} ${cy - r} V${cy - r*0.15}" stroke="${color}" stroke-width="${r*0.28}" stroke-linecap="round"/>
+  <path d="M${cx - r*0.7} ${cy - r*0.7} A${r} ${r} 0 1 0 ${cx + r*0.7} ${cy - r*0.7}" stroke="${color}" stroke-width="${r*0.28}" fill="none" stroke-linecap="round"/>`;
+
+const monitorInner = `
+  <rect x="20" y="30" width="160" height="108" rx="14" fill="#3d4a73"/>
+  <rect x="31" y="41" width="138" height="84" rx="6" fill="#8fdcff"/>
+  <circle cx="64" cy="66" r="13" fill="#ffd93b"/>
+  <path d="M31 125 L78 88 L106 112 L134 92 L169 125 Z" fill="#5fcf72"/>
+  <circle cx="160" cy="131" r="3.5" fill="#6dff8f"/>
+  <rect x="88" y="138" width="24" height="26" fill="#3d4a73"/>
+  <rect x="55" y="160" width="90" height="14" rx="7" fill="#3d4a73"/>`;
+
+const towerInner = (w=1) => `
+  <rect x="58" y="16" width="84" height="164" rx="14" fill="#4f5a85"/>
+  <rect x="58" y="16" width="84" height="164" rx="14" fill="none" stroke="#3a4369" stroke-width="5"/>
+  <rect x="70" y="34" width="60" height="11" rx="5" fill="#2f3758"/>
+  <rect x="70" y="52" width="60" height="11" rx="5" fill="#2f3758"/>
+  <circle cx="100" cy="106" r="17" fill="#2f3758"/>
+  ${powerIcon(100, 108, 9, '#6dff8f')}
+  <g stroke="#3a4369" stroke-width="4" stroke-linecap="round">
+    <line x1="74" y1="146" x2="126" y2="146"/><line x1="74" y1="156" x2="126" y2="156"/><line x1="74" y1="166" x2="126" y2="166"/>
+  </g>
+  <rect x="64" y="180" width="18" height="8" rx="3" fill="#3a4369"/><rect x="118" y="180" width="18" height="8" rx="3" fill="#3a4369"/>`;
+
+const PICS = {
+  monitor: `<svg viewBox="0 0 200 200">${monitorInner}</svg>`,
+  tower:   `<svg viewBox="0 0 200 200">${towerInner()}</svg>`,
+  computer: `<svg viewBox="0 0 200 200">
+      <g transform="translate(-6,8) scale(.72)">${monitorInner}</g>
+      <g transform="translate(118,30) scale(.62)">
+        <rect x="0" y="0" width="84" height="164" rx="14" fill="#4f5a85" stroke="#3a4369" stroke-width="5"/>
+        <rect x="12" y="18" width="60" height="11" rx="5" fill="#2f3758"/>
+        <rect x="12" y="36" width="60" height="11" rx="5" fill="#2f3758"/>
+        <circle cx="42" cy="90" r="15" fill="#2f3758"/>${powerIcon(42, 92, 8, '#6dff8f')}
+      </g>
+      <rect x="16" y="150" width="104" height="26" rx="6" fill="#e9e6ff" stroke="#3d4a73" stroke-width="4"/>
+      <g fill="#3d4a73">
+        <rect x="24" y="156" width="10" height="6" rx="2"/><rect x="38" y="156" width="10" height="6" rx="2"/><rect x="52" y="156" width="10" height="6" rx="2"/><rect x="66" y="156" width="10" height="6" rx="2"/><rect x="80" y="156" width="10" height="6" rx="2"/><rect x="94" y="156" width="10" height="6" rx="2"/>
+        <rect x="34" y="166" width="62" height="5" rx="2"/>
+      </g>
+      <rect x="134" y="152" width="18" height="26" rx="9" fill="#fff" stroke="#3d4a73" stroke-width="4"/>
+    </svg>`,
+  laptop: `<svg viewBox="0 0 200 200">
+      <rect x="38" y="40" width="124" height="86" rx="10" fill="#3d4a73"/>
+      <rect x="47" y="49" width="106" height="68" rx="4" fill="#ffd1e6"/>
+      <circle cx="100" cy="83" r="20" fill="#ff6b9a"/><circle cx="93" cy="79" r="3" fill="#fff"/><circle cx="107" cy="79" r="3" fill="#fff"/>
+      <path d="M92 88 Q100 95 108 88" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M22 132 H178 L166 154 H34 Z" fill="#8c95c2"/>
+      <rect x="84" y="136" width="32" height="6" rx="3" fill="#5c6596"/>
+    </svg>`,
+  mouse: `<svg viewBox="0 0 200 200">
+      <path d="M100 42 C100 20 132 26 142 8" stroke="#4f5a85" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <rect x="62" y="40" width="76" height="140" rx="38" fill="#fff" stroke="#4f5a85" stroke-width="7"/>
+      <line x1="62" y1="96" x2="138" y2="96" stroke="#4f5a85" stroke-width="6"/>
+      <line x1="100" y1="42" x2="100" y2="96" stroke="#4f5a85" stroke-width="6"/>
+      <rect x="92" y="54" width="16" height="28" rx="8" fill="#ff6b9a" stroke="#4f5a85" stroke-width="4"/>
+    </svg>`,
+  power: `<svg viewBox="0 0 200 200">
+      <circle cx="100" cy="104" r="74" fill="#2aa85a"/>
+      <circle cx="100" cy="98" r="74" fill="#3fd47a"/>
+      ${powerIcon(100, 104, 38, '#ffffff')}
+    </svg>`,
+  plug: `<svg viewBox="0 0 200 200">
+      <path d="M100 150 C100 185 40 180 40 196" stroke="#3d4a73" stroke-width="10" fill="none" stroke-linecap="round"/>
+      <rect x="74" y="20" width="12" height="40" rx="5" fill="#b9bfd9"/><rect x="114" y="20" width="12" height="40" rx="5" fill="#b9bfd9"/>
+      <rect x="56" y="56" width="88" height="70" rx="18" fill="#ffc93c" stroke="#e0a400" stroke-width="5"/>
+      <rect x="86" y="124" width="28" height="30" rx="6" fill="#ffc93c" stroke="#e0a400" stroke-width="5"/>
+      <path d="M104 70 L88 94 H102 L96 114 L114 88 H100 Z" fill="#fff"/>
+    </svg>`,
+  /* friendly computer mascot */
+  mascot: `<svg viewBox="0 0 200 200">
+      <rect x="20" y="24" width="160" height="116" rx="22" fill="#4cb8ff"/>
+      <rect x="32" y="36" width="136" height="92" rx="14" fill="#e9f8ff"/>
+      <circle cx="76" cy="76" r="11" fill="#2f2a4a"/><circle cx="124" cy="76" r="11" fill="#2f2a4a"/>
+      <circle cx="80" cy="72" r="4" fill="#fff"/><circle cx="128" cy="72" r="4" fill="#fff"/>
+      <circle cx="60" cy="98" r="9" fill="#ffb3cc"/><circle cx="140" cy="98" r="9" fill="#ffb3cc"/>
+      <path d="M82 100 Q100 118 118 100" stroke="#2f2a4a" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <rect x="86" y="140" width="28" height="20" fill="#4cb8ff"/>
+      <rect x="54" y="158" width="92" height="16" rx="8" fill="#ff6b9a"/>
+      <path d="M20 60 Q2 40 12 22" stroke="#4cb8ff" stroke-width="10" fill="none" stroke-linecap="round"/>
+      <circle cx="12" cy="20" r="9" fill="#ffc93c"/>
+    </svg>`
+};
+
+const pic = k => PICS[k] ? PICS[k] : `<span class="emo">${k}</span>`;
+
+/* ================= 15 QUESTIONS (3 per lesson) ================= */
+// each: lesson, text, say (spoken), hint emoji, options [picture, isCorrect]
+const QUESTIONS = [
+  // Lesson 1 — Knowing the Computer System
+  {lesson:"Lesson 1 · The Computer", hint:"👀", text:"Find the computer!", say:"Can you find the computer? Tap the computer!",
+   options:[["computer",1],["🍌",0],["🚗",0]], yay:"Yes! That is a computer!"},
+  {lesson:"Lesson 1 · The Computer", hint:"💻", text:"Which one is a computer?", say:"Which one is a computer?",
+   options:[["laptop",1],["🧸",0],["⚽",0]], yay:"Yes! A laptop is a small computer!"},
+  {lesson:"Lesson 1 · The Computer", hint:"⚡", text:"A computer is a… machine!", say:"A computer is an electronic machine. Tap the computer!",
+   options:[["computer",1],["🍎",0],["🐱",0]], yay:"Great! The computer is a machine!"},
+
+  // Lesson 2 — What makes the computer work? (System Unit)
+  {lesson:"Lesson 2 · System Unit", hint:"🔎", text:"Find the System Unit!", say:"Find the system unit!",
+   options:[["tower",1],["monitor",0],["mouse",0]], yay:"Yes! That is the system unit!"},
+  {lesson:"Lesson 2 · System Unit", hint:"🧠", text:"The brain of the computer?", say:"Which one is the brain of the computer?",
+   options:[["tower",1],["🍌",0],["🎈",0]], yay:"Yes! The system unit is the brain of the computer!"},
+  {lesson:"Lesson 2 · System Unit", hint:"⚙️", text:"What makes the computer work?", say:"What makes the computer work?",
+   options:[["tower",1],["🧸",0],["🥤",0]], yay:"Correct! The system unit makes the computer work!"},
+
+  // Lesson 3 — What a Monitor looks like
+  {lesson:"Lesson 3 · Monitor", hint:"🔎", text:"Find the Monitor!", say:"Find the monitor!",
+   options:[["monitor",1],["tower",0],["mouse",0]], yay:"Yes! That is the monitor!"},
+  {lesson:"Lesson 3 · Monitor", hint:"👀", text:"We SEE pictures on the…", say:"We see pictures on the… what? Tap it!",
+   options:[["monitor",1],["👟",0],["🍎",0]], yay:"Yes! We see pictures on the monitor!"},
+  {lesson:"Lesson 3 · Monitor", hint:"🤔", text:"A monitor looks like a…", say:"A monitor looks like a… what?",
+   options:[["📺",1],["🍌",0],["🐶",0]], yay:"Yes! A monitor looks like a television!"},
+
+  // Lesson 4 — Starting the computer
+  {lesson:"Lesson 4 · Start the Computer", hint:"🔎", text:"Find the Power Button!", say:"Find the power button!",
+   options:[["power",1],["⭐",0],["❤️",0]], yay:"Yes! That is the power button!"},
+  {lesson:"Lesson 4 · Start the Computer", hint:"👆", text:"Press it to switch ON!", say:"What do we press to switch on the computer?",
+   options:[["power",1],["🍪",0],["⚽",0]], yay:"Yes! We press the power button to switch on!"},
+  {lesson:"Lesson 4 · Start the Computer", hint:"⚡", text:"The computer needs…", say:"The computer needs electricity to start. Tap the plug!",
+   options:[["plug",1],["💧",0],["🍦",0]], yay:"Yes! The computer needs electricity!"},
+
+  // Lesson 5 — The Computer Mouse
+  {lesson:"Lesson 5 · The Mouse", hint:"🔎", text:"Find the Mouse!", say:"Find the computer mouse!",
+   options:[["mouse",1],["tower",0],["monitor",0]], yay:"Yes! That is the mouse!"},
+  {lesson:"Lesson 5 · The Mouse", hint:"🖥️", text:"Which mouse is for the computer?", say:"Which mouse is for the computer?",
+   options:[["mouse",1],["🐭",0],["🧀",0]], yay:"Hee hee! Yes! That is the computer mouse!"},
+  {lesson:"Lesson 5 · The Mouse", hint:"👆", text:"We CLICK with the…", say:"We click with the… what?",
+   options:[["mouse",1],["🍌",0],["👟",0]], yay:"Yes! We click with the mouse!"}
+];
+
+const PRAISE = ["Yay!", "Super!", "Well done!", "Great job!", "Wow!", "Clap clap!"];
+
+/* ================= SOUND + VOICE ================= */
+let soundOn = true, actx = null;
+function tone(freq, start, dur, type='sine', vol=.18){
+  if(!soundOn) return;
+  try{
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, actx.currentTime + start);
+    g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + start + dur);
+    o.connect(g).connect(actx.destination);
+    o.start(actx.currentTime + start); o.stop(actx.currentTime + start + dur);
+  }catch(e){}
+}
+const happySound = () => [523,659,784,1047].forEach((f,i)=>tone(f, i*.1, .3, 'triangle'));
+const oopsSound  = () => { tone(330,0,.18,'sine'); tone(262,.16,.25,'sine'); };
+
+function speak(text){
+  if(!soundOn || !('speechSynthesis' in window)) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = .85; u.pitch = 1.25; u.lang = 'en-GB';
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ================= CONFETTI ================= */
+function confetti(){
+  const bits = ['⭐','🎉','🌟','🎈','💖','✨'];
+  const colors = ['#ff6b9a','#4cb8ff','#ffc93c','#36c46b','#9b6bff'];
+  for(let i=0;i<34;i++){
+    const d = document.createElement('div');
+    d.className = 'confetti';
+    if(i%3===0){ d.textContent = bits[i%bits.length]; d.style.fontSize = (18+Math.random()*22)+'px'; }
+    else { d.style.width='12px'; d.style.height='16px'; d.style.borderRadius='3px'; d.style.background = colors[i%colors.length]; }
+    d.style.left = Math.random()*100+'vw';
+    d.style.animationDuration = (1.6+Math.random()*1.6)+'s';
+    d.style.animationDelay = (Math.random()*.3)+'s';
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(), 3800);
+  }
+}
+
+/* ================= GAME & BACKEND INTEGRATION ================= */
+const $ = id => document.getElementById(id);
+let idx = 0, stars = 0, firstTry = true, answered = false;
+let studentName = '', studentSchool = '', attemptId = null, answersRecord = [];
+
+// Pre-fill name and school from URL query parameters if present
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('name')) $('childName').value = urlParams.get('name');
+if (urlParams.get('school')) $('childSchool').value = urlParams.get('school');
+
+function shuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function drawProgress(){
+  $('progress').innerHTML = QUESTIONS.map((_,i)=>
+    `<i class="${i<idx?'done':''} ${i===idx?'now':''}">${i<idx?'⭐':''}</i>`).join('');
+}
+
+function showQuestion(){
+  const q = QUESTIONS[idx];
+  firstTry = true; answered = false;
+  $('lessonTag').textContent = q.lesson;
+  $('hint').textContent = q.hint;
+  $('qText').textContent = q.text;
+  $('feedback').textContent = ''; $('feedback').className = 'feedback';
+  $('nextBtn').classList.add('hidden');
+  drawProgress();
+  const cards = $('cards'); cards.innerHTML = '';
+  shuffle(q.options).forEach(([p, ok])=>{
+    const b = document.createElement('button');
+    b.className = 'card'; b.innerHTML = pic(p);
+    b.dataset.pic = p;
+    b.onclick = () => choose(b, ok);
+    cards.appendChild(b);
+  });
+  setTimeout(()=>speak(q.say), 350);
+}
+
+function choose(btn, ok){
+  if(answered || btn.classList.contains('wrong')) return;
+  const q = QUESTIONS[idx];
+  if(ok){
+    answered = true;
+    if(firstTry) {
+      stars++;
+      answersRecord[idx] = 0;
+    } else {
+      answersRecord[idx] = 1;
+    }
+    btn.classList.add('right');
+    [...$('cards').children].forEach(c=>{ if(c!==btn) c.classList.add('fade'); });
+    const word = PRAISE[Math.floor(Math.random()*PRAISE.length)];
+    $('feedback').textContent = '🎉 ' + word + ' 🎉';
+    $('feedback').className = 'feedback good';
+    happySound(); confetti();
+    setTimeout(()=>speak(word + ' ' + q.yay), 300);
+    $('nextBtn').textContent = idx === QUESTIONS.length-1 ? 'Finish 🏁' : 'Next ▶';
+    $('nextBtn').classList.remove('hidden');
+  } else {
+    firstTry = false;
+    btn.classList.add('wrong');
+    $('feedback').textContent = 'Oops! Try again 😊';
+    $('feedback').className = 'feedback try';
+    oopsSound(); speak('Oops! Try again!');
+  }
+}
+
+function next(){
+  idx++;
+  if(idx >= QUESTIONS.length) return finish();
+  showQuestion();
+}
+
+async function finish(){
+  $('quiz').classList.add('hidden');
+  $('end').classList.remove('hidden');
+  const greeting = studentName ? `Well done, ${studentName}!` : 'Well Done!';
+  $('end').querySelector('h1').textContent = greeting;
+  $('endText').textContent = `You got ${stars} out of ${QUESTIONS.length} stars!`;
+  $('endStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(QUESTIONS.length - stars);
+  happySound(); confetti(); setTimeout(confetti, 900);
+  speak(`Well done ${studentName}! You got ${stars} stars! You are a computer star!`);
+
+  // Submit attempt to server if attemptId exists
+  if (attemptId) {
+    try {
+      await api('POST', '/api/submit', { attemptId, answers: answersRecord });
+    } catch (e) {
+      console.warn('Could not submit attempt:', e);
+    }
+  }
+}
+
+async function start(){
+  const name = $('childName').value.trim();
+  const school = $('childSchool').value.trim() || 'Precious Innovators';
+  $('nameErr').textContent = '';
+  if (name.length < 2) {
+    $('nameErr').textContent = 'Please type your name!';
+    $('childName').focus();
+    return;
+  }
+  studentName = name;
+  studentSchool = school;
+  idx = 0; stars = 0;
+  answersRecord = new Array(QUESTIONS.length).fill(null);
+
+  // Register attempt with backend
+  try {
+    const res = await api('POST', '/api/start', { name: studentName, school: studentSchool, classId: 'nursery-2' });
+    attemptId = res.attemptId;
+  } catch (e) {
+    console.warn('Local mode (offline attempt):', e);
+  }
+
+  $('start').classList.add('hidden'); $('end').classList.add('hidden');
+  $('quiz').classList.remove('hidden');
+  showQuestion();
+}
+
+$('mascotStart').innerHTML = PICS.mascot;
+$('startBtn').onclick = start;
+$('againBtn').onclick = () => {
+  $('end').classList.add('hidden');
+  $('start').classList.remove('hidden');
+};
+$('nextBtn').onclick = next;
+$('sayBtn').onclick = () => speak(QUESTIONS[idx].say);
+$('soundBtn').onclick = () => {
+  soundOn = !soundOn; $('soundBtn').textContent = soundOn ? '🔊' : '🔇';
+  if(!soundOn && 'speechSynthesis' in window) speechSynthesis.cancel();
+};
+
+/* background bubbles */
+(function(){
+  const c = ['#ff6b9a','#4cb8ff','#ffc93c','#36c46b','#9b6bff'];
+  const box = document.querySelector('.bubbles');
+  for(let i=0;i<9;i++){
+    const s = document.createElement('span'), size = 40+Math.random()*90;
+    Object.assign(s.style,{width:size+'px',height:size+'px',left:Math.random()*95+'vw',top:Math.random()*90+'vh',background:c[i%c.length],animationDelay:(Math.random()*5)+'s'});
+    box.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>
