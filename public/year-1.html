@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Year 1 ICT Quiz · FutureIN</title>
+<link rel="icon" href="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="/api.js"></script>
+<style>
+  :root{
+    --bg1:#e9f7ff; --bg2:#fff0d9;
+    --ink:#2f2a4a; --soft:#5f5a85;
+    --card:#ffffff;
+    --pink:#ff6b9a; --blue:#4cb8ff; --green:#36c46b; --yellow:#ffc93c; --purple:#9b6bff; --orange:#ff9a3c;
+    --good:#36c46b; --bad:#ff6b6b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --bg1:#1f2a4f; --bg2:#3a2448; --ink:#fffaf0; --soft:#d6d0f5; }
+  }
+  :root[data-theme="dark"]{ --bg1:#1f2a4f; --bg2:#3a2448; --ink:#fffaf0; --soft:#d6d0f5; }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; height:100%}
+  body{
+    font-family:'Fredoka','Comic Sans MS',system-ui,sans-serif; color:var(--ink);
+    background:linear-gradient(160deg,var(--bg1),var(--bg2)); background-color:var(--bg1);
+    min-height:100%; overflow-x:hidden;
+  }
+  .bubbles span{position:fixed; border-radius:50%; opacity:.22; z-index:0; animation:float 9s ease-in-out infinite}
+  @keyframes float{50%{transform:translateY(-30px)}}
+
+  .wrap{position:relative; z-index:1; max-width:980px; margin:0 auto; padding:16px 16px 40px; min-height:100vh; display:flex; flex-direction:column}
+
+  .top{display:flex; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap}
+  .lesson-tag{background:var(--purple); color:#fff; font-weight:600; padding:8px 16px; border-radius:999px; font-size:clamp(14px,2.4vw,20px); box-shadow:0 4px 0 #6f45d6}
+  .progress{display:flex; gap:4px; flex-wrap:wrap; justify-content:center}
+  .progress i{width:clamp(14px,2.6vw,24px); height:clamp(14px,2.6vw,24px); border-radius:50%; background:#fff; border:3px solid #dcd2ff; display:grid; place-items:center; font-style:normal; font-size:clamp(10px,1.8vw,16px)}
+  .progress i.now{border-color:var(--pink); transform:scale(1.25)}
+  .progress i.done{background:var(--yellow); border-color:#f0a800}
+  .icon-btn{border:none; background:#fff; border-radius:50%; width:52px; height:52px; font-size:26px; cursor:pointer; box-shadow:0 4px 0 #dcd2ff}
+  .icon-btn:active{transform:translateY(3px); box-shadow:0 1px 0 #dcd2ff}
+
+  .q-area{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:clamp(14px,3vh,28px); padding-top:16px}
+  .qnum{font-size:clamp(16px,2.6vw,22px); color:var(--soft); font-weight:600}
+  .question{display:flex; align-items:center; gap:14px; background:#fff; color:#2f2a4a; padding:14px 22px; border-radius:28px; box-shadow:0 6px 0 rgba(0,0,0,.08); max-width:100%}
+  .question h1{margin:0; font-size:clamp(24px,4.8vw,44px); line-height:1.2; text-align:center}
+  .question h1 .blank{display:inline-block; min-width:2.6em; border-bottom:5px dashed var(--pink); margin:0 .15em}
+  .question .hint{font-size:clamp(32px,5.6vw,54px)}
+  .say{flex:none; border:none; background:var(--blue); color:#fff; width:clamp(48px,7vw,62px); height:clamp(48px,7vw,62px); border-radius:50%; font-size:clamp(22px,3.4vw,30px); cursor:pointer; box-shadow:0 5px 0 #2a8fd1}
+  .say:active{transform:translateY(4px); box-shadow:0 1px 0 #2a8fd1}
+
+  .cards{display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(10px,2.5vw,28px); width:100%}
+  .cards.words{grid-template-columns:1fr; max-width:560px; gap:14px}
+  .card{
+    position:relative; border:5px solid var(--edge,#ffd1e1); cursor:pointer; padding:10px; font-family:inherit; color:#2f2a4a;
+    background:var(--card); border-radius:30px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    box-shadow:0 9px 0 var(--shade,#ffd1e1); transition:transform .15s, filter .2s; animation:pop .5s backwards;
+  }
+  .cards:not(.words) .card{aspect-ratio:1/1.05}
+  .cards.words .card{flex-direction:row; justify-content:flex-start; gap:16px; padding:14px 22px; font-size:clamp(26px,5vw,40px); font-weight:700; border-radius:24px; box-shadow:0 7px 0 var(--shade)}
+  .cards.words .card .letter{flex:none; width:clamp(44px,7vw,58px); height:clamp(44px,7vw,58px); border-radius:50%; background:var(--shade); color:#fff; display:grid; place-items:center; font-size:.8em}
+  .card:nth-child(1){--edge:#ffc2d6; --shade:#ff8fb4; animation-delay:.05s}
+  .card:nth-child(2){--edge:#bfe6ff; --shade:#5fc0ff; animation-delay:.15s}
+  .card:nth-child(3){--edge:#ffe7a8; --shade:#ffbe3c; animation-delay:.25s}
+  .card:hover{transform:translateY(-5px)}
+  .card:active{transform:translateY(5px)}
+  .card svg{width:88%; height:auto; max-height:88%}
+  .card .emo{font-size:clamp(64px,14vw,140px); line-height:1}
+  .card .cap{font-size:clamp(14px,2.6vw,22px); font-weight:600; margin-top:4px}
+  @keyframes pop{from{transform:scale(.4); opacity:0}}
+  .card.right{--edge:var(--good); --shade:#23974f; animation:bounce .6s; filter:none}
+  .card.right::after{content:"✔"; position:absolute; top:-16px; right:-10px; background:var(--good); color:#fff; width:52px; height:52px; border-radius:50%; display:grid; place-items:center; font-size:30px; box-shadow:0 4px 0 #23974f}
+  .card.wrong{animation:shake .5s; filter:grayscale(1) brightness(.92); --edge:#ddd; --shade:#bbb}
+  .card.fade{filter:grayscale(.9); transform:scale(.94)}
+  @keyframes bounce{30%{transform:scale(1.1)} 60%{transform:scale(.97)}}
+  @keyframes shake{20%,60%{transform:translateX(-12px)} 40%,80%{transform:translateX(12px)}}
+
+  .feedback{min-height:60px; text-align:center}
+  .feedback b{display:block; font-size:clamp(26px,5vw,42px)}
+  .feedback small{display:block; font-size:clamp(18px,3.2vw,26px); color:var(--ink); margin-top:4px}
+  .feedback.good b{color:var(--green)}
+  .feedback.try b{color:var(--orange)}
+
+  .next{border:none; background:var(--green); color:#fff; font-family:inherit; font-weight:700; font-size:clamp(24px,4.5vw,36px); padding:14px 44px; border-radius:999px; cursor:pointer; box-shadow:0 7px 0 #23974f; animation:pop .4s}
+  .next:active{transform:translateY(5px); box-shadow:0 2px 0 #23974f}
+  .hidden{display:none !important}
+
+  .screen{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:18px}
+  .screen h1{font-size:clamp(36px,7.5vw,72px); margin:0; color:var(--pink); text-shadow:0 4px 0 #fff}
+  .screen p{font-size:clamp(20px,3.6vw,30px); margin:0; color:var(--soft)}
+  .mascot{width:clamp(170px,32vw,260px); animation:wobble 2.4s ease-in-out infinite}
+  @keyframes wobble{25%{transform:rotate(-5deg)} 75%{transform:rotate(5deg)}}
+  .big-btn{border:none; background:var(--pink); color:#fff; font-family:inherit; font-weight:700; font-size:clamp(28px,5vw,42px); padding:16px 56px; border-radius:999px; cursor:pointer; box-shadow:0 8px 0 #d6457a}
+  .big-btn:active{transform:translateY(6px); box-shadow:0 2px 0 #d6457a}
+  .stars-row{font-size:clamp(26px,5vw,44px); letter-spacing:2px; max-width:600px}
+  .topics{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; max-width:720px}
+  .topics span{background:#fff; color:#2f2a4a; padding:6px 14px; border-radius:999px; font-size:clamp(14px,2.4vw,18px); box-shadow:0 3px 0 #dcd2ff}
+
+  /* Form fields on start */
+  .child-info{display:flex; flex-direction:column; gap:10px; width:100%; max-width:380px; margin:8px auto}
+  .child-info input{
+    font-family:inherit; font-size:18px; padding:12px 18px; border-radius:18px;
+    border:3px solid var(--purple); background:#fff; color:#2f2a4a; outline:none; text-align:center;
+  }
+  .child-info input:focus{border-color:var(--pink); box-shadow:0 0 0 3px rgba(255,107,154,.3)}
+  .err-msg{color:var(--bad); font-weight:700; font-size:16px}
+  .nav-back{margin-top:14px; color:var(--soft); font-size:16px; text-decoration:none; font-weight:600}
+  .nav-back:hover{color:var(--pink)}
+
+  .confetti{position:fixed; top:-30px; z-index:50; pointer-events:none; animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+  @media (max-width:520px){
+    .cards{gap:8px}
+    .cards:not(.words) .card{border-radius:20px; border-width:4px; box-shadow:0 6px 0 var(--shade)}
+    .card.right::after{width:40px; height:40px; font-size:22px; top:-12px; right:-8px}
+    .question{padding:12px 14px; gap:10px}
+  }
+</style>
+</head>
+<body>
+<div class="bubbles" aria-hidden="true"></div>
+
+<div class="wrap">
+  <!-- START -->
+  <section id="start" class="screen">
+    <div class="mascot" id="mascotStart"></div>
+    <h1>Year 1 ICT Quiz!</h1>
+    <p>Read the question and tap the right answer</p>
+    <div class="topics">
+      <span>📡 Introduction to ICT</span><span>🖥️ Computer Parts</span><span>🧠 System Unit</span><span>💿 CD &amp; DVD</span><span>🖱️ The Mouse</span>
+    </div>
+
+    <div class="child-info" id="infoBox">
+      <input id="childName" placeholder="Your name (e.g. Victor)" maxlength="60">
+      <input id="childSchool" placeholder="Your school" maxlength="80">
+      <div class="err-msg" id="nameErr"></div>
+    </div>
+
+    <button class="big-btn" id="startBtn">▶ Start</button>
+    <a href="/" class="nav-back">← Choose another class</a>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="quiz" class="hidden" style="flex:1; display:flex; flex-direction:column">
+    <div class="top">
+      <div class="lesson-tag" id="lessonTag">Lesson 1</div>
+      <div class="progress" id="progress"></div>
+      <button class="icon-btn" id="soundBtn" title="Sound on/off">🔊</button>
+    </div>
+    <div class="q-area">
+      <div class="qnum" id="qNum"></div>
+      <div class="question">
+        <span class="hint" id="hint"></span>
+        <h1 id="qText"></h1>
+        <button class="say" id="sayBtn" title="Hear the question">🔈</button>
+      </div>
+      <div class="cards" id="cards"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next hidden" id="nextBtn">Next ▶</button>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="end" class="screen hidden">
+    <div style="font-size:clamp(90px,18vw,150px); animation:wobble 2s infinite">🏆</div>
+    <h1>Well Done!</h1>
+    <p id="endText"></p>
+    <div class="stars-row" id="endStars"></div>
+    <button class="big-btn" id="againBtn" style="margin-top:14px">🔁 Play Again</button>
+    <a href="/" class="nav-back" style="font-size:18px">← Back to Quiz Home</a>
+  </section>
+</div>
+
+<script>
+/* ================= PICTURES (drawn in the page, so they work offline) ================= */
+const powerIcon = (cx, cy, r, color) => `
+  <path d="M${cx} ${cy - r} V${cy - r*0.15}" stroke="${color}" stroke-width="${r*0.28}" stroke-linecap="round"/>
+  <path d="M${cx - r*0.7} ${cy - r*0.7} A${r} ${r} 0 1 0 ${cx + r*0.7} ${cy - r*0.7}" stroke="${color}" stroke-width="${r*0.28}" fill="none" stroke-linecap="round"/>`;
+
+const monitorInner = `
+  <rect x="20" y="30" width="160" height="108" rx="14" fill="#3d4a73"/>
+  <rect x="31" y="41" width="138" height="84" rx="6" fill="#8fdcff"/>
+  <circle cx="64" cy="66" r="13" fill="#ffd93b"/>
+  <path d="M31 125 L78 88 L106 112 L134 92 L169 125 Z" fill="#5fcf72"/>
+  <circle cx="160" cy="131" r="3.5" fill="#6dff8f"/>
+  <rect x="88" y="138" width="24" height="26" fill="#3d4a73"/>
+  <rect x="55" y="160" width="90" height="14" rx="7" fill="#3d4a73"/>`;
+
+const keyRow = (y, n, x0, w) => Array.from({length:n},(_,i)=>`<rect x="${x0+i*(w+4)}" y="${y}" width="${w}" height="16" rx="4" fill="#fff"/>`).join('');
+
+/* mouse with one part highlighted: 'left' | 'right' | 'wheel' | null */
+const mousePic = (hl) => {
+  const glow = '#ffd23c';
+  return `<svg viewBox="0 0 200 200">
+    <path d="M100 42 C100 20 132 26 142 8" stroke="#4f5a85" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <rect x="62" y="40" width="76" height="140" rx="38" fill="#fff"/>
+    ${hl==='left'  ? `<path d="M62 96 V78 A38 38 0 0 1 100 40 V96 Z" fill="${glow}"/>` : ''}
+    ${hl==='right' ? `<path d="M100 40 A38 38 0 0 1 138 78 V96 H100 Z" fill="${glow}"/>` : ''}
+    <rect x="62" y="40" width="76" height="140" rx="38" fill="none" stroke="#4f5a85" stroke-width="7"/>
+    <line x1="62" y1="96" x2="138" y2="96" stroke="#4f5a85" stroke-width="6"/>
+    <line x1="100" y1="42" x2="100" y2="96" stroke="#4f5a85" stroke-width="6"/>
+    <rect x="91" y="52" width="18" height="30" rx="9" fill="${hl==='wheel' ? '#ff4f8b' : '#c9cde3'}" stroke="#4f5a85" stroke-width="4"/>
+    ${hl==='wheel' ? `<circle cx="100" cy="67" r="26" fill="none" stroke="#ff4f8b" stroke-width="4" stroke-dasharray="6 6"/>` : ''}
+  </svg>`;
+};
+
+const PICS = {
+  monitor: `<svg viewBox="0 0 200 200">${monitorInner}</svg>`,
+  tower: `<svg viewBox="0 0 200 200">
+      <rect x="58" y="16" width="84" height="164" rx="14" fill="#4f5a85" stroke="#3a4369" stroke-width="5"/>
+      <rect x="70" y="34" width="60" height="11" rx="5" fill="#2f3758"/>
+      <rect x="70" y="52" width="60" height="11" rx="5" fill="#2f3758"/>
+      <circle cx="100" cy="106" r="17" fill="#2f3758"/>${powerIcon(100, 108, 9, '#6dff8f')}
+      <g stroke="#3a4369" stroke-width="4" stroke-linecap="round"><line x1="74" y1="146" x2="126" y2="146"/><line x1="74" y1="156" x2="126" y2="156"/><line x1="74" y1="166" x2="126" y2="166"/></g>
+      <rect x="64" y="180" width="18" height="8" rx="3" fill="#3a4369"/><rect x="118" y="180" width="18" height="8" rx="3" fill="#3a4369"/></svg>`,
+  keyboard: `<svg viewBox="0 0 200 200">
+      <rect x="10" y="62" width="180" height="84" rx="14" fill="#4f5a85"/>
+      ${keyRow(74, 10, 20, 13.4)}${keyRow(94, 10, 20, 13.4)}${keyRow(114, 3, 20, 13.4)}
+      <rect x="71" y="114" width="58" height="16" rx="4" fill="#fff"/>${keyRow(114, 3, 133, 13.4)}
+      <path d="M100 62 C100 40 130 40 140 24" stroke="#4f5a85" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`,
+  mouse: mousePic(null),
+  laptop: `<svg viewBox="0 0 200 200">
+      <rect x="38" y="40" width="124" height="86" rx="10" fill="#3d4a73"/>
+      <rect x="47" y="49" width="106" height="68" rx="4" fill="#ffd1e6"/>
+      <circle cx="100" cy="83" r="20" fill="#ff6b9a"/><circle cx="93" cy="79" r="3" fill="#fff"/><circle cx="107" cy="79" r="3" fill="#fff"/>
+      <path d="M92 88 Q100 95 108 88" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M22 132 H178 L166 154 H34 Z" fill="#8c95c2"/><rect x="84" y="136" width="32" height="6" rx="3" fill="#5c6596"/></svg>`,
+  power: `<svg viewBox="0 0 200 200">
+      <circle cx="100" cy="104" r="74" fill="#2aa85a"/><circle cx="100" cy="98" r="74" fill="#3fd47a"/>
+      ${powerIcon(100, 104, 38, '#ffffff')}</svg>`,
+  flash: `<svg viewBox="0 0 200 200">
+      <g transform="rotate(-30 100 100)">
+        <rect x="76" y="20" width="48" height="40" rx="4" fill="#c9cde3" stroke="#7b83a8" stroke-width="4"/>
+        <rect x="86" y="30" width="10" height="10" fill="#7b83a8"/><rect x="104" y="30" width="10" height="10" fill="#7b83a8"/>
+        <rect x="64" y="58" width="72" height="120" rx="16" fill="#4cb8ff"/>
+        <rect x="80" y="80" width="40" height="60" rx="8" fill="#2a8fd1"/>
+        <circle cx="100" cy="160" r="7" fill="#e9f8ff"/>
+      </g></svg>`,
+  mascot: `<svg viewBox="0 0 200 200">
+      <rect x="20" y="24" width="160" height="116" rx="22" fill="#9b6bff"/>
+      <rect x="32" y="36" width="136" height="92" rx="14" fill="#f3edff"/>
+      <circle cx="76" cy="76" r="11" fill="#2f2a4a"/><circle cx="124" cy="76" r="11" fill="#2f2a4a"/>
+      <circle cx="80" cy="72" r="4" fill="#fff"/><circle cx="128" cy="72" r="4" fill="#fff"/>
+      <circle cx="60" cy="98" r="9" fill="#ffb3cc"/><circle cx="140" cy="98" r="9" fill="#ffb3cc"/>
+      <path d="M82 100 Q100 118 118 100" stroke="#2f2a4a" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <rect x="86" y="140" width="28" height="20" fill="#9b6bff"/>
+      <rect x="54" y="158" width="92" height="16" rx="8" fill="#ffc93c"/>
+      <path d="M58 30 L48 8 L74 24 Z" fill="#ffc93c"/><path d="M142 30 L152 8 L126 24 Z" fill="#ffc93c"/></svg>`
+};
+
+/* ================= 15 QUESTIONS (3 per lesson) =================
+   type 'pic'  → picture cards  (options: [pictureKey or emoji, isCorrect, optional caption])
+   type 'word' → reading cards  (options: [word, isCorrect])                              */
+const L1 = "Lesson 1 · Introduction to ICT", L2 = "Lesson 2 · Computer & its Parts",
+      L3 = "Lesson 3 · The System Unit",    L4 = "Lesson 4 · CD & DVD",
+      L5 = "Lesson 5 · The Computer Mouse";
+
+const QUESTIONS = [
+  // Lesson 1 — Introduction to ICT
+  {lesson:L1, type:'word', hint:"📡", text:"ICT means Information and Communication ___",
+   say:"ICT means Information and Communication… what?",
+   options:[["Technology",1],["Science",0],["Battery",0]], yay:"ICT means Information and Communication Technology."},
+  {lesson:L1, type:'pic', hint:"🔎", text:"Which one is an ICT device?", say:"Which one is an I C T device?",
+   options:[["📻",1,"Radio"],["🍎",0,"Apple"],["🌳",0,"Tree"]], yay:"A radio is an ICT device."},
+  {lesson:L1, type:'word', hint:"⚡", text:"Electronic devices need electricity to work.",
+   say:"True or false? Electronic devices need electricity to work.",
+   options:[["✅ True",1],["❌ False",0]], yay:"True! Without electricity they cannot work."},
+
+  // Lesson 2 — Computer and its parts
+  {lesson:L2, type:'word', hint:"🖥️", text:"A computer is an electronic ___",
+   say:"A computer is an electronic… what?",
+   options:[["machine",1],["animal",0],["food",0]], yay:"A computer is an electronic machine."},
+  {lesson:L2, type:'pic', hint:"⌨️", text:"Find the Keyboard!", say:"Find the keyboard!",
+   options:[["keyboard",1],["mouse",0],["monitor",0]], yay:"That is the keyboard. We type with it."},
+  {lesson:L2, type:'pic', hint:"💻", text:"Which one is a Laptop?", say:"Which one is a laptop?",
+   options:[["laptop",1],["tower",0],["🚗",0]], yay:"A laptop can sit on your lap. It has a battery."},
+
+  // Lesson 3 — The System Unit
+  {lesson:L3, type:'word', hint:"🧠", text:"The most important part of the computer is the ___",
+   say:"The most important part of the computer is the… what?",
+   options:[["System Unit",1],["Mouse",0],["Keyboard",0]], yay:"The System Unit is the most important part."},
+  {lesson:L3, type:'pic', hint:"👆", text:"Press this to start the computer!", say:"What do we press to start the computer?",
+   options:[["power",1],["⭐",0],["🍪",0]], yay:"We press the Power Button to start the computer."},
+  {lesson:L3, type:'word', hint:"🧩", text:"CPU means Central ___ Unit",
+   say:"C P U means Central… what… Unit?",
+   options:[["Processing",1],["Playing",0],["Painting",0]], yay:"CPU means Central Processing Unit. It is the brain of the computer."},
+
+  // Lesson 4 — Removable storage devices (CD & DVD)
+  {lesson:L4, type:'pic', hint:"🔎", text:"Find the CD!", say:"Find the C D!",
+   options:[["💿",1],["🍩",0],["🍪",0]], yay:"That is a CD. A doughnut is not a CD!"},
+  {lesson:L4, type:'word', hint:"💿", text:"CD means Compact ___",
+   say:"C D means Compact… what?",
+   options:[["Disc",1],["Dog",0],["Door",0]], yay:"CD means Compact Disc."},
+  {lesson:L4, type:'pic', hint:"💾", text:"Find the Flash Drive!", say:"Find the flash drive!",
+   options:[["flash",1],["👟",0],["🍌",0]], yay:"A flash drive stores pictures, music and videos."},
+
+  // Lesson 5 — The Computer Mouse
+  {lesson:L5, type:'word', hint:"✋", text:"The mouse is the ___ of the computer.",
+   say:"The mouse is the… what… of the computer?",
+   options:[["hand",1],["eye",0],["foot",0]], yay:"The mouse is the hand of the computer."},
+  {lesson:L5, type:'pic', hint:"🖱️", text:"Which one shows the Scroll Button?", say:"Which picture shows the scroll button?",
+   options:[["m-wheel",1,"?"],["m-left",0,"?"],["m-right",0,"?"]], yay:"The scroll button is the little wheel in the middle."},
+  {lesson:L5, type:'word', hint:"⏻", text:"We shut down the computer with the ___ click.",
+   say:"We shut down the computer with the… what… click?",
+   options:[["Left",1],["Right",0],["Top",0]], yay:"We use the Left click to shut down the computer."}
+];
+PICS['m-wheel'] = mousePic('wheel'); PICS['m-left'] = mousePic('left'); PICS['m-right'] = mousePic('right');
+
+const PRAISE = ["Yay!", "Super!", "Well done!", "Great job!", "Excellent!", "Brilliant!"];
+
+/* ================= SOUND + VOICE ================= */
+let soundOn = true, actx = null;
+function tone(freq, start, dur, type='sine', vol=.18){
+  if(!soundOn) return;
+  try{
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, actx.currentTime + start);
+    g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + start + dur);
+    o.connect(g).connect(actx.destination);
+    o.start(actx.currentTime + start); o.stop(actx.currentTime + start + dur);
+  }catch(e){}
+}
+const happySound = () => [523,659,784,1047].forEach((f,i)=>tone(f, i*.1, .3, 'triangle'));
+const oopsSound  = () => { tone(330,0,.18); tone(262,.16,.25); };
+function speak(text){
+  if(!soundOn || !('speechSynthesis' in window)) return;
+  try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate=.88; u.pitch=1.2; u.lang='en-GB'; speechSynthesis.speak(u); }catch(e){}
+}
+
+function confetti(){
+  const bits=['⭐','🎉','🌟','🎈','✨'], colors=['#ff6b9a','#4cb8ff','#ffc93c','#36c46b','#9b6bff'];
+  for(let i=0;i<34;i++){
+    const d=document.createElement('div'); d.className='confetti';
+    if(i%3===0){ d.textContent=bits[i%bits.length]; d.style.fontSize=(18+Math.random()*22)+'px'; }
+    else { d.style.width='12px'; d.style.height='16px'; d.style.borderRadius='3px'; d.style.background=colors[i%colors.length]; }
+    d.style.left=Math.random()*100+'vw'; d.style.animationDuration=(1.6+Math.random()*1.6)+'s'; d.style.animationDelay=(Math.random()*.3)+'s';
+    document.body.appendChild(d); setTimeout(()=>d.remove(),3800);
+  }
+}
+
+/* ================= GAME & BACKEND INTEGRATION ================= */
+const $ = id => document.getElementById(id);
+let idx=0, stars=0, firstTry=true, answered=false;
+let studentName = '', studentSchool = '', attemptId = null, answersRecord = [];
+
+// Pre-fill name and school from URL query parameters if present
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('name')) $('childName').value = urlParams.get('name');
+if (urlParams.get('school')) $('childSchool').value = urlParams.get('school');
+
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; };
+const esc = s => s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function drawProgress(){
+  $('progress').innerHTML = QUESTIONS.map((_,i)=>`<i class="${i<idx?'done':''} ${i===idx?'now':''}">${i<idx?'⭐':''}</i>`).join('');
+}
+
+function showQuestion(){
+  const q = QUESTIONS[idx]; firstTry=true; answered=false;
+  $('lessonTag').textContent = q.lesson;
+  $('qNum').textContent = `Question ${idx+1} of ${QUESTIONS.length}`;
+  $('hint').textContent = q.hint;
+  $('qText').innerHTML = esc(q.text).replace('___','<span class="blank"></span>');
+  $('feedback').innerHTML=''; $('feedback').className='feedback';
+  $('nextBtn').classList.add('hidden');
+  drawProgress();
+  const cards=$('cards'); cards.innerHTML=''; cards.className = 'cards' + (q.type==='word' ? ' words' : '');
+  const opts = (q.type==='word' && q.options.length===2) ? q.options : shuffle(q.options); // keep True before False
+  opts.forEach(([val, ok, cap], i)=>{
+    const b=document.createElement('button'); b.className='card'; b.dataset.ok = ok ? '1' : '0';
+    if(q.type==='word'){
+      b.innerHTML = `<span class="letter">${'ABC'[i]}</span><span>${esc(val)}</span>`;
+    } else {
+      b.innerHTML = (PICS[val] || `<span class="emo">${val}</span>`) + (cap && cap!=='?' ? `<span class="cap">${cap}</span>` : '');
+    }
+    b.onclick=()=>choose(b, ok);
+    cards.appendChild(b);
+  });
+  setTimeout(()=>speak(q.say), 350);
+}
+
+function choose(btn, ok){
+  if(answered || btn.classList.contains('wrong')) return;
+  const q=QUESTIONS[idx];
+  if(ok){
+    answered=true;
+    if(firstTry) {
+      stars++;
+      answersRecord[idx] = 0;
+    } else {
+      answersRecord[idx] = 1;
+    }
+    btn.classList.add('right');
+    [...$('cards').children].forEach(c=>{ if(c!==btn) c.classList.add('fade'); });
+    const word=PRAISE[Math.floor(Math.random()*PRAISE.length)];
+    $('feedback').innerHTML = `<b>🎉 ${word} 🎉</b><small>${esc(q.yay)}</small>`;
+    $('feedback').className='feedback good';
+    happySound(); confetti(); setTimeout(()=>speak(word+' '+q.yay),300);
+    $('nextBtn').textContent = idx===QUESTIONS.length-1 ? 'Finish 🏁' : 'Next ▶';
+    $('nextBtn').classList.remove('hidden');
+  } else {
+    firstTry=false; btn.classList.add('wrong');
+    $('feedback').innerHTML='<b>Oops! Try again 😊</b>'; $('feedback').className='feedback try';
+    oopsSound(); speak('Oops! Try again!');
+  }
+}
+
+function next(){ idx++; if(idx>=QUESTIONS.length) return finish(); showQuestion(); window.scrollTo(0,0); }
+
+async function finish(){
+  $('quiz').classList.add('hidden'); $('end').classList.remove('hidden');
+  const greeting = studentName ? `Well done, ${studentName}!` : 'Well Done!';
+  $('end').querySelector('h1').textContent = greeting;
+  $('endText').textContent = `You got ${stars} out of ${QUESTIONS.length} stars!`;
+  $('endStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(QUESTIONS.length-stars);
+  happySound(); confetti(); setTimeout(confetti,900);
+  speak(`Well done ${studentName}! You got ${stars} out of ${QUESTIONS.length} stars! You are a computer star!`);
+
+  // Submit attempt to server if attemptId exists
+  if (attemptId) {
+    try {
+      await api('POST', '/api/submit', { attemptId, answers: answersRecord });
+    } catch (e) {
+      console.warn('Could not submit attempt:', e);
+    }
+  }
+}
+
+async function start(){
+  const name = $('childName').value.trim();
+  const school = $('childSchool').value.trim() || 'Precious Innovators';
+  $('nameErr').textContent = '';
+  if (name.length < 2) {
+    $('nameErr').textContent = 'Please type your name!';
+    $('childName').focus();
+    return;
+  }
+  studentName = name;
+  studentSchool = school;
+  idx = 0; stars = 0;
+  answersRecord = new Array(QUESTIONS.length).fill(null);
+
+  // Register attempt with backend
+  try {
+    const res = await api('POST', '/api/start', { name: studentName, school: studentSchool, classId: 'year-1' });
+    attemptId = res.attemptId;
+  } catch (e) {
+    console.warn('Local mode (offline attempt):', e);
+  }
+
+  $('start').classList.add('hidden'); $('end').classList.add('hidden'); $('quiz').classList.remove('hidden');
+  showQuestion();
+}
+
+$('mascotStart').innerHTML = PICS.mascot;
+$('startBtn').onclick=start;
+$('againBtn').onclick=() => {
+  $('end').classList.add('hidden');
+  $('start').classList.remove('hidden');
+};
+$('nextBtn').onclick=next;
+$('sayBtn').onclick=()=>speak(QUESTIONS[idx].say);
+$('soundBtn').onclick=()=>{ soundOn=!soundOn; $('soundBtn').textContent=soundOn?'🔊':'🔇'; if(!soundOn && 'speechSynthesis' in window) speechSynthesis.cancel(); };
+
+// If student details were already captured from the homepage, launch directly into Question 1!
+if (urlParams.get('name')) {
+  start();
+}
+
+(function(){
+  const c=['#ff6b9a','#4cb8ff','#ffc93c','#36c46b','#9b6bff'], box=document.querySelector('.bubbles');
+  for(let i=0;i<9;i++){ const s=document.createElement('span'), size=40+Math.random()*90;
+    Object.assign(s.style,{width:size+'px',height:size+'px',left:Math.random()*95+'vw',top:Math.random()*90+'vh',background:c[i%c.length],animationDelay:(Math.random()*5)+'s'});
+    box.appendChild(s); }
+})();
+</script>
+</body>
+</html>

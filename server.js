@@ -129,6 +129,38 @@ function seedNursery() {
 }
 seedNursery();
 
+function seedYear1() {
+  try {
+    const existing = q.questionsFor.all('year-1');
+    if (existing.length === 0) {
+      const year1Qs = [
+        { text: 'ICT means Information and Communication ___', options: ['Technology', 'Science', 'Battery'], answer: 0 },
+        { text: 'Which one is an ICT device?', options: ['Radio 📻', 'Apple 🍎', 'Tree 🌳'], answer: 0 },
+        { text: 'Electronic devices need electricity to work.', options: ['True ✅', 'False ❌'], answer: 0 },
+        { text: 'A computer is an electronic ___', options: ['machine', 'animal', 'food'], answer: 0 },
+        { text: 'Find the Keyboard!', options: ['Keyboard', 'Mouse', 'Monitor'], answer: 0 },
+        { text: 'Which one is a Laptop?', options: ['Laptop', 'Tower (System Unit)', 'Car 🚗'], answer: 0 },
+        { text: 'The most important part of the computer is the ___', options: ['System Unit', 'Mouse', 'Keyboard'], answer: 0 },
+        { text: 'Press this to start the computer!', options: ['Power Button', 'Star ⭐', 'Cookie 🍪'], answer: 0 },
+        { text: 'CPU means Central ___ Unit', options: ['Processing', 'Playing', 'Painting'], answer: 0 },
+        { text: 'Find the CD!', options: ['CD 💿', 'Doughnut 🍩', 'Cookie 🍪'], answer: 0 },
+        { text: 'CD means Compact ___', options: ['Disc', 'Dog', 'Door'], answer: 0 },
+        { text: 'Find the Flash Drive!', options: ['Flash Drive', 'Shoe 👟', 'Banana 🍌'], answer: 0 },
+        { text: 'The mouse is the ___ of the computer.', options: ['hand', 'eye', 'foot'], answer: 0 },
+        { text: 'Which one shows the Scroll Button?', options: ['Scroll Button (Wheel)', 'Left Button', 'Right Button'], answer: 0 },
+        { text: 'We shut down the computer with the ___ click.', options: ['Left click', 'Right click', 'Top click'], answer: 0 },
+      ];
+      db.exec('BEGIN');
+      year1Qs.forEach((x, i) => q.insertQuestion.run('year-1', i, x.text, JSON.stringify(x.options), x.answer));
+      q.setPublished.run('year-1', 1, Date.now());
+      db.exec('COMMIT');
+    }
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+  }
+}
+seedYear1();
+
 
 // Best attempt per child (same name + school) within each class; ranked by score, then speed.
 function leaderboard(classId) {
@@ -419,6 +451,7 @@ const server = http.createServer(async (req, res) => {
     if (lower === ADMIN_PATH) return sendFile(res, path.join(PUBLIC_DIR, 'private', 'admin.html'),
       { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' });
     if (lower === '/nursery' || lower === '/nursery-2' || lower === '/quiz/nursery-2' || lower === '/quiz/nursery') return sendFile(res, path.join(PUBLIC_DIR, 'nursery.html'));
+    if (lower === '/year-1' || lower === '/quiz/year-1' || lower === '/year1' || lower === '/quiz/year1') return sendFile(res, path.join(PUBLIC_DIR, 'year-1.html'));
     if (lower === '/' || /^\/quiz\/[a-z0-9-]+$/.test(lower)) return sendFile(res, path.join(PUBLIC_DIR, 'index.html'));
     if (lower.startsWith('/private')) { res.writeHead(404); return res.end('Not found'); }
 

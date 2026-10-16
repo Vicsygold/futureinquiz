@@ -118,6 +118,10 @@
       location.href = '/quiz/nursery-2?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
       return;
     }
+    if (classId === 'year-1') {
+      location.href = '/quiz/year-1?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
+      return;
+    }
     $('c_go').disabled = true;
     try {
       const d = await api('POST', '/api/start', { name, school, classId });
