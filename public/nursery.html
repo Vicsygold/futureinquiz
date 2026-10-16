@@ -494,6 +494,11 @@ $('soundBtn').onclick = () => {
   if(!soundOn && 'speechSynthesis' in window) speechSynthesis.cancel();
 };
 
+// If student details were already filled on the homepage, launch directly into Question 1!
+if (urlParams.get('name')) {
+  start();
+}
+
 /* background bubbles */
 (function(){
   const c = ['#ff6b9a','#4cb8ff','#ffc93c','#36c46b','#9b6bff'];

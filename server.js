@@ -418,7 +418,7 @@ const server = http.createServer(async (req, res) => {
 
     if (lower === ADMIN_PATH) return sendFile(res, path.join(PUBLIC_DIR, 'private', 'admin.html'),
       { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' });
-    if (lower === '/nursery' || lower === '/quiz/nursery-2') return sendFile(res, path.join(PUBLIC_DIR, 'nursery.html'));
+    if (lower === '/nursery' || lower === '/nursery-2' || lower === '/quiz/nursery-2' || lower === '/quiz/nursery') return sendFile(res, path.join(PUBLIC_DIR, 'nursery.html'));
     if (lower === '/' || /^\/quiz\/[a-z0-9-]+$/.test(lower)) return sendFile(res, path.join(PUBLIC_DIR, 'index.html'));
     if (lower.startsWith('/private')) { res.writeHead(404); return res.end('Not found'); }
 
