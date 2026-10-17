@@ -76,9 +76,21 @@
           <span class="icon">🚀</span>
           <span class="info"><span class="title">Year 2</span><span class="meta">15 questions</span></span>
         </a>
-        <a href="/quiz/year-3" class="c-class-btn featured" data-class="year-3">
+        <a href="/quiz/year-3" class="c-class-btn" data-class="year-3">
           <span class="icon">💻</span>
-          <span class="info"><span class="title">Year 3</span><span class="meta">20 questions · New</span></span>
+          <span class="info"><span class="title">Year 3</span><span class="meta">20 questions</span></span>
+        </a>
+        <a href="/quiz/year-4" class="c-class-btn" data-class="year-4">
+          <span class="icon">📊</span>
+          <span class="info"><span class="title">Year 4</span><span class="meta">20 questions</span></span>
+        </a>
+        <a href="/quiz/year-5" class="c-class-btn" data-class="year-5">
+          <span class="icon">🤖</span>
+          <span class="info"><span class="title">Year 5</span><span class="meta">20 questions</span></span>
+        </a>
+        <a href="/quiz/year-6" class="c-class-btn" data-class="year-6">
+          <span class="icon">💡</span>
+          <span class="info"><span class="title">Year 6</span><span class="meta">20 questions</span></span>
         </a>
       </div>
     </div>
@@ -160,6 +172,18 @@
     }
     if (classId === 'year-3') {
       location.href = '/quiz/year-3?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
+      return;
+    }
+    if (classId === 'year-4') {
+      location.href = '/quiz/year-4?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
+      return;
+    }
+    if (classId === 'year-5') {
+      location.href = '/quiz/year-5?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
+      return;
+    }
+    if (classId === 'year-6') {
+      location.href = '/quiz/year-6?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
       return;
     }
     $('c_go').disabled = true;

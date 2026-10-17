@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Year 4 ICT Quiz · FutureIN</title>
+<link rel="icon" href="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="/api.js"></script>
+<style>
+  :root{
+    --bg1:#fff4e6; --bg2:#e6f4ff;
+    --ink:#2f2a4a; --soft:#5f5a85; --card:#ffffff;
+    --pink:#ff6b9a; --blue:#3aa8f0; --green:#36c46b; --yellow:#ffc93c; --purple:#7a5cff; --orange:#ff8a2a; --teal:#4a5be0;
+    --good:#36c46b; --bad:#ff6b6b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --bg1:#2b2440; --bg2:#1c3346; --ink:#fffaf0; --soft:#d6d0f5; }
+  }
+  :root[data-theme="dark"]{ --bg1:#2b2440; --bg2:#1c3346; --ink:#fffaf0; --soft:#d6d0f5; }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; height:100%}
+  body{font-family:'Fredoka','Comic Sans MS',system-ui,sans-serif; color:var(--ink);
+    background:linear-gradient(160deg,var(--bg1),var(--bg2)); background-color:var(--bg1); min-height:100%; overflow-x:hidden}
+  .bubbles span{position:fixed; border-radius:50%; opacity:.18; z-index:0; animation:float 9s ease-in-out infinite}
+  @keyframes float{50%{transform:translateY(-30px)}}
+  .wrap{position:relative; z-index:1; max-width:1040px; margin:0 auto; padding:16px 16px 40px; min-height:100vh; display:flex; flex-direction:column}
+
+  .top{display:flex; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap}
+  .lesson-tag{background:var(--teal); color:#fff; font-weight:600; padding:8px 16px; border-radius:999px; font-size:clamp(14px,2.3vw,19px); box-shadow:0 4px 0 #3343b8}
+  .progress{display:flex; gap:3px; flex-wrap:wrap; justify-content:center; max-width:520px}
+  .progress i{width:clamp(13px,2.2vw,20px); height:clamp(13px,2.2vw,20px); border-radius:50%; background:#fff; border:3px solid #cfe7f5; display:grid; place-items:center; font-style:normal; font-size:clamp(8px,1.4vw,12px)}
+  .progress i.now{border-color:var(--pink); transform:scale(1.25)}
+  .progress i.done{background:var(--yellow); border-color:#f0a800}
+  .progress i.miss{background:#ffe1c2; border-color:#ffb36b}
+  .icon-btn{border:none; background:#fff; border-radius:50%; width:50px; height:50px; font-size:24px; cursor:pointer; box-shadow:0 4px 0 #cfe7f5}
+  .icon-btn:active{transform:translateY(3px); box-shadow:0 1px 0 #cfe7f5}
+
+  .q-area{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:clamp(12px,2.4vh,24px); padding-top:14px}
+  .qnum{font-size:clamp(16px,2.5vw,21px); color:var(--soft); font-weight:600}
+  .prompt-img{width:clamp(130px,22vw,190px); background:#fff; border-radius:24px; padding:10px; box-shadow:0 6px 0 rgba(0,0,0,.08); animation:pop .45s}
+  .prompt-img svg{width:100%; height:auto; display:block}
+  .prompt-img.wide{width:clamp(240px,46vw,400px)}
+  .question{display:flex; align-items:center; gap:14px; background:#fff; color:#2f2a4a; padding:14px 22px; border-radius:26px; box-shadow:0 6px 0 rgba(0,0,0,.08); max-width:100%}
+  .question h1{margin:0; font-size:clamp(21px,3.9vw,36px); line-height:1.25; text-align:center}
+  .question h1 .blank{display:inline-block; min-width:2.6em; border-bottom:5px dashed var(--pink); margin:0 .15em}
+  .question h1 em{font-style:normal; color:var(--teal)}
+  .question .hint{font-size:clamp(28px,4.8vw,46px)}
+  .say{flex:none; border:none; background:var(--blue); color:#fff; width:clamp(44px,6vw,56px); height:clamp(44px,6vw,56px); border-radius:50%; font-size:clamp(19px,3vw,26px); cursor:pointer; box-shadow:0 5px 0 #1f7fc0}
+  .say:active{transform:translateY(4px); box-shadow:0 1px 0 #1f7fc0}
+
+  .cards{display:grid; width:100%}
+  .cards.pics{grid-template-columns:repeat(4,1fr); gap:clamp(10px,2vw,22px)}
+  .cards.words{grid-template-columns:repeat(2,1fr); gap:16px; max-width:860px}
+  .card{position:relative; border:5px solid var(--edge); cursor:pointer; padding:10px; font-family:inherit; color:#2f2a4a;
+    background:var(--card); border-radius:24px; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 0 var(--shade); transition:transform .15s, filter .2s; animation:pop .45s backwards}
+  .cards.pics .card{aspect-ratio:1/1.05; flex-direction:column}
+  .cards.words .card{justify-content:flex-start; gap:14px; padding:12px 18px; font-size:clamp(20px,3.4vw,30px); font-weight:700; text-align:left; min-height:80px}
+  .letter{flex:none; width:clamp(38px,5.6vw,50px); height:clamp(38px,5.6vw,50px); border-radius:50%; background:var(--shade); color:#fff; display:grid; place-items:center; font-size:clamp(19px,3vw,26px); font-weight:700}
+  .cards.pics .letter{position:absolute; top:8px; left:8px}
+  .card:nth-child(1){--edge:#ffc2d6; --shade:#ff7fab; animation-delay:.04s}
+  .card:nth-child(2){--edge:#bfe6ff; --shade:#3aa8f0; animation-delay:.12s}
+  .card:nth-child(3){--edge:#ffe3a1; --shade:#ffb52e; animation-delay:.2s}
+  .card:nth-child(4){--edge:#cdd3ff; --shade:#4a5be0; animation-delay:.28s}
+  .card:hover{transform:translateY(-5px)}
+  .card:active{transform:translateY(5px)}
+  .card svg{width:82%; height:auto; max-height:82%}
+  .card .emo{font-size:clamp(54px,10vw,110px); line-height:1}
+  @keyframes pop{from{transform:scale(.4); opacity:0}}
+  .card.right{--edge:var(--good); --shade:#23974f; animation:bounce .6s; filter:none}
+  .card.right::after{content:"✔"; position:absolute; top:-15px; right:-10px; background:var(--good); color:#fff; width:46px; height:46px; border-radius:50%; display:grid; place-items:center; font-size:27px; box-shadow:0 4px 0 #23974f}
+  .card.wrong{animation:shake .5s; filter:grayscale(1) brightness(.92); --edge:#ddd; --shade:#b5b5b5}
+  .card.fade{filter:grayscale(.9); transform:scale(.95)}
+  @keyframes bounce{30%{transform:scale(1.08)} 60%{transform:scale(.97)}}
+  @keyframes shake{20%,60%{transform:translateX(-12px)} 40%,80%{transform:translateX(12px)}}
+
+  .feedback{min-height:56px; text-align:center; max-width:780px}
+  .feedback b{display:block; font-size:clamp(24px,4.4vw,38px)}
+  .feedback small{display:block; font-size:clamp(17px,2.9vw,23px); color:var(--ink); margin-top:4px}
+  .feedback.good b{color:var(--green)}
+  .feedback.try b{color:var(--orange)}
+  .next{border:none; background:var(--green); color:#fff; font-family:inherit; font-weight:700; font-size:clamp(22px,4vw,32px); padding:12px 42px; border-radius:999px; cursor:pointer; box-shadow:0 7px 0 #23974f; animation:pop .4s}
+  .next:active{transform:translateY(5px); box-shadow:0 2px 0 #23974f}
+  .hidden{display:none !important}
+
+  .screen{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:18px}
+  .screen h1{font-size:clamp(36px,7.5vw,70px); margin:0; color:var(--teal); text-shadow:0 4px 0 #fff}
+  .screen p{font-size:clamp(19px,3.4vw,28px); margin:0; color:var(--soft)}
+  .mascot{width:clamp(160px,30vw,240px); animation:wobble 2.4s ease-in-out infinite}
+  @keyframes wobble{25%{transform:rotate(-5deg)} 75%{transform:rotate(5deg)}}
+  .big-btn{border:none; background:var(--pink); color:#fff; font-family:inherit; font-weight:700; font-size:clamp(26px,4.8vw,40px); padding:14px 54px; border-radius:999px; cursor:pointer; box-shadow:0 8px 0 #d6457a}
+  .big-btn:active{transform:translateY(6px); box-shadow:0 2px 0 #d6457a}
+  .stars-row{font-size:clamp(22px,4vw,36px); letter-spacing:2px; max-width:min(640px,100%); word-break:break-all; line-height:1.3}
+  .topics{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; max-width:780px}
+  .topics span{background:#fff; color:#2f2a4a; padding:6px 14px; border-radius:999px; font-size:clamp(14px,2.3vw,18px); box-shadow:0 3px 0 #cfe7f5}
+
+  /* Form fields on start */
+  .child-info{display:flex; flex-direction:column; gap:10px; width:100%; max-width:380px; margin:8px auto}
+  .child-info input{
+    font-family:inherit; font-size:18px; padding:12px 18px; border-radius:18px;
+    border:3px solid var(--teal); background:#fff; color:#2f2a4a; outline:none; text-align:center;
+  }
+  .child-info input:focus{border-color:var(--pink); box-shadow:0 0 0 3px rgba(255,107,154,.3)}
+  .err-msg{color:var(--bad); font-weight:700; font-size:16px}
+  .nav-back{margin-top:14px; color:var(--soft); font-size:16px; text-decoration:none; font-weight:600}
+  .nav-back:hover{color:var(--pink)}
+
+  .confetti{position:fixed; top:-30px; z-index:50; pointer-events:none; animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+  @media (max-width:640px){
+    .cards.pics{grid-template-columns:repeat(2,1fr); gap:12px}
+    .cards.words{grid-template-columns:1fr; gap:12px}
+    .cards.words .card{min-height:64px}
+    .card{border-radius:20px; border-width:4px; box-shadow:0 6px 0 var(--shade)}
+    .card.right::after{width:38px; height:38px; font-size:21px; top:-11px; right:-7px}
+    .question{padding:12px 14px; gap:10px}
+  }
+</style>
+</head>
+<body>
+<div class="bubbles" aria-hidden="true"></div>
+
+<div class="wrap">
+  <section id="start" class="screen">
+    <div class="mascot" id="mascotStart"></div>
+    <h1>Year 4 ICT Quiz</h1>
+    <p>20 questions · Read carefully and choose A, B, C or D</p>
+    <div class="topics">
+      <span>🖥️ The Computer System</span><span>🔢 Data &amp; Information</span><span>🗂️ Data Management</span><span>📊 Spreadsheet</span><span>🟩 Microsoft Excel</span>
+    </div>
+
+    <div class="child-info" id="infoBox">
+      <input id="childName" placeholder="Your name (e.g. Victor)" maxlength="60">
+      <input id="childSchool" placeholder="Your school" maxlength="80">
+      <div class="err-msg" id="nameErr"></div>
+    </div>
+
+    <button class="big-btn" id="startBtn">▶ Start</button>
+    <a href="/" class="nav-back">← Choose another class</a>
+  </section>
+
+  <section id="quiz" class="hidden" style="flex:1; display:flex; flex-direction:column">
+    <div class="top">
+      <div class="lesson-tag" id="lessonTag">Week 1</div>
+      <div class="progress" id="progress"></div>
+      <button class="icon-btn" id="soundBtn" title="Sound on/off">🔊</button>
+    </div>
+    <div class="q-area">
+      <div class="qnum" id="qNum"></div>
+      <div class="prompt-img hidden" id="promptImg"></div>
+      <div class="question">
+        <span class="hint" id="hint"></span>
+        <h1 id="qText"></h1>
+        <button class="say" id="sayBtn" title="Hear the question">🔈</button>
+      </div>
+      <div class="cards" id="cards"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next hidden" id="nextBtn">Next ▶</button>
+    </div>
+  </section>
+
+  <section id="end" class="screen hidden">
+    <div style="font-size:clamp(90px,17vw,150px); animation:wobble 2s infinite">🏆</div>
+    <h1 id="endTitle">Well Done!</h1>
+    <p id="endText"></p>
+    <div class="stars-row" id="endStars"></div>
+    <button class="big-btn" id="againBtn">🔁 Play Again</button>
+  </section>
+</div>
+
+<script>
+/* ================= PICTURES (drawn in the page — work offline) ================= */
+const powerIcon = (cx, cy, r, color) => `
+  <path d="M${cx} ${cy - r} V${cy - r*0.15}" stroke="${color}" stroke-width="${r*0.28}" stroke-linecap="round"/>
+  <path d="M${cx - r*0.7} ${cy - r*0.7} A${r} ${r} 0 1 0 ${cx + r*0.7} ${cy - r*0.7}" stroke="${color}" stroke-width="${r*0.28}" fill="none" stroke-linecap="round"/>`;
+const keyRow = (y, n, x0, w) => Array.from({length:n},(_,i)=>`<rect x="${x0+i*(w+4)}" y="${y}" width="${w}" height="16" rx="4" fill="#fff"/>`).join('');
+const beads = (y, xs, color) => xs.map(x=>`<ellipse cx="${x}" cy="${y}" rx="10" ry="12" fill="${color}" stroke="rgba(0,0,0,.18)" stroke-width="2"/>`).join('');
+
+const PICS = {
+  monitor: `<svg viewBox="0 0 200 200">
+      <rect x="20" y="30" width="160" height="108" rx="14" fill="#3d4a73"/>
+      <rect x="31" y="41" width="138" height="84" rx="6" fill="#8fdcff"/>
+      <circle cx="64" cy="66" r="13" fill="#ffd93b"/><path d="M31 125 L78 88 L106 112 L134 92 L169 125 Z" fill="#5fcf72"/>
+      <rect x="88" y="138" width="24" height="26" fill="#3d4a73"/><rect x="55" y="160" width="90" height="14" rx="7" fill="#3d4a73"/></svg>`,
+  tower: `<svg viewBox="0 0 200 200">
+      <rect x="58" y="16" width="84" height="164" rx="14" fill="#4f5a85" stroke="#3a4369" stroke-width="5"/>
+      <rect x="70" y="34" width="60" height="11" rx="5" fill="#2f3758"/><rect x="70" y="52" width="60" height="11" rx="5" fill="#2f3758"/>
+      <circle cx="100" cy="106" r="17" fill="#2f3758"/>${powerIcon(100, 108, 9, '#6dff8f')}
+      <g stroke="#3a4369" stroke-width="4" stroke-linecap="round"><line x1="74" y1="146" x2="126" y2="146"/><line x1="74" y1="156" x2="126" y2="156"/><line x1="74" y1="166" x2="126" y2="166"/></g>
+      <rect x="64" y="180" width="18" height="8" rx="3" fill="#3a4369"/><rect x="118" y="180" width="18" height="8" rx="3" fill="#3a4369"/></svg>`,
+  desktopUnit: `<svg viewBox="0 0 200 200">
+      <rect x="40" y="24" width="120" height="80" rx="10" fill="#3d4a73"/><rect x="49" y="33" width="102" height="62" rx="4" fill="#8fdcff"/>
+      <circle cx="74" cy="52" r="9" fill="#ffd93b"/><path d="M49 95 L84 70 L104 86 L124 72 L151 95 Z" fill="#5fcf72"/>
+      <rect x="90" y="104" width="20" height="16" fill="#3d4a73"/><rect x="70" y="118" width="60" height="8" rx="3" fill="#3d4a73"/>
+      <rect x="14" y="126" width="172" height="50" rx="10" fill="#4f5a85" stroke="#3a4369" stroke-width="5"/>
+      <rect x="28" y="140" width="62" height="10" rx="4" fill="#2f3758"/><rect x="28" y="156" width="62" height="10" rx="4" fill="#2f3758"/>
+      <circle cx="160" cy="151" r="13" fill="#2f3758"/>${powerIcon(160, 153, 7, '#6dff8f')}</svg>`,
+  keyboard: `<svg viewBox="0 0 200 200">
+      <rect x="10" y="62" width="180" height="84" rx="14" fill="#4f5a85"/>
+      ${keyRow(74, 10, 20, 13.4)}${keyRow(94, 10, 20, 13.4)}${keyRow(114, 3, 20, 13.4)}
+      <rect x="71" y="114" width="58" height="16" rx="4" fill="#fff"/>${keyRow(114, 3, 133, 13.4)}
+      <path d="M100 62 C100 40 130 40 140 24" stroke="#4f5a85" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`,
+  mouse: `<svg viewBox="0 0 200 200">
+      <path d="M100 42 C100 20 132 26 142 8" stroke="#4f5a85" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <rect x="62" y="40" width="76" height="140" rx="38" fill="#fff" stroke="#4f5a85" stroke-width="7"/>
+      <line x1="62" y1="96" x2="138" y2="96" stroke="#4f5a85" stroke-width="6"/><line x1="100" y1="42" x2="100" y2="96" stroke="#4f5a85" stroke-width="6"/>
+      <rect x="92" y="54" width="16" height="28" rx="8" fill="#ff6b9a" stroke="#4f5a85" stroke-width="4"/></svg>`,
+  printer: `<svg viewBox="0 0 200 200">
+      <rect x="58" y="22" width="84" height="50" rx="4" fill="#fff" stroke="#9aa1c4" stroke-width="4"/>
+      <rect x="22" y="64" width="156" height="78" rx="16" fill="#4f5a85"/><rect x="22" y="64" width="156" height="22" rx="10" fill="#636fa3"/>
+      <circle cx="154" cy="104" r="7" fill="#6dff8f"/><rect x="36" y="100" width="40" height="8" rx="4" fill="#3a4369"/>
+      <rect x="48" y="126" width="104" height="58" rx="3" fill="#fff" stroke="#9aa1c4" stroke-width="4"/>
+      <line x1="62" y1="148" x2="138" y2="148" stroke="#ff6b9a" stroke-width="5" stroke-linecap="round"/>
+      <g stroke="#c4c9e2" stroke-width="5" stroke-linecap="round"><line x1="62" y1="162" x2="128" y2="162"/><line x1="62" y1="174" x2="112" y2="174"/></g></svg>`,
+  webcam: `<svg viewBox="0 0 200 200">
+      <path d="M70 168 H130 L120 150 H80 Z" fill="#4f5a85"/><rect x="94" y="120" width="12" height="32" fill="#4f5a85"/>
+      <circle cx="100" cy="82" r="58" fill="#3d4a73"/><circle cx="100" cy="82" r="40" fill="#2a3352"/>
+      <circle cx="100" cy="82" r="26" fill="#4cb8ff"/><circle cx="100" cy="82" r="13" fill="#123a5c"/>
+      <circle cx="92" cy="74" r="6" fill="#fff" opacity=".8"/><circle cx="146" cy="50" r="5" fill="#ff4f6b"/></svg>`,
+  abacus: `<svg viewBox="0 0 200 200">
+      <rect x="18" y="26" width="164" height="148" rx="10" fill="none" stroke="#a0612b" stroke-width="12"/>
+      <g stroke="#7b4a21" stroke-width="4">
+        <line x1="24" y1="58" x2="176" y2="58"/><line x1="24" y1="90" x2="176" y2="90"/><line x1="24" y1="122" x2="176" y2="122"/><line x1="24" y1="152" x2="176" y2="152"/></g>
+      ${beads(58,[40,62,84,140,162],'#ff6b9a')}${beads(90,[40,62,120,142,164],'#3aa8f0')}
+      ${beads(122,[40,98,120,142,164],'#ffc93c')}${beads(152,[40,62,84,106,164],'#36c46b')}</svg>`,
+  motherboard: `<svg viewBox="0 0 200 200">
+      <rect x="16" y="16" width="168" height="168" rx="10" fill="#1f9e5a" stroke="#137a43" stroke-width="5"/>
+      <g stroke="#ffd36b" stroke-width="3" fill="none" opacity=".9">
+        <path d="M40 40 H90 V70"/><path d="M160 40 V90 H130"/><path d="M40 160 H100 V130"/><path d="M160 160 H130 V140"/><path d="M40 100 H70"/></g>
+      <rect x="82" y="72" width="48" height="48" rx="4" fill="#2f3758"/><rect x="92" y="82" width="28" height="28" rx="2" fill="#9aa1c4"/>
+      <rect x="146" y="60" width="10" height="90" rx="2" fill="#2f3758"/><rect x="162" y="60" width="10" height="90" rx="2" fill="#2f3758"/>
+      <rect x="30" y="118" width="40" height="26" rx="3" fill="#3d4a73"/><circle cx="50" cy="66" r="12" fill="#c9cde3" stroke="#7b83a8" stroke-width="3"/>
+      <rect x="84" y="140" width="40" height="10" rx="2" fill="#2f3758"/><rect x="84" y="156" width="40" height="10" rx="2" fill="#2f3758"/></svg>`,
+  laptop: `<svg viewBox="0 0 200 200">
+      <rect x="38" y="40" width="124" height="86" rx="10" fill="#3d4a73"/><rect x="47" y="49" width="106" height="68" rx="4" fill="#bdf0d4"/>
+      <path d="M22 132 H178 L166 154 H34 Z" fill="#8c95c2"/><rect x="84" y="136" width="32" height="6" rx="3" fill="#5c6596"/></svg>`,
+  mascot: `<svg viewBox="0 0 200 200">
+      <rect x="20" y="24" width="160" height="116" rx="22" fill="#14a8a0"/>
+      <rect x="32" y="36" width="136" height="92" rx="14" fill="#eafffd"/>
+      <circle cx="76" cy="76" r="11" fill="#2f2a4a"/><circle cx="124" cy="76" r="11" fill="#2f2a4a"/>
+      <circle cx="80" cy="72" r="4" fill="#fff"/><circle cx="128" cy="72" r="4" fill="#fff"/>
+      <circle cx="60" cy="98" r="9" fill="#ffb3cc"/><circle cx="140" cy="98" r="9" fill="#ffb3cc"/>
+      <path d="M82 100 Q100 118 118 100" stroke="#2f2a4a" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <rect x="86" y="140" width="28" height="20" fill="#14a8a0"/><rect x="54" y="158" width="92" height="16" rx="8" fill="#ff8a2a"/>
+      <path d="M70 26 L100 4 L130 26 Z" fill="#ffc93c"/></svg>`
+};
+
+/* spreadsheet grid: hl = {col:'B'} | {row:3} | null */
+function sheet(hl){
+  const cols=['A','B','C','D'], x0=34, y0=30, cw=40, rh=30, rows=5;
+  let s=`<svg viewBox="0 0 200 200"><rect x="6" y="6" width="188" height="188" rx="12" fill="#fff" stroke="#1d7a45" stroke-width="4"/>`;
+  s+=`<rect x="6" y="6" width="188" height="20" rx="10" fill="#1d7a45"/><rect x="6" y="16" width="188" height="10" fill="#1d7a45"/>`;
+  s+=`<rect x="${x0-24}" y="${y0}" width="${24+cw*4}" height="${rh-6}" fill="#e7f5ec"/>`;
+  s+=`<rect x="${x0-24}" y="${y0}" width="24" height="${(rh-6)+rows*rh}" fill="#e7f5ec"/>`;
+  if(hl && hl.col){ const c=cols.indexOf(hl.col); s+=`<rect x="${x0+c*cw}" y="${y0+rh-6}" width="${cw}" height="${rows*rh}" fill="#ffe27a"/>`; }
+  if(hl && hl.row){ s+=`<rect x="${x0}" y="${y0+rh-6+(hl.row-1)*rh}" width="${cw*4}" height="${rh}" fill="#ffe27a"/>`; }
+  for(let c=0;c<=4;c++) s+=`<line x1="${x0+c*cw}" y1="${y0}" x2="${x0+c*cw}" y2="${y0+rh-6+rows*rh}" stroke="#b9cfc0" stroke-width="2"/>`;
+  for(let r=0;r<=rows;r++) s+=`<line x1="${x0-24}" y1="${y0+rh-6+r*rh}" x2="${x0+cw*4}" y2="${y0+rh-6+r*rh}" stroke="#b9cfc0" stroke-width="2"/>`;
+  cols.forEach((c,i)=> s+=`<text x="${x0+i*cw+cw/2}" y="${y0+17}" text-anchor="middle" font-size="15" font-weight="700" fill="#1d7a45" font-family="Fredoka, sans-serif">${c}</text>`);
+  for(let r=1;r<=rows;r++) s+=`<text x="${x0-12}" y="${y0+rh-6+(r-1)*rh+20}" text-anchor="middle" font-size="15" font-weight="700" fill="#1d7a45" font-family="Fredoka, sans-serif">${r}</text>`;
+  return s+'</svg>';
+}
+function salesTable(){
+  const rows=[['Textbooks','6000'],['Pen','300'],['Eraser','100']];
+  let s=`<svg viewBox="0 0 320 190" font-family="Fredoka, sans-serif">
+    <rect x="4" y="4" width="312" height="182" rx="12" fill="#fff" stroke="#1d7a45" stroke-width="4"/>
+    <text x="160" y="32" text-anchor="middle" font-size="20" font-weight="700" fill="#1d7a45">SALES RECORD</text>
+    <rect x="20" y="44" width="280" height="34" fill="#1d7a45"/>
+    <text x="40" y="67" font-size="18" font-weight="700" fill="#fff">Product</text><text x="200" y="67" font-size="18" font-weight="700" fill="#fff">Price (₦)</text>`;
+  rows.forEach((r,i)=>{ const y=78+i*34;
+    s+=`<rect x="20" y="${y}" width="280" height="34" fill="${i%2?'#f2faf5':'#ffffff'}" stroke="#b9cfc0" stroke-width="2"/>
+        <line x1="180" y1="${y}" x2="180" y2="${y+34}" stroke="#b9cfc0" stroke-width="2"/>
+        <text x="40" y="${y+23}" font-size="18" fill="#2f2a4a">${r[0]}</text><text x="200" y="${y+23}" font-size="18" fill="#2f2a4a">${r[1]}</text>`; });
+  return s+'</svg>';
+}
+PICS.sheetCell = sheet(null).replace('</svg>', '<rect x="74" y="84" width="40" height="30" fill="none" stroke="#ff4f8b" stroke-width="4"/></svg>');
+PICS.sheetCol = sheet({col:'C'});
+PICS.sheetRow = sheet({row:3});
+PICS.sales = salesTable();
+
+/* ================= 20 QUESTIONS — Weeks 1 to 5, 4 per week, options A–D =================
+   type 'word' → 4 reading cards  (optional img = picture shown above the question; wide = wider picture)
+   type 'pic'  → 4 picture cards  (options: [pictureKey or emoji, isCorrect])          */
+const W1="Week 1 · The Computer System", W2="Week 2 · Data & Information", W3="Week 3 · Data Management",
+      W4="Week 4 · Spreadsheet",         W5="Week 5 · Microsoft Excel";
+
+const QUESTIONS = [
+  // Week 1 — The computer system
+  {lesson:W1, type:'word', hint:"🧩", text:"The three elements of a computer are Hardware, Software and ___",
+   say:"The three elements of a computer are Hardware, Software and… what?",
+   options:[["Human ware",1],["Keyboard",0],["Electricity",0],["Monitor",0]],
+   yay:"Hardware, Software and Human ware are the three elements of a computer."},
+  {lesson:W1, type:'pic', hint:"⚙️", text:"Which one is the <em>Processing</em> device?",
+   say:"Which one is the processing device?",
+   options:[["tower",1],["printer",0],["keyboard",0],["monitor",0]],
+   yay:"The System Unit is the processing device. It has the CPU."},
+  {lesson:W1, type:'word', hint:"🔌", text:"Which cable connects the system unit to the <em>monitor</em>?",
+   say:"Which cable connects the system unit to the monitor?",
+   options:[["VGA cable",1],["Printer cable",0],["Network cable",0],["Power cable",0]],
+   yay:"The VGA cable connects the system unit and the monitor. HDMI can do it too, with better pictures."},
+  {lesson:W1, type:'word', hint:"🔗", text:"USB means Universal Serial ___",
+   say:"U S B means Universal Serial… what?",
+   options:[["Bus",1],["Box",0],["Button",0],["Battery",0]],
+   yay:"USB means Universal Serial Bus."},
+
+  // Week 2 — Data and information
+  {lesson:W2, type:'word', hint:"🔢", text:"Data are raw facts or ___ information.",
+   say:"Data are raw facts or… what… information?",
+   options:[["incomplete",1],["complete",0],["printed",0],["coloured",0]],
+   yay:"Data are raw facts or incomplete information."},
+  {lesson:W2, type:'word', hint:"✳️", text:"Which of these is a <em>special character</em>?",
+   say:"Which of these is a special character?",
+   options:[["*",1],["A",0],["7",0],["b",0]],
+   yay:"Data uses alphabets (A–Z), digits (0–9) and special characters like * / < >."},
+  {lesson:W2, type:'word', hint:"💡", text:"Information is data that has been ___",
+   say:"Information is data that has been… what?",
+   options:[["processed",1],["deleted",0],["hidden",0],["lost",0]],
+   yay:"Information is processed data that has meaning to the receiver."},
+  {lesson:W2, type:'word', hint:"✅", text:"Good information should be timely, accurate and ___",
+   say:"Good information should be timely, accurate and… what?",
+   options:[["complete",1],["late",0],["messy",0],["secret",0]],
+   yay:"Good information is Timely, Accurate and Complete."},
+
+  // Week 3 — Data management
+  {lesson:W3, type:'word', hint:"🗂️", text:"Collecting, organising, protecting and storing data is called ___",
+   say:"Collecting, organising, protecting and storing data is called… what?",
+   options:[["Data management",1],["Data deleting",0],["Typing",0],["Printing",0]],
+   yay:"That is Data management."},
+  {lesson:W3, type:'word', hint:"📒", text:"Using paper and pen to record data, like a class register, is the ___ method.",
+   say:"Using paper and pen to record data, like a class register, is the… what… method?",
+   options:[["Manual",1],["Computer",0],["Electronic",0],["Automatic",0]],
+   yay:"Paper and pen is the Manual method. It does not need any device."},
+  {lesson:W3, type:'word', hint:"💻", text:"Computer simulation is also called ___ data management.",
+   say:"Computer simulation is also called… what… data management?",
+   options:[["Electronic",1],["Manual",0],["Paper",0],["Pencil",0]],
+   yay:"Computer simulation is electronic data management. It uses application software."},
+  {lesson:W3, type:'word', hint:"🔐", text:"Why do we need data management?",
+   say:"Why do we need data management?",
+   options:[["To find data quickly and keep it safe",1],["To make data messy and hard to find",0],["To lose data and forget about it",0],["To slow the computer down",0]],
+   yay:"Data management helps us find what we need quickly and keeps our data safe."},
+
+  // Week 4 — Spreadsheet
+  {lesson:W4, type:'word', hint:"📊", text:"A spreadsheet is a program used to ___",
+   say:"A spreadsheet is a program used to… what?",
+   options:[["do calculations, make charts and store information",1],["play music, show films and record videos",0],["draw pictures, paint and colour them",0],["send messages, chat and make calls",0]],
+   yay:"A spreadsheet does calculations, makes charts and stores information."},
+  {lesson:W4, type:'word', img:'sheetCell', hint:"🔲", text:"The small boxes in a spreadsheet are called ___",
+   say:"The small boxes in a spreadsheet are called… what?",
+   options:[["Cells",1],["Rooms",0],["Windows",0],["Doors",0]],
+   yay:"The spaces between rows and columns are called Cells."},
+  {lesson:W4, type:'word', hint:"🟩", text:"Which one is a good example of a <em>spreadsheet</em> program?",
+   say:"Which one is a good example of a spreadsheet program?",
+   options:[["Microsoft Excel",1],["Microsoft Paint",0],["Media Player",0],["Notepad",0]],
+   yay:"Microsoft Excel is a good example of a spreadsheet program."},
+  {lesson:W4, type:'word', img:'sheetCol', hint:"↕️", text:"The yellow part going <em>up and down</em> is a ___",
+   say:"The yellow part going up and down is a… what?",
+   options:[["Column",1],["Row",0],["Chart",0],["Cell",0]],
+   yay:"Columns go up and down. They are named with letters: A, B, C…"},
+
+  // Week 5 — Microsoft Excel (filling the worksheet)
+  {lesson:W5, type:'word', img:'sheetRow', hint:"↔️", text:"The yellow part going <em>across</em> is a ___",
+   say:"The yellow part going across is a… what?",
+   options:[["Row",1],["Column",0],["Chart",0],["Theme",0]],
+   yay:"Rows go across. They are named with numbers: 1, 2, 3…"},
+  {lesson:W5, type:'word', hint:"⌨️", text:"What can we type into the cells of a worksheet?",
+   say:"What can we type into the cells of a worksheet?",
+   options:[["Numbers, alphabets and signs",1],["Only pictures",0],["Only colours",0],["Nothing at all",0]],
+   yay:"We can enter numbers, alphabets and signs into the cells."},
+  {lesson:W5, type:'word', img:'sales', wide:true, hint:"🔎", text:"Look at the worksheet. How much is a <em>Pen</em>?",
+   say:"Look at the worksheet. How much is a pen?",
+   options:[["₦300",1],["₦6000",0],["₦100",0],["₦3000",0]],
+   yay:"The Pen costs ₦300."},
+  {lesson:W5, type:'word', img:'sales', wide:true, hint:"💰", text:"Which product costs the <em>most</em>?",
+   say:"Which product costs the most?",
+   options:[["Textbooks",1],["Pen",0],["Eraser",0],["Price",0]],
+   yay:"Textbooks cost ₦6000, the highest price on the worksheet."}
+];
+
+const PRAISE = ["Correct!", "Super!", "Well done!", "Great job!", "Excellent!", "Brilliant!"];
+
+/* ================= SOUND + VOICE ================= */
+let soundOn=true, actx=null;
+function tone(freq,start,dur,type='sine',vol=.18){
+  if(!soundOn) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(), g=actx.createGain(); o.type=type; o.frequency.value=freq;
+    g.gain.setValueAtTime(vol, actx.currentTime+start); g.gain.exponentialRampToValueAtTime(.001, actx.currentTime+start+dur);
+    o.connect(g).connect(actx.destination); o.start(actx.currentTime+start); o.stop(actx.currentTime+start+dur);
+  }catch(e){}
+}
+const happySound=()=>[523,659,784,1047].forEach((f,i)=>tone(f,i*.1,.3,'triangle'));
+const oopsSound=()=>{ tone(330,0,.18); tone(262,.16,.25); };
+function speak(text){
+  if(!soundOn || !('speechSynthesis' in window)) return;
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.rate=.92; u.pitch=1.1; u.lang='en-GB'; speechSynthesis.speak(u); }catch(e){}
+}
+function confetti(){
+  const bits=['⭐','🎉','🌟','✨'], colors=['#ff6b9a','#3aa8f0','#ffc93c','#36c46b','#4a5be0'];
+  for(let i=0;i<30;i++){
+    const d=document.createElement('div'); d.className='confetti';
+    if(i%3===0){ d.textContent=bits[i%bits.length]; d.style.fontSize=(18+Math.random()*20)+'px'; }
+    else { d.style.width='12px'; d.style.height='16px'; d.style.borderRadius='3px'; d.style.background=colors[i%colors.length]; }
+    d.style.left=Math.random()*100+'vw'; d.style.animationDuration=(1.6+Math.random()*1.6)+'s'; d.style.animationDelay=(Math.random()*.3)+'s';
+    document.body.appendChild(d); setTimeout(()=>d.remove(),3800);
+  }
+}
+
+/* ================= GAME & BACKEND INTEGRATION ================= */
+const $=id=>document.getElementById(id);
+let idx=0, stars=0, firstTry=true, answered=false, results=[];
+let studentName = '', studentSchool = '', attemptId = null, answersRecord = [];
+
+// Pre-fill name and school from URL query parameters if present
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('name')) $('childName').value = urlParams.get('name');
+if (urlParams.get('school')) $('childSchool').value = urlParams.get('school');
+
+const shuffle=a=>{a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a;};
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function drawProgress(){
+  $('progress').innerHTML = QUESTIONS.map((_,i)=>{
+    const cls = i<idx ? (results[i] ? 'done' : 'miss') : (i===idx ? 'now' : '');
+    return `<i class="${cls}">${i<idx ? (results[i] ? '⭐' : '✓') : ''}</i>`;
+  }).join('');
+}
+
+function showQuestion(){
+  const q=QUESTIONS[idx]; firstTry=true; answered=false;
+  $('lessonTag').textContent=q.lesson;
+  $('qNum').textContent=`Question ${idx+1} of ${QUESTIONS.length}`;
+  $('hint').textContent=q.hint;
+  $('qText').innerHTML=q.text.replace('___','<span class="blank"></span>');
+  if(q.img){ $('promptImg').innerHTML=PICS[q.img]; $('promptImg').classList.remove('hidden'); $('promptImg').classList.toggle('wide', !!q.wide); }
+  else { $('promptImg').classList.add('hidden'); $('promptImg').innerHTML=''; }
+  $('feedback').innerHTML=''; $('feedback').className='feedback';
+  $('nextBtn').classList.add('hidden');
+  drawProgress();
+  const cards=$('cards'); cards.innerHTML=''; cards.className='cards '+(q.type==='pic'?'pics':'words');
+  shuffle(q.options).forEach(([val,ok],i)=>{
+    const b=document.createElement('button'); b.className='card'; b.dataset.ok=ok?'1':'0';
+    const letter=`<span class="letter">${'ABCD'[i]}</span>`;
+    b.innerHTML = q.type==='pic'
+      ? letter + (PICS[val] || `<span class="emo">${val}</span>`)
+      : letter + `<span>${esc(val)}</span>`;
+    b.onclick=()=>choose(b,ok);
+    cards.appendChild(b);
+  });
+  setTimeout(()=>speak(q.say), 350);
+}
+
+function choose(btn,ok){
+  if(answered || btn.classList.contains('wrong')) return;
+  const q=QUESTIONS[idx];
+  if(ok){
+    answered=true; results[idx]=firstTry;
+    if(firstTry) {
+      stars++;
+      answersRecord[idx] = 0;
+    } else {
+      answersRecord[idx] = 1;
+    }
+    btn.classList.add('right');
+    [...$('cards').children].forEach(c=>{ if(c!==btn) c.classList.add('fade'); });
+    const word=PRAISE[Math.floor(Math.random()*PRAISE.length)];
+    $('feedback').innerHTML=`<b>🎉 ${word} 🎉</b><small>${esc(q.yay)}</small>`; $('feedback').className='feedback good';
+    happySound(); confetti(); setTimeout(()=>speak(word+' '+q.yay),300);
+    $('nextBtn').textContent = idx===QUESTIONS.length-1 ? 'Finish 🏁' : 'Next ▶';
+    $('nextBtn').classList.remove('hidden');
+  } else {
+    firstTry=false; btn.classList.add('wrong');
+    $('feedback').innerHTML='<b>Not quite! Try again 😊</b>'; $('feedback').className='feedback try';
+    oopsSound(); speak('Not quite! Try again!');
+  }
+}
+
+function next(){ idx++; if(idx>=QUESTIONS.length) return finish(); showQuestion(); window.scrollTo(0,0); }
+
+async function finish(){
+  $('quiz').classList.add('hidden'); $('end').classList.remove('hidden');
+  const n=QUESTIONS.length;
+  const greeting = studentName ? `Well done, ${studentName}!` : (stars>=16 ? 'Excellent!' : stars>=11 ? 'Well Done!' : 'Good Try!');
+  $('endTitle').textContent = greeting;
+  $('endText').textContent=`You scored ${stars} out of ${n}!`;
+  $('endStars').textContent='⭐'.repeat(stars)+'☆'.repeat(n-stars);
+  happySound(); confetti(); setTimeout(confetti,900);
+  speak(`${greeting} You scored ${stars} out of ${n}! You are a computer star!`);
+
+  // Submit attempt to server if attemptId exists
+  if (attemptId) {
+    try {
+      await api('POST', '/api/submit', { attemptId, answers: answersRecord });
+    } catch (e) {
+      console.warn('Could not submit attempt:', e);
+    }
+  }
+}
+
+async function start(){
+  const name = $('childName').value.trim();
+  const school = $('childSchool').value.trim() || 'Precious Innovators';
+  $('nameErr').textContent = '';
+  if (name.length < 2) {
+    $('nameErr').textContent = 'Please type your name!';
+    $('childName').focus();
+    return;
+  }
+  studentName = name;
+  studentSchool = school;
+  idx = 0; stars = 0; results = [];
+  answersRecord = new Array(QUESTIONS.length).fill(null);
+
+  // Register attempt with backend
+  try {
+    const res = await api('POST', '/api/start', { name: studentName, school: studentSchool, classId: 'year-4' });
+    attemptId = res.attemptId;
+  } catch (e) {
+    console.warn('Local mode (offline attempt):', e);
+  }
+
+  $('start').classList.add('hidden'); $('end').classList.add('hidden'); $('quiz').classList.remove('hidden');
+  showQuestion();
+}
+
+$('mascotStart').innerHTML=PICS.mascot;
+$('startBtn').onclick=start;
+$('againBtn').onclick=() => {
+  $('end').classList.add('hidden');
+  $('start').classList.remove('hidden');
+};
+$('nextBtn').onclick=next;
+$('sayBtn').onclick=()=>speak(QUESTIONS[idx].say);
+$('soundBtn').onclick=()=>{ soundOn=!soundOn; $('soundBtn').textContent=soundOn?'🔊':'🔇'; if(!soundOn && 'speechSynthesis' in window) speechSynthesis.cancel(); };
+
+// If student details were already captured from the homepage, launch directly into Question 1!
+if (urlParams.get('name')) {
+  start();
+}
+
+(function(){
+  const c=['#ff6b9a','#3aa8f0','#ffc93c','#36c46b','#4a5be0'], box=document.querySelector('.bubbles');
+  for(let i=0;i<9;i++){ const s=document.createElement('span'), size=40+Math.random()*90;
+    Object.assign(s.style,{width:size+'px',height:size+'px',left:Math.random()*95+'vw',top:Math.random()*90+'vh',background:c[i%c.length],animationDelay:(Math.random()*5)+'s'});
+    box.appendChild(s); }
+})();
+</script>
+</body>
+</html>

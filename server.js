@@ -230,6 +230,117 @@ function seedYear3() {
 }
 seedYear3();
 
+function seedYear4() {
+  try {
+    const existing = q.questionsFor.all('year-4');
+    if (existing.length === 0) {
+      const year4Qs = [
+        { text: 'The three elements of a computer are Hardware, Software and ___', options: ['Human ware', 'Keyboard', 'Electricity', 'Monitor'], answer: 0 },
+        { text: 'Which one is the Processing device?', options: ['System Unit (Tower)', 'Printer', 'Keyboard', 'Monitor'], answer: 0 },
+        { text: 'Which cable connects the system unit to the monitor?', options: ['VGA cable', 'Printer cable', 'Network cable', 'Power cable'], answer: 0 },
+        { text: 'USB means Universal Serial ___', options: ['Bus', 'Box', 'Button', 'Battery'], answer: 0 },
+        { text: 'Data are raw facts or ___ information.', options: ['incomplete', 'complete', 'printed', 'coloured'], answer: 0 },
+        { text: 'Which of these is a special character?', options: ['*', 'A', '7', 'b'], answer: 0 },
+        { text: 'Information is data that has been ___', options: ['processed', 'deleted', 'hidden', 'lost'], answer: 0 },
+        { text: 'Good information should be timely, accurate and ___', options: ['complete', 'late', 'messy', 'secret'], answer: 0 },
+        { text: 'Collecting, organising, protecting and storing data is called ___', options: ['Data management', 'Data deleting', 'Typing', 'Printing'], answer: 0 },
+        { text: 'Using paper and pen to record data, like a class register, is the ___ method.', options: ['Manual', 'Computer', 'Electronic', 'Automatic'], answer: 0 },
+        { text: 'Computer simulation is also called ___ data management.', options: ['Electronic', 'Manual', 'Paper', 'Pencil'], answer: 0 },
+        { text: 'Why do we need data management?', options: ['To find data quickly and keep it safe', 'To make data messy and hard to find', 'To lose data and forget about it', 'To slow the computer down'], answer: 0 },
+        { text: 'A spreadsheet is a program used to ___', options: ['do calculations, make charts and store information', 'play music, show films and record videos', 'draw pictures, paint and colour them', 'send messages, chat and make calls'], answer: 0 },
+        { text: 'The small boxes in a spreadsheet are called ___', options: ['Cells', 'Rooms', 'Windows', 'Doors'], answer: 0 },
+        { text: 'Which one is a good example of a spreadsheet program?', options: ['Microsoft Excel', 'Microsoft Paint', 'Media Player', 'Notepad'], answer: 0 },
+        { text: 'The yellow part going up and down in a spreadsheet is a ___', options: ['Column', 'Row', 'Chart', 'Cell'], answer: 0 },
+        { text: 'The yellow part going across in a spreadsheet is a ___', options: ['Row', 'Column', 'Chart', 'Theme'], answer: 0 },
+        { text: 'What can we type into the cells of a worksheet?', options: ['Numbers, alphabets and signs', 'Only pictures', 'Only colours', 'Nothing at all'], answer: 0 },
+        { text: 'Look at the sales worksheet. How much is a Pen?', options: ['₦300', '₦6000', '₦100', '₦3000'], answer: 0 },
+        { text: 'Look at the sales worksheet. Which product costs the most?', options: ['Textbooks', 'Pen', 'Eraser', 'Price'], answer: 0 },
+      ];
+      db.exec('BEGIN');
+      year4Qs.forEach((x, i) => q.insertQuestion.run('year-4', i, x.text, JSON.stringify(x.options), x.answer));
+      q.setPublished.run('year-4', 1, Date.now());
+      db.exec('COMMIT');
+    }
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+  }
+}
+seedYear4();
+
+function seedYear5() {
+  try {
+    const existing = q.questionsFor.all('year-5');
+    if (existing.length === 0) {
+      const year5Qs = [
+        { text: 'This counting device uses columns of beads. What is it called?', options: ['Abacus', 'Napier Bones', "Pascal's Wheel", 'Analytical Engine'], answer: 0 },
+        { text: "Pascal's Wheel was the first mechanical calculating machine. It could ___", options: ['add and subtract numbers', 'print documents', 'send emails', 'store pictures'], answer: 0 },
+        { text: "Odometers in cars use the principle of ___", options: ["Pascal's Wheel", 'the Abacus', 'Napier Bones', 'the Analytical Engine'], answer: 0 },
+        { text: 'Who invented the Analytical Engine, the first mechanical computer?', options: ['Charles Babbage', 'Blaise Pascal', 'John Napier', 'Isaac Newton'], answer: 0 },
+        { text: 'Which is the fastest, strongest and most expensive computer?', options: ['Supercomputer', 'Microcomputer', 'Minicomputer', 'Mainframe computer'], answer: 0 },
+        { text: 'Mainframe computers are mostly used in ___', options: ['banks, government and large companies', 'toy shops and playgrounds', 'cars and bicycles', 'wrist watches and phones'], answer: 0 },
+        { text: 'Which one is a Palmtop computer?', options: ['Tablet', 'Laptop', 'Tower Unit', 'Desktop Unit'], answer: 0 },
+        { text: 'A laptop is also called an ___ computer.', options: ['All-in-one', 'In-car', 'Analog', 'Mainframe'], answer: 0 },
+        { text: 'A thermometer is an example of a ___ computer.', options: ['Analog', 'Digital', 'Hybrid', 'Super'], answer: 0 },
+        { text: 'Which one is a Digital computer?', options: ['Calculator', 'Thermometer', 'Speedometer', 'Fuel pump'], answer: 0 },
+        { text: 'A fuel pump at a filling station measures AND counts. It is a ___ computer.', options: ['Hybrid', 'Analog', 'Digital', 'Mini'], answer: 0 },
+        { text: 'An ATM can only do one kind of job. It is a ___ purpose computer.', options: ['Special', 'General', 'Hybrid', 'Analog'], answer: 0 },
+        { text: 'First generation computers (1946–1959) were based on ___', options: ['Vacuum tubes', 'Transistors', 'Integrated circuits', 'Microprocessors'], answer: 0 },
+        { text: 'Computers based on Transistors belong to which generation?', options: ['Second generation', 'First generation', 'Fourth generation', 'Fifth generation'], answer: 0 },
+        { text: 'The third generation (1965–1971) was based on ___', options: ['Integrated circuits', 'Vacuum tubes', 'Transistors', 'Beads and sticks'], answer: 0 },
+        { text: 'The fifth generation (1980 onwards) is based on ___', options: ['Artificial intelligence', 'Vacuum tubes', 'Transistors', 'The Abacus'], answer: 0 },
+        { text: 'What is the full meaning of AI?', options: ['Artificial Intelligence', 'Automatic Internet', 'Active Information', 'Advanced Input'], answer: 0 },
+        { text: 'Which of these is a voice assistant?', options: ['Siri', 'Canva', 'Grammarly', 'Google AutoDraw'], answer: 0 },
+        { text: 'Which AI tool turns rough doodles into neat drawings?', options: ['Google AutoDraw', 'Grammarly', 'Google Translate', 'Netflix'], answer: 0 },
+        { text: 'Which one is a safe rule for using AI?', options: ['Never share your name, school or address', 'Copy AI answers for your homework', 'Believe everything that AI tells you', 'Use AI apps without asking an adult'], answer: 0 },
+      ];
+      db.exec('BEGIN');
+      year5Qs.forEach((x, i) => q.insertQuestion.run('year-5', i, x.text, JSON.stringify(x.options), x.answer));
+      q.setPublished.run('year-5', 1, Date.now());
+      db.exec('COMMIT');
+    }
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+  }
+}
+seedYear5();
+
+function seedYear6() {
+  try {
+    const existing = q.questionsFor.all('year-6');
+    if (existing.length === 0) {
+      const year6Qs = [
+        { text: 'Another name for computer personnel is ___', options: ['Human ware', 'Hardware', 'Software', 'Firmware'], answer: 0 },
+        { text: 'Telling a computer what to do through a special set of instructions is called ___', options: ['Computer programming', 'Web design', 'Network engineering', 'Data management'], answer: 0 },
+        { text: 'Which of these is a programming language?', options: ['Java', 'Excel', 'Google', 'Windows'], answer: 0 },
+        { text: 'Architects use which software to design buildings?', options: ['AutoCAD', 'Photoshop', 'CorelDraw', 'Microsoft Excel'], answer: 0 },
+        { text: 'A computer application that does a job a human expert would normally do is called an ___', options: ['Expert system', 'Operating system', 'Search engine', 'Spreadsheet'], answer: 0 },
+        { text: 'The ATM is an expert system in banking. ATM means Automated ___ Machine.', options: ['Teller', 'Typing', 'Transfer', 'Ticket'], answer: 0 },
+        { text: 'Expert systems belong to a group of computer applications called ___', options: ['Artificial intelligence', 'Word processing', 'Desktop publishing', 'Spreadsheets'], answer: 0 },
+        { text: 'Which one is an ADVANTAGE of an expert system?', options: ['It can work round the clock', 'It lacks common sense', 'It cannot make creative responses', 'It cannot adapt to changes'], answer: 0 },
+        { text: 'Which AI tool did we use to generate creative writing ideas?', options: ['ChatGPT', 'AutoCAD', 'Natural Reader', 'Microsoft Excel'], answer: 0 },
+        { text: 'What is the FIRST step to start writing with ChatGPT?', options: ['Log in or sign up', 'Click Play to listen', 'Print the story', 'Choose a voice'], answer: 0 },
+        { text: 'Look at the picture. What is the pupil asking the AI to do?', options: ['Write a short story about a talking dog', 'Draw a picture of a dog', 'Read a story out loud', 'Translate a story into French'], answer: 0 },
+        { text: 'AI that creates new stories, ideas or pictures is called ___ AI.', options: ['Generative', 'Analog', 'Hybrid', 'Digital'], answer: 0 },
+        { text: 'AI gives you a starting point. What makes the story truly yours?', options: ['Your own imagination', 'Copying the AI exactly', 'A faster computer', 'A bigger keyboard'], answer: 0 },
+        { text: 'After AI gives you a story idea, what is the BEST thing to do?', options: ['Improve it with your own ideas', 'Submit it exactly as it is', 'Delete it and stop writing', 'Share it as your own work'], answer: 0 },
+        { text: 'In the group activity, one pupil asks AI for a story ___ and the others expand it.', options: ['starter', 'password', 'printer', 'voice'], answer: 0 },
+        { text: 'The group then presents its finished story to the class as a short ___', options: ['drama', 'spreadsheet', 'email', 'password'], answer: 0 },
+        { text: 'AI text-to-speech turns written words into ___', options: ['spoken audio', 'pictures', 'videos', 'numbers'], answer: 0 },
+        { text: 'Which AI tool did we use to turn our story into audio?', options: ['Natural Reader', 'ChatGPT', 'AutoCAD', 'Photoshop'], answer: 0 },
+        { text: 'What is the correct order of steps in Natural Reader?', options: ['Input story → Choose voice → Listen', 'Listen → Input story → Choose voice', 'Choose voice → Listen → Input story', 'Listen → Choose voice → Input story'], answer: 0 },
+        { text: 'Which button do you click to hear your story read aloud?', options: ['Play ▶️', 'Stop ⏹️', 'Delete 🗑️', 'Print 🖨️'], answer: 0 },
+      ];
+      db.exec('BEGIN');
+      year6Qs.forEach((x, i) => q.insertQuestion.run('year-6', i, x.text, JSON.stringify(x.options), x.answer));
+      q.setPublished.run('year-6', 1, Date.now());
+      db.exec('COMMIT');
+    }
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+  }
+}
+seedYear6();
+
 
 // Best attempt per child (same name + school) within each class; ranked by score, then speed.
 function leaderboard(classId) {
@@ -530,6 +641,9 @@ const server = http.createServer(async (req, res) => {
     if (lower === '/year-1' || lower === '/quiz/year-1' || lower === '/year1' || lower === '/quiz/year1') return sendFile(res, path.join(PUBLIC_DIR, 'year-1.html'));
     if (lower === '/year-2' || lower === '/quiz/year-2' || lower === '/year2' || lower === '/quiz/year2') return sendFile(res, path.join(PUBLIC_DIR, 'year-2.html'));
     if (lower === '/year-3' || lower === '/quiz/year-3' || lower === '/year3' || lower === '/quiz/year3') return sendFile(res, path.join(PUBLIC_DIR, 'year-3.html'));
+    if (lower === '/year-4' || lower === '/quiz/year-4' || lower === '/year4' || lower === '/quiz/year4') return sendFile(res, path.join(PUBLIC_DIR, 'year-4.html'));
+    if (lower === '/year-5' || lower === '/quiz/year-5' || lower === '/year5' || lower === '/quiz/year5') return sendFile(res, path.join(PUBLIC_DIR, 'year-5.html'));
+    if (lower === '/year-6' || lower === '/quiz/year-6' || lower === '/year6' || lower === '/quiz/year6') return sendFile(res, path.join(PUBLIC_DIR, 'year-6.html'));
     if (lower === '/' || /^\/quiz\/[a-z0-9-]+$/.test(lower)) return sendFile(res, path.join(PUBLIC_DIR, 'index.html'));
     if (lower.startsWith('/private')) { res.writeHead(404); return res.end('Not found'); }
 
