@@ -3,13 +3,134 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>FutureIN Quiz</title>
+<title>FutureIN Quiz · Young Innovators</title>
 <link rel="icon" href="/logo.png">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@600;700;800&family=Poppins:wght@400;500;600;700&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lexend:wght@600;700;800&family=Poppins:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/brand.css">
 <script src="/api.js"></script>
 <style id="page-css">
-  .child { max-width: 620px; width: 100%; margin: 0 auto; display: grid; gap: 16px; }
+  /* Floating bubbles & background sparkles */
+  .bubbles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .bubbles span { position: absolute; border-radius: 50%; opacity: .22; animation: floatBubble 10s ease-in-out infinite; filter: blur(1px); }
+  @keyframes floatBubble {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-38px) scale(1.08); }
+  }
+
+  .child-wrap { position: relative; z-index: 1; max-width: 680px; width: 100%; margin: 0 auto; display: grid; gap: 20px; }
+
+  /* Mascot banner on top of the card */
+  .mascot-hero { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 4px; }
+  .mascot-avatar { width: clamp(86px, 18vw, 110px); flex: none; animation: wobble 2.6s ease-in-out infinite; cursor: pointer; filter: drop-shadow(0 10px 18px rgba(0,0,0,.35)); }
+  .mascot-avatar:hover { transform: scale(1.08) rotate(4deg); }
+  @keyframes wobble { 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } }
+
+  .bubble-msg {
+    position: relative; background: #fff; color: #1e1338; font-family: 'Fredoka', 'Poppins', sans-serif;
+    padding: 12px 18px; border-radius: 20px; font-weight: 600; font-size: clamp(14px, 2.7vw, 16px);
+    line-height: 1.35; box-shadow: 0 8px 24px rgba(0,0,0,.25); max-width: 380px;
+    border: 3px solid var(--yellow); animation: popIn .45s ease-out;
+  }
+  .bubble-msg::before {
+    content: ""; position: absolute; left: -10px; top: 50%; transform: translateY(-50%);
+    border-width: 8px 10px 8px 0; border-style: solid; border-color: transparent #fff transparent transparent;
+  }
+  @keyframes popIn { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  /* Main Kid-Friendly Form Card */
+  .card.kid-card {
+    background: linear-gradient(180deg, rgba(31, 14, 74, 0.95), rgba(22, 8, 56, 0.98));
+    border: 2px solid rgba(155, 77, 255, 0.45);
+    border-radius: 28px; padding: clamp(20px, 4vw, 32px);
+    box-shadow: 0 24px 60px rgba(5, 0, 25, 0.7), 0 0 35px rgba(155, 77, 255, 0.2);
+    position: relative; overflow: hidden;
+  }
+  .card.kid-card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+    background: linear-gradient(90deg, #ff6b9a, #ffc629, #36c46b, #3aa8f0, #9b4dff);
+  }
+
+  .kid-hero-title { font-family: 'Fredoka', var(--display); font-size: clamp(28px, 6vw, 38px); margin: 0 0 8px; line-height: 1.15; }
+  .kid-hero-sub { color: var(--muted); font-size: clamp(14px, 2.5vw, 16px); margin: 0 0 22px; line-height: 1.5; }
+
+  /* Form Fields */
+  .field label { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; color: #fff; margin-bottom: 6px; }
+  .field .f-icon { font-size: 19px; }
+  .field input, .field select {
+    font-family: inherit; font-size: 16px; font-weight: 500;
+    padding: 13px 18px; border-radius: 18px;
+    border: 2px solid var(--line-2); background: #0c0024; color: #fff;
+    transition: border-color .2s, box-shadow .2s; outline: none;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--yellow); box-shadow: 0 0 0 4px rgba(255, 198, 41, 0.25);
+  }
+  .field input::placeholder { color: var(--faint); font-weight: 400; }
+
+  /* 3D Kid-Friendly Start Button */
+  .btn-start-quiz {
+    font-family: 'Fredoka', var(--display); font-size: 20px; font-weight: 700; letter-spacing: .02em;
+    padding: 15px 28px; border-radius: 999px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #ffc629, #ffa800); color: #0e002c;
+    box-shadow: 0 6px 0 #cc8600, 0 12px 24px rgba(255, 198, 41, 0.35);
+    width: 100%; transition: transform .12s, box-shadow .12s, filter .12s;
+    margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .btn-start-quiz:hover { filter: brightness(1.06); transform: translateY(-2px); box-shadow: 0 8px 0 #cc8600, 0 16px 28px rgba(255, 198, 41, 0.45); }
+  .btn-start-quiz:active { transform: translateY(4px); box-shadow: 0 2px 0 #cc8600; }
+  .btn-start-quiz:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* Section Divider */
+  .c-divider { display: flex; align-items: center; gap: 14px; margin: 30px 0 18px; color: var(--muted); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+  .c-divider::before, .c-divider::after { content: ""; flex: 1; height: 1.5px; background: linear-gradient(90deg, transparent, var(--line), transparent); }
+
+  /* Class Grid */
+  .c-class-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 580px) { .c-class-grid { grid-template-columns: 1fr; } }
+
+  .c-class-btn {
+    position: relative; display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+    background: #0e002c; border: 2px solid var(--c-border, var(--line));
+    border-radius: 18px; color: #fff; text-decoration: none;
+    box-shadow: 0 6px 0 var(--c-shade, #1f0e4a);
+    transition: transform .15s, border-color .15s, box-shadow .15s;
+    cursor: pointer; overflow: hidden;
+  }
+  .c-class-btn:hover {
+    transform: translateY(-4px);
+    border-color: var(--c-hover, var(--violet));
+    box-shadow: 0 10px 0 var(--c-shade, #1f0e4a), 0 12px 20px rgba(0,0,0,.35);
+  }
+  .c-class-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--c-shade, #1f0e4a); }
+
+  .c-class-btn .icon { font-size: 32px; flex: none; line-height: 1; transition: transform .2s; }
+  .c-class-btn:hover .icon { transform: scale(1.2) rotate(6deg); }
+  .c-class-btn .info { display: flex; flex-direction: column; text-align: left; line-height: 1.3; flex: 1; min-width: 0; }
+  .c-class-btn .title { font-family: 'Fredoka', var(--display); font-size: 17px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; }
+  .c-class-btn .meta { font-size: 13px; color: var(--muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .c-class-btn .arrow { font-size: 18px; color: var(--yellow); flex: none; transition: transform .15s; font-weight: 700; }
+  .c-class-btn:hover .arrow { transform: translateX(4px); }
+
+  /* Custom Class Theme Borders */
+  .c-nursery { --c-border: #ff8fab; --c-shade: #c94065; --c-hover: #ff6b9a; }
+  .c-year1   { --c-border: #9b6bff; --c-shade: #5b2dbd; --c-hover: #b085ff; }
+  .c-year2   { --c-border: #4cb8ff; --c-shade: #1a6fb0; --c-hover: #7ad1ff; }
+  .c-year3   { --c-border: #14a8a0; --c-shade: #0a6661; --c-hover: #26ded4; }
+  .c-year4   { --c-border: #4a5be0; --c-shade: #263394; --c-hover: #7583f5; }
+  .c-year5   { --c-border: #ff8a2a; --c-shade: #ad5005; --c-hover: #ffaa61; }
+  .c-year6   { --c-border: #c2185b; --c-shade: #780833; --c-hover: #eb2874; }
+
+  /* Top Bar Actions & Sound Button */
+  .sound-toggle-btn {
+    font-family: inherit; font-size: 14px; font-weight: 600; padding: 7px 14px;
+    border-radius: 999px; border: 1.5px solid #c9c5dc; background: #fff;
+    color: var(--bar-ink); cursor: pointer; display: flex; align-items: center; gap: 6px;
+    transition: transform .15s, background .15s;
+  }
+  .sound-toggle-btn:hover { background: #f0edf8; transform: scale(1.04); }
+
+  /* Generic Quiz Runner fallback */
   .c-top { display: flex; justify-content: space-between; color: var(--muted); font-weight: 600; margin-bottom: 10px; font-variant-numeric: tabular-nums; font-size: 15px; }
   .c-top .timer { color: var(--yellow); }
   .c-bar { height: 8px; background: var(--night); border-radius: 99px; overflow: hidden; margin-bottom: 24px; }
@@ -22,79 +143,123 @@
   .c-opt.sel .l { background: var(--yellow); color: var(--night); }
   .c-nav { display: flex; gap: 10px; }
   .c-nav .primary { flex: 1; }
-  .c-divider { display: flex; align-items: center; gap: 12px; margin: 24px 0 14px; color: var(--faint); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
-  .c-divider::before, .c-divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-  .c-class-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  @media (max-width: 500px) { .c-class-grid { grid-template-columns: 1fr; } }
-  .c-class-btn { display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: var(--night); border: 1.5px solid var(--line); border-radius: 14px; color: var(--ink); text-decoration: none; font-weight: 600; font-size: 15px; transition: transform .15s, border-color .15s, background .15s; cursor: pointer; }
-  .c-class-btn:hover { border-color: var(--violet); background: var(--surface-2); transform: translateY(-2px); }
-  .c-class-btn .icon { font-size: 26px; flex: none; }
-  .c-class-btn .info { display: flex; flex-direction: column; text-align: left; line-height: 1.25; }
-  .c-class-btn .title { font-size: 15px; font-weight: 700; color: #fff; }
-  .c-class-btn .meta { font-size: 12px; color: var(--muted); font-weight: 500; }
-  .c-class-btn.featured { border-color: rgba(20, 168, 160, 0.6); }
-  .c-class-btn.featured:hover { border-color: #14a8a0; }
   .c-center { text-align: center; }
   .c-big { font-family: var(--display); font-weight: 800; letter-spacing: -.04em; font-size: 76px; line-height: 1; color: var(--yellow); margin: 16px 0 8px; font-variant-numeric: tabular-nums; }
   .c-notice-icon { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 14px; display: grid; place-items: center; background: rgba(255, 198, 41, .12); color: var(--yellow); font-size: 30px; }
 </style>
 </head>
 <body>
-<!--APP START-->
+<!-- Animated Floating Bubbles -->
+<div class="bubbles" aria-hidden="true" id="bubbleCanvas"></div>
+
+<!-- Topbar -->
 <header class="topbar"><div class="in">
   <span class="logo"><img src="/logo.png" alt="FutureIN"><span class="sep"></span><span class="label">Quiz</span></span>
+  <button class="sound-toggle-btn" id="soundToggle" type="button" title="Toggle sound effects">🔊 Sound On</button>
 </div></header>
 
 <main class="wrap" id="childApp">
-  <section class="child">
-    <span class="pill">✦ Future Innovators Quiz</span>
+  <section class="child-wrap">
 
-    <div class="card" id="c_start">
-      <h1>Are you a future <span class="in-violet">innovator?</span></h1>
-      <p class="kicker">Tech quiz for young innovators</p>
-      <p class="sub">Type your name, your school and your class, then start the quiz. Answer correctly and as fast as you can.</p>
+    <!-- Start / Hero Card -->
+    <div class="card kid-card" id="c_start">
+
+      <!-- Welcoming Mascot & Speech Bubble -->
+      <div class="mascot-hero">
+        <div class="mascot-avatar" id="mascotAvatar" title="FutureIN Robot Friend">
+          <svg viewBox="0 0 200 200" width="100%" height="100%">
+            <!-- Antenna -->
+            <line x1="100" y1="28" x2="100" y2="4" stroke="#ffc629" stroke-width="6" stroke-linecap="round"/>
+            <polygon points="100,2 104,11 114,12 106,19 108,29 100,23 92,29 94,19 86,12 96,11" fill="#ffc629"/>
+            <!-- Body -->
+            <rect x="22" y="28" width="156" height="114" rx="26" fill="#9b4dff" stroke="#7a34d6" stroke-width="5"/>
+            <!-- Face Screen -->
+            <rect x="36" y="40" width="128" height="90" rx="18" fill="#140833"/>
+            <!-- Cute Eyes -->
+            <circle cx="72" cy="74" r="14" fill="#3ddc84"/>
+            <circle cx="128" cy="74" r="14" fill="#3ddc84"/>
+            <circle cx="76" cy="70" r="5" fill="#fff"/>
+            <circle cx="132" cy="70" r="5" fill="#fff"/>
+            <!-- Rosy Cheeks -->
+            <circle cx="56" cy="94" r="9" fill="#ff6b9a" opacity=".7"/>
+            <circle cx="144" cy="94" r="9" fill="#ff6b9a" opacity=".7"/>
+            <!-- Big Smile -->
+            <path d="M80 94 Q100 114 120 94" stroke="#ffc629" stroke-width="6" fill="none" stroke-linecap="round"/>
+            <!-- Neck & Base Stand -->
+            <rect x="88" y="142" width="24" height="18" fill="#7a34d6"/>
+            <rect x="52" y="158" width="96" height="16" rx="8" fill="#ffc629" stroke="#cc8600" stroke-width="3"/>
+          </svg>
+        </div>
+        <div class="bubble-msg" id="mascotBubble">
+          Hello Young Innovator! 🌟 Type your details below or pick your class to start your quiz!
+        </div>
+      </div>
+
+      <span class="pill" style="margin-bottom:12px">✦ Tech Quest for Future Leaders</span>
+      <h1 class="kid-hero-title">Are you a future <span class="in-violet">innovator?</span> 🚀</h1>
+      <p class="kid-hero-sub">Type your name, your school and your class to begin. Answer fast to earn maximum stars!</p>
+
       <form id="c_form" autocomplete="off" novalidate>
-        <div class="field"><label for="c_name">Your full name</label><input id="c_name" maxlength="80" placeholder="e.g. Victor Adebayo"></div>
-        <div class="field"><label for="c_school">Your school</label><input id="c_school" maxlength="80" placeholder="e.g. Precious Stone School"></div>
-        <div class="field"><label for="c_class">Your class</label>
-          <select id="c_class"><option value="">Choose your class</option></select></div>
+        <div class="field">
+          <label for="c_name"><span class="f-icon">👤</span> Your full name</label>
+          <input id="c_name" maxlength="80" placeholder="e.g. Victor Adebayo">
+        </div>
+        <div class="field">
+          <label for="c_school"><span class="f-icon">🏫</span> Your school</label>
+          <input id="c_school" maxlength="80" placeholder="e.g. Precious Stone School">
+        </div>
+        <div class="field">
+          <label for="c_class"><span class="f-icon">🎓</span> Choose your class</label>
+          <select id="c_class"><option value="">Select your class...</option></select>
+        </div>
         <div class="err" id="c_err" role="alert"></div>
-        <button class="primary wide" type="submit" id="c_go">Start quiz</button>
+        <button class="btn-start-quiz" type="submit" id="c_go">
+          <span>🚀</span> Start Quiz <span>▶</span>
+        </button>
       </form>
 
-      <div class="c-divider">Or click your class directly</div>
+      <!-- Direct Class Links Grid -->
+      <div class="c-divider"><span>Or Choose Your Class Directly</span></div>
       <div class="c-class-grid">
-        <a href="/quiz/nursery-2" class="c-class-btn" data-class="nursery-2">
+        <a href="/quiz/nursery-2" class="c-class-btn c-nursery" data-class="nursery-2">
           <span class="icon">🧸</span>
-          <span class="info"><span class="title">Nursery 2</span><span class="meta">15 picture cards</span></span>
+          <span class="info"><span class="title">Nursery 2</span><span class="meta">15 Picture Cards</span></span>
+          <span class="arrow">▶</span>
         </a>
-        <a href="/quiz/year-1" class="c-class-btn" data-class="year-1">
+        <a href="/quiz/year-1" class="c-class-btn c-year1" data-class="year-1">
           <span class="icon">🎒</span>
-          <span class="info"><span class="title">Year 1</span><span class="meta">15 questions</span></span>
+          <span class="info"><span class="title">Year 1</span><span class="meta">15 Interactive Cards</span></span>
+          <span class="arrow">▶</span>
         </a>
-        <a href="/quiz/year-2" class="c-class-btn" data-class="year-2">
+        <a href="/quiz/year-2" class="c-class-btn c-year2" data-class="year-2">
           <span class="icon">🚀</span>
-          <span class="info"><span class="title">Year 2</span><span class="meta">15 questions</span></span>
+          <span class="info"><span class="title">Year 2</span><span class="meta">15 Questions</span></span>
+          <span class="arrow">▶</span>
         </a>
-        <a href="/quiz/year-3" class="c-class-btn" data-class="year-3">
+        <a href="/quiz/year-3" class="c-class-btn c-year3" data-class="year-3">
           <span class="icon">💻</span>
-          <span class="info"><span class="title">Year 3</span><span class="meta">20 questions</span></span>
+          <span class="info"><span class="title">Year 3</span><span class="meta">20 Questions</span></span>
+          <span class="arrow">▶</span>
         </a>
-        <a href="/quiz/year-4" class="c-class-btn" data-class="year-4">
+        <a href="/quiz/year-4" class="c-class-btn c-year4" data-class="year-4">
           <span class="icon">📊</span>
-          <span class="info"><span class="title">Year 4</span><span class="meta">20 questions</span></span>
+          <span class="info"><span class="title">Year 4</span><span class="meta">20 Questions</span></span>
+          <span class="arrow">▶</span>
         </a>
-        <a href="/quiz/year-5" class="c-class-btn" data-class="year-5">
+        <a href="/quiz/year-5" class="c-class-btn c-year5" data-class="year-5">
           <span class="icon">🤖</span>
-          <span class="info"><span class="title">Year 5</span><span class="meta">20 questions</span></span>
+          <span class="info"><span class="title">Year 5</span><span class="meta">20 Questions</span></span>
+          <span class="arrow">▶</span>
         </a>
-        <a href="/quiz/year-6" class="c-class-btn" data-class="year-6">
+        <a href="/quiz/year-6" class="c-class-btn c-year6" data-class="year-6">
           <span class="icon">💡</span>
-          <span class="info"><span class="title">Year 6</span><span class="meta">20 questions</span></span>
+          <span class="info"><span class="title">Year 6</span><span class="meta">20 Questions</span></span>
+          <span class="arrow">▶</span>
         </a>
       </div>
     </div>
 
+    <!-- No Quiz Notice -->
     <div class="card c-center" id="c_none" hidden>
       <div class="c-notice-icon">✦</div>
       <h2>No quiz for <span id="c_noneClass"></span> yet</h2>
@@ -102,6 +267,7 @@
       <button class="ghost" type="button" id="c_noneBack">Go back</button>
     </div>
 
+    <!-- Generic Quiz Runner Fallback (For unpublished classes) -->
     <div class="card" id="c_quiz" hidden>
       <div class="c-top"><span id="c_counter"></span><span class="timer" id="c_timer">⏱ 0:00</span></div>
       <div class="c-bar"><div id="c_progress"></div></div>
@@ -114,6 +280,7 @@
       </div>
     </div>
 
+    <!-- Completed Screen (Fallback Runner) -->
     <div class="card framed c-center" id="c_done" hidden>
       <h1>Well done, <span id="c_doneName" class="in-violet"></span>!</h1>
       <p class="c-big" id="c_doneScore"></p>
@@ -123,17 +290,58 @@
   </section>
   <p class="foot">© Future Innovators Network (Future<span class="in-violet">IN</span>)</p>
 </main>
-<!--APP END-->
 
 <script id="page-js">
 (function () {
   const $ = (id) => document.getElementById(id);
   let st = null, tick = null, classes = [];
+  let soundOn = true, actx = null;
+
+  /* Sound Synthesis */
+  function playTone(freq, start, dur, type = 'sine', vol = 0.16) {
+    if (!soundOn) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(vol, actx.currentTime + start);
+      g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + start + dur);
+      o.connect(g).connect(actx.destination);
+      o.start(actx.currentTime + start);
+      o.stop(actx.currentTime + start + dur);
+    } catch (e) {}
+  }
+  const chime = () => [523, 659, 784, 1047].forEach((f, i) => playTone(f, i * 0.08, 0.25, 'triangle'));
+  const popTone = () => playTone(600, 0, 0.1, 'sine');
+
+  $('soundToggle').onclick = () => {
+    soundOn = !soundOn;
+    $('soundToggle').textContent = soundOn ? '🔊 Sound On' : '🔇 Sound Off';
+    if (soundOn) chime();
+  };
+
+  /* Floating Bubbles Canvas */
+  (function createBubbles() {
+    const colors = ['#ff6b9a', '#3aa8f0', '#ffc629', '#36c46b', '#9b4dff', '#4cb8ff'];
+    const box = $('bubbleCanvas');
+    if (!box) return;
+    for (let i = 0; i < 14; i++) {
+      const s = document.createElement('span');
+      const size = 30 + Math.random() * 85;
+      Object.assign(s.style, {
+        width: size + 'px', height: size + 'px',
+        left: (Math.random() * 96) + 'vw', top: (Math.random() * 95) + 'vh',
+        background: colors[i % colors.length],
+        animationDelay: (Math.random() * 6) + 's',
+        animationDuration: (7 + Math.random() * 6) + 's'
+      });
+      box.appendChild(s);
+    }
+  })();
 
   function show(id) { ['c_start', 'c_none', 'c_quiz', 'c_done'].forEach((c) => { $(c).hidden = c !== id; }); window.scrollTo(0, 0); }
   const clock = (ms) => { const s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 
-  // A class link like /quiz/year-6 (or #year-6) picks the class for the child.
   function presetClass() {
     const m = location.pathname.match(/\/quiz\/([a-z0-9-]+)/i);
     if (m) return m[1].toLowerCase();
@@ -151,41 +359,25 @@
     } catch (e) { $('c_err').textContent = e.message; }
   }
 
+  // Handle Form Submission -> Launches directly into the interactive quiz!
   $('c_form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = $('c_name').value.trim(), school = $('c_school').value.trim(), classId = $('c_class').value;
     $('c_err').textContent = '';
-    if (name.length < 2) return void ($('c_err').textContent = 'Please type your name.');
-    if (school.length < 2) return void ($('c_err').textContent = 'Please type the name of your school.');
-    if (!classId) return void ($('c_err').textContent = 'Please choose your class.');
-    if (classId === 'nursery-2') {
-      location.href = '/quiz/nursery-2?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
+    if (name.length < 2) return void ($('c_err').textContent = 'Please type your name!');
+    if (school.length < 2) return void ($('c_err').textContent = 'Please type the name of your school!');
+    if (!classId) return void ($('c_err').textContent = 'Please choose your class!');
+
+    chime();
+
+    // Map each class directly to its standalone interactive quiz page
+    const directQuizzes = ['nursery-2', 'year-1', 'year-2', 'year-3', 'year-4', 'year-5', 'year-6'];
+    if (directQuizzes.includes(classId)) {
+      location.href = '/quiz/' + classId + '?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
       return;
     }
-    if (classId === 'year-1') {
-      location.href = '/quiz/year-1?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
-      return;
-    }
-    if (classId === 'year-2') {
-      location.href = '/quiz/year-2?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
-      return;
-    }
-    if (classId === 'year-3') {
-      location.href = '/quiz/year-3?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
-      return;
-    }
-    if (classId === 'year-4') {
-      location.href = '/quiz/year-4?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
-      return;
-    }
-    if (classId === 'year-5') {
-      location.href = '/quiz/year-5?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
-      return;
-    }
-    if (classId === 'year-6') {
-      location.href = '/quiz/year-6?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
-      return;
-    }
+
+    // Generic fallback for any future classes
     $('c_go').disabled = true;
     try {
       const d = await api('POST', '/api/start', { name, school, classId });
@@ -199,6 +391,35 @@
     finally { $('c_go').disabled = false; }
   });
 
+  // Direct Class Buttons Click Handler: carries over name & school if typed
+  document.querySelectorAll('.c-class-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      popTone();
+      const name = $('c_name').value.trim();
+      const school = $('c_school').value.trim();
+      if (name) {
+        e.preventDefault();
+        const base = btn.getAttribute('href');
+        let dest = base + '?name=' + encodeURIComponent(name);
+        if (school) dest += '&school=' + encodeURIComponent(school);
+        location.href = dest;
+      }
+    });
+  });
+
+  // Mascot click animation
+  $('mascotAvatar').onclick = () => {
+    chime();
+    const msgs = [
+      "Ready to win stars? ⭐ You've got this!",
+      "I'm cheering for you! 🚀 Choose your class!",
+      "Are you the next big innovator? Let's find out! 💻",
+      "Think fast, click accurately, and have fun! 🌟"
+    ];
+    $('mascotBubble').textContent = msgs[Math.floor(Math.random() * msgs.length)];
+  };
+
+  /* Fallback Quiz Runner */
   function render() {
     const q = st.qs[st.i];
     $('c_counter').textContent = 'Question ' + (st.i + 1) + ' of ' + st.qs.length;
@@ -211,12 +432,12 @@
       const l = document.createElement('span'); l.className = 'l'; l.textContent = 'ABCDEF'[k];
       const t = document.createElement('span'); t.textContent = opt;
       b.append(l, t);
-      b.onclick = () => { st.answers[st.i] = k; render(); };
+      b.onclick = () => { st.answers[st.i] = k; popTone(); render(); };
       box.appendChild(b);
     });
     $('c_back').style.visibility = st.i === 0 ? 'hidden' : 'visible';
     $('c_next').disabled = st.answers[st.i] === null;
-    $('c_next').textContent = st.i === st.qs.length - 1 ? 'Finish' : 'Next';
+    $('c_next').textContent = st.i === st.qs.length - 1 ? 'Finish 🏁' : 'Next ▶';
     $('c_qerr').textContent = '';
   }
 
@@ -227,6 +448,7 @@
     try {
       const d = await api('POST', '/api/submit', { attemptId: st.id, answers: st.answers });
       clearInterval(tick);
+      chime();
       $('c_doneName').textContent = st.name.split(' ')[0];
       $('c_doneScore').textContent = d.score + ' / ' + d.total;
       $('c_doneTime').textContent = 'You finished in ' + clock(d.durationMs) + '.';
@@ -239,19 +461,6 @@
   function reset() { st = null; $('c_name').value = ''; $('c_school').value = ''; document.title = 'FutureIN Quiz'; show('c_start'); }
   $('c_again').onclick = reset;
   $('c_noneBack').onclick = () => show('c_start');
-  document.querySelectorAll('.c-class-btn').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const name = $('c_name').value.trim();
-      const school = $('c_school').value.trim();
-      if (name) {
-        e.preventDefault();
-        const base = btn.getAttribute('href');
-        let dest = base + '?name=' + encodeURIComponent(name);
-        if (school) dest += '&school=' + encodeURIComponent(school);
-        location.href = dest;
-      }
-    });
-  });
 
   loadClasses();
 })();
