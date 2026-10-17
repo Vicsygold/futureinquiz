@@ -193,6 +193,43 @@ function seedYear2() {
 }
 seedYear2();
 
+function seedYear3() {
+  try {
+    const existing = q.questionsFor.all('year-3');
+    if (existing.length === 0) {
+      const year3Qs = [
+        { text: 'Long ago, people did counting with ___', options: ['fingers, stones and sticks', 'phones', 'calculators', 'laptops'], answer: 0 },
+        { text: 'This counting device uses columns of beads. It is called ___', options: ['Abacus', 'Napier Bones', 'Plotter', 'Joystick'], answer: 0 },
+        { text: "Pascal's Wheel was able to ___ numbers.", options: ['add and subtract', 'print', 'sing', 'draw'], answer: 0 },
+        { text: 'Who is called the Father of the Computer?', options: ['Charles Babbage', 'Blaise Pascal', 'John Napier', 'Isaac Newton'], answer: 0 },
+        { text: 'Based on size, computers are grouped into how many classes?', options: ['4', '2', '6', '10'], answer: 0 },
+        { text: 'The most common kind of computer in use today is the ___', options: ['Microcomputer', 'Supercomputer', 'Mainframe computer', 'Minicomputer'], answer: 0 },
+        { text: 'Which one is also a microcomputer?', options: ['Smartphone 📱', 'Bicycle 🚲', 'Teddy Bear 🧸', 'Pizza 🍕'], answer: 0 },
+        { text: 'Which of these is NOT a class of computer?', options: ['Joystick computer', 'Microcomputer', 'Supercomputer', 'Mainframe computer'], answer: 0 },
+        { text: 'Hardware means the parts of the computer we can ___', options: ['see and touch', 'only hear', 'eat', 'smell'], answer: 0 },
+        { text: 'Which input device is a camera attached to the computer?', options: ['Webcam', 'Printer', 'Monitor', 'Speaker 🔊'], answer: 0 },
+        { text: 'Which one is an OUTPUT device?', options: ['Printer', 'Keyboard', 'Mouse', 'Microphone 🎤'], answer: 0 },
+        { text: 'The ___ prints big banners and flex in the printing press.', options: ['Plotter', 'Webcam', 'Joystick', 'Microphone'], answer: 0 },
+        { text: 'The brain of the computer is the ___', options: ['C.P.U', 'Monitor', 'Speaker', 'Printer'], answer: 0 },
+        { text: 'Which one is a Tower system unit?', options: ['Tower System Unit', 'Desktop Unit', 'Monitor', 'Printer'], answer: 0 },
+        { text: 'The main circuit board inside the system unit is the ___', options: ['Motherboard', 'Keyboard', 'Blackboard', 'Mousepad'], answer: 0 },
+        { text: 'All other parts of the computer are connected to the ___', options: ['System unit', 'Speaker', 'Mouse', 'Microphone'], answer: 0 },
+        { text: 'Software means all the ___ that a computer uses.', options: ['programs', 'cables', 'screws', 'chairs'], answer: 0 },
+        { text: 'Software is like the ___ of the computer system.', options: ['heart', 'leg', 'hair', 'shoe'], answer: 0 },
+        { text: 'The two main types of software are System Software and ___ Software.', options: ['Application', 'Hardware', 'Paper', 'Keyboard'], answer: 0 },
+        { text: 'Which one is an example of Application Software?', options: ['Microsoft Word', 'Keyboard', 'Monitor', 'Motherboard'], answer: 0 },
+      ];
+      db.exec('BEGIN');
+      year3Qs.forEach((x, i) => q.insertQuestion.run('year-3', i, x.text, JSON.stringify(x.options), x.answer));
+      q.setPublished.run('year-3', 1, Date.now());
+      db.exec('COMMIT');
+    }
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+  }
+}
+seedYear3();
+
 
 // Best attempt per child (same name + school) within each class; ranked by score, then speed.
 function leaderboard(classId) {
@@ -485,6 +522,7 @@ const server = http.createServer(async (req, res) => {
     if (lower === '/nursery' || lower === '/nursery-2' || lower === '/quiz/nursery-2' || lower === '/quiz/nursery') return sendFile(res, path.join(PUBLIC_DIR, 'nursery.html'));
     if (lower === '/year-1' || lower === '/quiz/year-1' || lower === '/year1' || lower === '/quiz/year1') return sendFile(res, path.join(PUBLIC_DIR, 'year-1.html'));
     if (lower === '/year-2' || lower === '/quiz/year-2' || lower === '/year2' || lower === '/quiz/year2') return sendFile(res, path.join(PUBLIC_DIR, 'year-2.html'));
+    if (lower === '/year-3' || lower === '/quiz/year-3' || lower === '/year3' || lower === '/quiz/year3') return sendFile(res, path.join(PUBLIC_DIR, 'year-3.html'));
     if (lower === '/' || /^\/quiz\/[a-z0-9-]+$/.test(lower)) return sendFile(res, path.join(PUBLIC_DIR, 'index.html'));
     if (lower.startsWith('/private')) { res.writeHead(404); return res.end('Not found'); }
 
