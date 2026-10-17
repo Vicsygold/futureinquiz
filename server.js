@@ -161,6 +161,38 @@ function seedYear1() {
 }
 seedYear1();
 
+function seedYear2() {
+  try {
+    const existing = q.questionsFor.all('year-2');
+    if (existing.length === 0) {
+      const year2Qs = [
+        { text: 'A computer is an electronic ___', options: ['machine', 'animal', 'food', 'toy'], answer: 0 },
+        { text: 'Which one is an example of data?', options: ['1, 2, 3', 'a chair', 'a cup', 'a shoe'], answer: 0 },
+        { text: 'The computer keeps information for a long time. This is called ___', options: ['Storage', 'Input', 'Output', 'Sleeping'], answer: 0 },
+        { text: 'Which one is the System Unit?', options: ['System Unit (Tower)', 'Monitor', 'Keyboard', 'Mouse'], answer: 0 },
+        { text: 'CPU means Central ___ Unit', options: ['Processing', 'Playing', 'Printing', 'Painting'], answer: 0 },
+        { text: 'The two types of system unit are Desktop and ___', options: ['Tower', 'Table', 'Window', 'Door'], answer: 0 },
+        { text: 'The computer part used for typing is the ___', options: ['Keyboard', 'Monitor', 'Speaker', 'Printer'], answer: 0 },
+        { text: 'Which input device is used to play games?', options: ['Joystick 🕹️', 'Keyboard', 'Mouse', 'Microphone 🎤'], answer: 0 },
+        { text: 'Which input device sends sound into the computer?', options: ['Microphone 🎤', 'Joystick 🕹️', 'Mouse', 'Keyboard'], answer: 0 },
+        { text: 'Output devices ___ information from the computer.', options: ['bring out', 'send in', 'eat', 'hide'], answer: 0 },
+        { text: 'Which one is an OUTPUT device?', options: ['Monitor', 'Keyboard', 'Mouse', 'Joystick 🕹️'], answer: 0 },
+        { text: 'We hear music from the computer through the…', options: ['Speaker 🔊', 'Microphone 🎤', 'Keyboard', 'Mouse'], answer: 0 },
+        { text: 'The keyboard is an input device. The monitor is an ___ device.', options: ['Output', 'Input', 'Eating', 'Sleeping'], answer: 0 },
+        { text: 'Which one do we use to print a document?', options: ['Printer', 'Keyboard', 'Mouse', 'Microphone 🎤'], answer: 0 },
+        { text: 'Input devices let you talk to the computer. Output devices let the computer ___', options: ['talk back to you', 'go to sleep', 'eat food', 'run away'], answer: 0 },
+      ];
+      db.exec('BEGIN');
+      year2Qs.forEach((x, i) => q.insertQuestion.run('year-2', i, x.text, JSON.stringify(x.options), x.answer));
+      q.setPublished.run('year-2', 1, Date.now());
+      db.exec('COMMIT');
+    }
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+  }
+}
+seedYear2();
+
 
 // Best attempt per child (same name + school) within each class; ranked by score, then speed.
 function leaderboard(classId) {
@@ -452,6 +484,7 @@ const server = http.createServer(async (req, res) => {
       { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' });
     if (lower === '/nursery' || lower === '/nursery-2' || lower === '/quiz/nursery-2' || lower === '/quiz/nursery') return sendFile(res, path.join(PUBLIC_DIR, 'nursery.html'));
     if (lower === '/year-1' || lower === '/quiz/year-1' || lower === '/year1' || lower === '/quiz/year1') return sendFile(res, path.join(PUBLIC_DIR, 'year-1.html'));
+    if (lower === '/year-2' || lower === '/quiz/year-2' || lower === '/year2' || lower === '/quiz/year2') return sendFile(res, path.join(PUBLIC_DIR, 'year-2.html'));
     if (lower === '/' || /^\/quiz\/[a-z0-9-]+$/.test(lower)) return sendFile(res, path.join(PUBLIC_DIR, 'index.html'));
     if (lower.startsWith('/private')) { res.writeHead(404); return res.end('Not found'); }
 

@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Year 2 ICT Quiz · FutureIN</title>
+<link rel="icon" href="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="/api.js"></script>
+<style>
+  :root{
+    --bg1:#eafff3; --bg2:#e8ecff;
+    --ink:#2f2a4a; --soft:#5f5a85; --card:#ffffff;
+    --pink:#ff6b9a; --blue:#4cb8ff; --green:#36c46b; --yellow:#ffc93c; --purple:#7a5cff; --orange:#ff9a3c;
+    --good:#36c46b; --bad:#ff6b6b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --bg1:#1d3340; --bg2:#2a2550; --ink:#fffaf0; --soft:#d6d0f5; }
+  }
+  :root[data-theme="dark"]{ --bg1:#1d3340; --bg2:#2a2550; --ink:#fffaf0; --soft:#d6d0f5; }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; height:100%}
+  body{font-family:'Fredoka','Comic Sans MS',system-ui,sans-serif; color:var(--ink);
+    background:linear-gradient(160deg,var(--bg1),var(--bg2)); background-color:var(--bg1); min-height:100%; overflow-x:hidden}
+  .bubbles span{position:fixed; border-radius:50%; opacity:.2; z-index:0; animation:float 9s ease-in-out infinite}
+  @keyframes float{50%{transform:translateY(-30px)}}
+  .wrap{position:relative; z-index:1; max-width:1040px; margin:0 auto; padding:16px 16px 40px; min-height:100vh; display:flex; flex-direction:column}
+
+  .top{display:flex; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap}
+  .lesson-tag{background:var(--purple); color:#fff; font-weight:600; padding:8px 16px; border-radius:999px; font-size:clamp(14px,2.3vw,19px); box-shadow:0 4px 0 #5338d1}
+  .progress{display:flex; gap:4px; flex-wrap:wrap; justify-content:center}
+  .progress i{width:clamp(14px,2.5vw,22px); height:clamp(14px,2.5vw,22px); border-radius:50%; background:#fff; border:3px solid #d7d0ff; display:grid; place-items:center; font-style:normal; font-size:clamp(9px,1.6vw,14px)}
+  .progress i.now{border-color:var(--pink); transform:scale(1.25)}
+  .progress i.done{background:var(--yellow); border-color:#f0a800}
+  .progress i.miss{background:#ffe1c2; border-color:#ffb36b}
+  .icon-btn{border:none; background:#fff; border-radius:50%; width:50px; height:50px; font-size:24px; cursor:pointer; box-shadow:0 4px 0 #d7d0ff}
+  .icon-btn:active{transform:translateY(3px); box-shadow:0 1px 0 #d7d0ff}
+
+  .q-area{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:clamp(14px,2.6vh,26px); padding-top:14px}
+  .qnum{font-size:clamp(16px,2.5vw,21px); color:var(--soft); font-weight:600}
+  .question{display:flex; align-items:center; gap:14px; background:#fff; color:#2f2a4a; padding:14px 22px; border-radius:26px; box-shadow:0 6px 0 rgba(0,0,0,.08); max-width:100%}
+  .question h1{margin:0; font-size:clamp(22px,4.2vw,40px); line-height:1.25; text-align:center}
+  .question h1 .blank{display:inline-block; min-width:2.6em; border-bottom:5px dashed var(--pink); margin:0 .15em}
+  .question h1 em{font-style:normal; color:var(--purple)}
+  .question .hint{font-size:clamp(30px,5vw,50px)}
+  .say{flex:none; border:none; background:var(--blue); color:#fff; width:clamp(46px,6.5vw,58px); height:clamp(46px,6.5vw,58px); border-radius:50%; font-size:clamp(20px,3.2vw,28px); cursor:pointer; box-shadow:0 5px 0 #2a8fd1}
+  .say:active{transform:translateY(4px); box-shadow:0 1px 0 #2a8fd1}
+
+  .cards{display:grid; width:100%}
+  .cards.pics{grid-template-columns:repeat(4,1fr); gap:clamp(10px,2vw,22px)}
+  .cards.words{grid-template-columns:repeat(2,1fr); gap:16px; max-width:820px}
+  .card{position:relative; border:5px solid var(--edge); cursor:pointer; padding:10px; font-family:inherit; color:#2f2a4a;
+    background:var(--card); border-radius:26px; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 0 var(--shade); transition:transform .15s, filter .2s; animation:pop .45s backwards}
+  .cards.pics .card{aspect-ratio:1/1.05; flex-direction:column}
+  .cards.words .card{justify-content:flex-start; gap:14px; padding:14px 18px; font-size:clamp(22px,3.8vw,34px); font-weight:700; text-align:left; min-height:84px}
+  .letter{flex:none; width:clamp(40px,6vw,52px); height:clamp(40px,6vw,52px); border-radius:50%; background:var(--shade); color:#fff; display:grid; place-items:center; font-size:clamp(20px,3.2vw,28px); font-weight:700}
+  .cards.pics .letter{position:absolute; top:8px; left:8px}
+  .card:nth-child(1){--edge:#ffc2d6; --shade:#ff7fab; animation-delay:.04s}
+  .card:nth-child(2){--edge:#bfe6ff; --shade:#45b4ff; animation-delay:.12s}
+  .card:nth-child(3){--edge:#ffe3a1; --shade:#ffb52e; animation-delay:.2s}
+  .card:nth-child(4){--edge:#d6ccff; --shade:#8f72ff; animation-delay:.28s}
+  .card:hover{transform:translateY(-5px)}
+  .card:active{transform:translateY(5px)}
+  .card svg{width:84%; height:auto; max-height:84%}
+  .card .emo{font-size:clamp(56px,11vw,120px); line-height:1}
+  @keyframes pop{from{transform:scale(.4); opacity:0}}
+  .card.right{--edge:var(--good); --shade:#23974f; animation:bounce .6s; filter:none}
+  .card.right::after{content:"✔"; position:absolute; top:-15px; right:-10px; background:var(--good); color:#fff; width:48px; height:48px; border-radius:50%; display:grid; place-items:center; font-size:28px; box-shadow:0 4px 0 #23974f}
+  .card.wrong{animation:shake .5s; filter:grayscale(1) brightness(.92); --edge:#ddd; --shade:#b5b5b5}
+  .card.fade{filter:grayscale(.9); transform:scale(.95)}
+  @keyframes bounce{30%{transform:scale(1.08)} 60%{transform:scale(.97)}}
+  @keyframes shake{20%,60%{transform:translateX(-12px)} 40%,80%{transform:translateX(12px)}}
+
+  .feedback{min-height:56px; text-align:center; max-width:760px}
+  .feedback b{display:block; font-size:clamp(24px,4.6vw,40px)}
+  .feedback small{display:block; font-size:clamp(17px,3vw,24px); color:var(--ink); margin-top:4px}
+  .feedback.good b{color:var(--green)}
+  .feedback.try b{color:var(--orange)}
+  .next{border:none; background:var(--green); color:#fff; font-family:inherit; font-weight:700; font-size:clamp(22px,4.2vw,34px); padding:12px 42px; border-radius:999px; cursor:pointer; box-shadow:0 7px 0 #23974f; animation:pop .4s}
+  .next:active{transform:translateY(5px); box-shadow:0 2px 0 #23974f}
+  .hidden{display:none !important}
+
+  .screen{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:18px}
+  .screen h1{font-size:clamp(36px,7.5vw,70px); margin:0; color:var(--purple); text-shadow:0 4px 0 #fff}
+  .screen p{font-size:clamp(19px,3.4vw,28px); margin:0; color:var(--soft)}
+  .mascot{width:clamp(160px,30vw,240px); animation:wobble 2.4s ease-in-out infinite}
+  @keyframes wobble{25%{transform:rotate(-5deg)} 75%{transform:rotate(5deg)}}
+  .big-btn{border:none; background:var(--pink); color:#fff; font-family:inherit; font-weight:700; font-size:clamp(26px,4.8vw,40px); padding:14px 54px; border-radius:999px; cursor:pointer; box-shadow:0 8px 0 #d6457a}
+  .big-btn:active{transform:translateY(6px); box-shadow:0 2px 0 #d6457a}
+  .stars-row{font-size:clamp(24px,4.6vw,40px); letter-spacing:2px; max-width:620px}
+  .topics{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; max-width:760px}
+  .topics span{background:#fff; color:#2f2a4a; padding:6px 14px; border-radius:999px; font-size:clamp(14px,2.3vw,18px); box-shadow:0 3px 0 #d7d0ff}
+
+  /* Form fields on start */
+  .child-info{display:flex; flex-direction:column; gap:10px; width:100%; max-width:380px; margin:8px auto}
+  .child-info input{
+    font-family:inherit; font-size:18px; padding:12px 18px; border-radius:18px;
+    border:3px solid var(--purple); background:#fff; color:#2f2a4a; outline:none; text-align:center;
+  }
+  .child-info input:focus{border-color:var(--pink); box-shadow:0 0 0 3px rgba(255,107,154,.3)}
+  .err-msg{color:var(--bad); font-weight:700; font-size:16px}
+  .nav-back{margin-top:14px; color:var(--soft); font-size:16px; text-decoration:none; font-weight:600}
+  .nav-back:hover{color:var(--pink)}
+
+  .confetti{position:fixed; top:-30px; z-index:50; pointer-events:none; animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+  @media (max-width:640px){
+    .cards.pics{grid-template-columns:repeat(2,1fr); gap:12px}
+    .cards.words{grid-template-columns:1fr; gap:12px}
+    .cards.words .card{min-height:68px}
+    .card{border-radius:20px; border-width:4px; box-shadow:0 6px 0 var(--shade)}
+    .card.right::after{width:38px; height:38px; font-size:21px; top:-11px; right:-7px}
+    .question{padding:12px 14px; gap:10px}
+  }
+</style>
+</head>
+<body>
+<div class="bubbles" aria-hidden="true"></div>
+
+<div class="wrap">
+  <section id="start" class="screen">
+    <div class="mascot" id="mascotStart"></div>
+    <h1>Year 2 ICT Quiz</h1>
+    <p>Read each question and choose A, B, C or D</p>
+    <div class="topics">
+      <span>💡 What is a Computer?</span><span>🧠 System Unit</span><span>⌨️ Input Devices</span><span>🔊 Output Devices</span><span>🔁 Input vs Output</span>
+    </div>
+
+    <div class="child-info" id="infoBox">
+      <input id="childName" placeholder="Your name (e.g. Victor)" maxlength="60">
+      <input id="childSchool" placeholder="Your school" maxlength="80">
+      <div class="err-msg" id="nameErr"></div>
+    </div>
+
+    <button class="big-btn" id="startBtn">▶ Start</button>
+    <a href="/" class="nav-back">← Choose another class</a>
+  </section>
+
+  <section id="quiz" class="hidden" style="flex:1; display:flex; flex-direction:column">
+    <div class="top">
+      <div class="lesson-tag" id="lessonTag">Week 1</div>
+      <div class="progress" id="progress"></div>
+      <button class="icon-btn" id="soundBtn" title="Sound on/off">🔊</button>
+    </div>
+    <div class="q-area">
+      <div class="qnum" id="qNum"></div>
+      <div class="question">
+        <span class="hint" id="hint"></span>
+        <h1 id="qText"></h1>
+        <button class="say" id="sayBtn" title="Hear the question">🔈</button>
+      </div>
+      <div class="cards" id="cards"></div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next hidden" id="nextBtn">Next ▶</button>
+    </div>
+  </section>
+
+  <section id="end" class="screen hidden">
+    <div style="font-size:clamp(90px,17vw,150px); animation:wobble 2s infinite">🏆</div>
+    <h1 id="endTitle">Well Done!</h1>
+    <p id="endText"></p>
+    <div class="stars-row" id="endStars"></div>
+    <button class="big-btn" id="againBtn" style="margin-top:14px">🔁 Play Again</button>
+    <a href="/" class="nav-back" style="font-size:18px">← Back to Quiz Home</a>
+  </section>
+</div>
+
+<script>
+/* ================= PICTURES (drawn in the page — work offline) ================= */
+const powerIcon = (cx, cy, r, color) => `
+  <path d="M${cx} ${cy - r} V${cy - r*0.15}" stroke="${color}" stroke-width="${r*0.28}" stroke-linecap="round"/>
+  <path d="M${cx - r*0.7} ${cy - r*0.7} A${r} ${r} 0 1 0 ${cx + r*0.7} ${cy - r*0.7}" stroke="${color}" stroke-width="${r*0.28}" fill="none" stroke-linecap="round"/>`;
+const keyRow = (y, n, x0, w) => Array.from({length:n},(_,i)=>`<rect x="${x0+i*(w+4)}" y="${y}" width="${w}" height="16" rx="4" fill="#fff"/>`).join('');
+
+const PICS = {
+  monitor: `<svg viewBox="0 0 200 200">
+      <rect x="20" y="30" width="160" height="108" rx="14" fill="#3d4a73"/>
+      <rect x="31" y="41" width="138" height="84" rx="6" fill="#8fdcff"/>
+      <circle cx="64" cy="66" r="13" fill="#ffd93b"/>
+      <path d="M31 125 L78 88 L106 112 L134 92 L169 125 Z" fill="#5fcf72"/>
+      <rect x="88" y="138" width="24" height="26" fill="#3d4a73"/><rect x="55" y="160" width="90" height="14" rx="7" fill="#3d4a73"/></svg>`,
+  tower: `<svg viewBox="0 0 200 200">
+      <rect x="58" y="16" width="84" height="164" rx="14" fill="#4f5a85" stroke="#3a4369" stroke-width="5"/>
+      <rect x="70" y="34" width="60" height="11" rx="5" fill="#2f3758"/><rect x="70" y="52" width="60" height="11" rx="5" fill="#2f3758"/>
+      <circle cx="100" cy="106" r="17" fill="#2f3758"/>${powerIcon(100, 108, 9, '#6dff8f')}
+      <g stroke="#3a4369" stroke-width="4" stroke-linecap="round"><line x1="74" y1="146" x2="126" y2="146"/><line x1="74" y1="156" x2="126" y2="156"/><line x1="74" y1="166" x2="126" y2="166"/></g>
+      <rect x="64" y="180" width="18" height="8" rx="3" fill="#3a4369"/><rect x="118" y="180" width="18" height="8" rx="3" fill="#3a4369"/></svg>`,
+  keyboard: `<svg viewBox="0 0 200 200">
+      <rect x="10" y="62" width="180" height="84" rx="14" fill="#4f5a85"/>
+      ${keyRow(74, 10, 20, 13.4)}${keyRow(94, 10, 20, 13.4)}${keyRow(114, 3, 20, 13.4)}
+      <rect x="71" y="114" width="58" height="16" rx="4" fill="#fff"/>${keyRow(114, 3, 133, 13.4)}
+      <path d="M100 62 C100 40 130 40 140 24" stroke="#4f5a85" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`,
+  mouse: `<svg viewBox="0 0 200 200">
+      <path d="M100 42 C100 20 132 26 142 8" stroke="#4f5a85" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <rect x="62" y="40" width="76" height="140" rx="38" fill="#fff" stroke="#4f5a85" stroke-width="7"/>
+      <line x1="62" y1="96" x2="138" y2="96" stroke="#4f5a85" stroke-width="6"/><line x1="100" y1="42" x2="100" y2="96" stroke="#4f5a85" stroke-width="6"/>
+      <rect x="92" y="54" width="16" height="28" rx="8" fill="#ff6b9a" stroke="#4f5a85" stroke-width="4"/></svg>`,
+  printer: `<svg viewBox="0 0 200 200">
+      <rect x="58" y="22" width="84" height="50" rx="4" fill="#fff" stroke="#9aa1c4" stroke-width="4"/>
+      <rect x="22" y="64" width="156" height="78" rx="16" fill="#4f5a85"/>
+      <rect x="22" y="64" width="156" height="22" rx="10" fill="#636fa3"/>
+      <circle cx="154" cy="104" r="7" fill="#6dff8f"/><rect x="36" y="100" width="40" height="8" rx="4" fill="#3a4369"/>
+      <rect x="48" y="126" width="104" height="58" rx="3" fill="#fff" stroke="#9aa1c4" stroke-width="4"/>
+      <g stroke="#ff6b9a" stroke-width="5" stroke-linecap="round"><line x1="62" y1="148" x2="138" y2="148"/></g>
+      <g stroke="#c4c9e2" stroke-width="5" stroke-linecap="round"><line x1="62" y1="162" x2="128" y2="162"/><line x1="62" y1="174" x2="112" y2="174"/></g></svg>`,
+  mascot: `<svg viewBox="0 0 200 200">
+      <rect x="20" y="24" width="160" height="116" rx="22" fill="#36c46b"/>
+      <rect x="32" y="36" width="136" height="92" rx="14" fill="#effff4"/>
+      <circle cx="76" cy="76" r="11" fill="#2f2a4a"/><circle cx="124" cy="76" r="11" fill="#2f2a4a"/>
+      <circle cx="80" cy="72" r="4" fill="#fff"/><circle cx="128" cy="72" r="4" fill="#fff"/>
+      <circle cx="60" cy="98" r="9" fill="#ffb3cc"/><circle cx="140" cy="98" r="9" fill="#ffb3cc"/>
+      <path d="M82 100 Q100 118 118 100" stroke="#2f2a4a" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <rect x="86" y="140" width="28" height="20" fill="#36c46b"/><rect x="54" y="158" width="92" height="16" rx="8" fill="#7a5cff"/>
+      <rect x="62" y="10" width="76" height="18" rx="4" fill="#2f2a4a"/><rect x="92" y="2" width="16" height="10" rx="2" fill="#ffc93c"/></svg>`
+};
+
+/* ================= 15 QUESTIONS — Weeks 1 to 5, 3 per week, 4 options each =================
+   type 'pic'  → 4 picture cards   (options: [pictureKey or emoji, isCorrect])
+   type 'word' → 4 reading cards   (options: [text, isCorrect])                    */
+const W1="Week 1 · What is a Computer?", W2="Week 2 · The System Unit", W3="Week 3 · Input Devices",
+      W4="Week 4 · Output Devices",     W5="Week 5 · Input vs Output";
+
+const QUESTIONS = [
+  // Week 1 — Standard definition of computer
+  {lesson:W1, type:'word', hint:"💡", text:"A computer is an electronic ___",
+   say:"A computer is an electronic… what?",
+   options:[["machine",1],["animal",0],["food",0],["toy",0]],
+   yay:"A computer is an electronic machine that accepts, processes and stores data, and gives useful information."},
+  {lesson:W1, type:'word', hint:"🔢", text:"Which one is an example of <em>data</em>?",
+   say:"Which one is an example of data?",
+   options:[["1, 2, 3",1],["a chair",0],["a cup",0],["a shoe",0]],
+   yay:"Numbers, alphabets, signs and pictures are data."},
+  {lesson:W1, type:'word', hint:"🗄️", text:"The computer keeps information for a long time. This is called ___",
+   say:"The computer keeps information for a long time. This is called… what?",
+   options:[["Storage",1],["Input",0],["Output",0],["Sleeping",0]],
+   yay:"Keeping information in the computer's memory is called Storage."},
+
+  // Week 2 — System Unit
+  {lesson:W2, type:'pic', hint:"🔎", text:"Which one is the <em>System Unit</em>?",
+   say:"Which one is the system unit?",
+   options:[["tower",1],["monitor",0],["keyboard",0],["mouse",0]],
+   yay:"The System Unit is the box where all processing takes place."},
+  {lesson:W2, type:'word', hint:"🧠", text:"CPU means Central ___ Unit",
+   say:"C P U means Central… what… Unit?",
+   options:[["Processing",1],["Playing",0],["Printing",0],["Painting",0]],
+   yay:"CPU means Central Processing Unit. It is the brain of the computer."},
+  {lesson:W2, type:'word', hint:"🖥️", text:"The two types of system unit are Desktop and ___",
+   say:"The two types of system unit are Desktop and… what?",
+   options:[["Tower",1],["Table",0],["Window",0],["Door",0]],
+   yay:"The two types are the Desktop system unit and the Tower system unit."},
+
+  // Week 3 — Input devices
+  {lesson:W3, type:'word', hint:"⌨️", text:"The computer part used for <em>typing</em> is the ___",
+   say:"The computer part used for typing is the… what?",
+   options:[["Keyboard",1],["Monitor",0],["Speaker",0],["Printer",0]],
+   yay:"We use the keyboard for typing."},
+  {lesson:W3, type:'pic', hint:"🎮", text:"Which input device is used to <em>play games</em>?",
+   say:"Which input device is used to play games?",
+   options:[["🕹️",1],["keyboard",0],["mouse",0],["🎤",0]],
+   yay:"The Joystick is used to play games."},
+  {lesson:W3, type:'pic', hint:"🎵", text:"Which input device sends <em>sound</em> into the computer?",
+   say:"Which input device sends sound into the computer?",
+   options:[["🎤",1],["🕹️",0],["mouse",0],["keyboard",0]],
+   yay:"The Microphone sends sound into the computer."},
+
+  // Week 4 — Output devices
+  {lesson:W4, type:'word', hint:"📤", text:"Output devices ___ information from the computer.",
+   say:"Output devices… what… information from the computer?",
+   options:[["bring out",1],["send in",0],["eat",0],["hide",0]],
+   yay:"Output devices bring out information from the computer."},
+  {lesson:W4, type:'pic', hint:"🔎", text:"Which one is an <em>OUTPUT</em> device?",
+   say:"Which one is an output device?",
+   options:[["monitor",1],["keyboard",0],["mouse",0],["🕹️",0]],
+   yay:"The monitor is an output device. It shows us what is inside the computer."},
+  {lesson:W4, type:'pic', hint:"🎶", text:"We <em>hear music</em> from the computer through the…",
+   say:"We hear music from the computer through the… what?",
+   options:[["🔊",1],["🎤",0],["keyboard",0],["mouse",0]],
+   yay:"We hear music through the Speaker. It is an output device."},
+
+  // Week 5 — Relationship between input and output devices
+  {lesson:W5, type:'word', hint:"🔁", text:"The keyboard is an input device. The monitor is an ___ device.",
+   say:"The keyboard is an input device. The monitor is an… what… device?",
+   options:[["Output",1],["Input",0],["Eating",0],["Sleeping",0]],
+   yay:"Keyboard = input. Monitor = output."},
+  {lesson:W5, type:'pic', hint:"📄", text:"Which one do we use to <em>print</em> a document?",
+   say:"Which one do we use to print a document?",
+   options:[["printer",1],["keyboard",0],["mouse",0],["🎤",0]],
+   yay:"We use the Printer to print out a document."},
+  {lesson:W5, type:'word', hint:"💬", text:"Input devices let you talk to the computer. Output devices let the computer ___",
+   say:"Input devices let you talk to the computer. Output devices let the computer… what?",
+   options:[["talk back to you",1],["go to sleep",0],["eat food",0],["run away",0]],
+   yay:"Output devices let the computer talk back to you by showing, printing or playing things."}
+];
+
+const PRAISE = ["Correct!", "Super!", "Well done!", "Great job!", "Excellent!", "Brilliant!"];
+
+/* ================= SOUND + VOICE ================= */
+let soundOn=true, actx=null;
+function tone(freq,start,dur,type='sine',vol=.18){
+  if(!soundOn) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(), g=actx.createGain(); o.type=type; o.frequency.value=freq;
+    g.gain.setValueAtTime(vol, actx.currentTime+start); g.gain.exponentialRampToValueAtTime(.001, actx.currentTime+start+dur);
+    o.connect(g).connect(actx.destination); o.start(actx.currentTime+start); o.stop(actx.currentTime+start+dur);
+  }catch(e){}
+}
+const happySound=()=>[523,659,784,1047].forEach((f,i)=>tone(f,i*.1,.3,'triangle'));
+const oopsSound=()=>{ tone(330,0,.18); tone(262,.16,.25); };
+function speak(text){
+  if(!soundOn || !('speechSynthesis' in window)) return;
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.rate=.9; u.pitch=1.15; u.lang='en-GB'; speechSynthesis.speak(u); }catch(e){}
+}
+function confetti(){
+  const bits=['⭐','🎉','🌟','✨'], colors=['#ff6b9a','#4cb8ff','#ffc93c','#36c46b','#7a5cff'];
+  for(let i=0;i<30;i++){
+    const d=document.createElement('div'); d.className='confetti';
+    if(i%3===0){ d.textContent=bits[i%bits.length]; d.style.fontSize=(18+Math.random()*20)+'px'; }
+    else { d.style.width='12px'; d.style.height='16px'; d.style.borderRadius='3px'; d.style.background=colors[i%colors.length]; }
+    d.style.left=Math.random()*100+'vw'; d.style.animationDuration=(1.6+Math.random()*1.6)+'s'; d.style.animationDelay=(Math.random()*.3)+'s';
+    document.body.appendChild(d); setTimeout(()=>d.remove(),3800);
+  }
+}
+
+/* ================= GAME & BACKEND INTEGRATION ================= */
+const $=id=>document.getElementById(id);
+let idx=0, stars=0, firstTry=true, answered=false, results=[];
+let studentName = '', studentSchool = '', attemptId = null, answersRecord = [];
+
+// Pre-fill name and school from URL query parameters if present
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('name')) $('childName').value = urlParams.get('name');
+if (urlParams.get('school')) $('childSchool').value = urlParams.get('school');
+
+const shuffle=a=>{a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a;};
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function drawProgress(){
+  $('progress').innerHTML = QUESTIONS.map((_,i)=>{
+    const cls = i<idx ? (results[i] ? 'done' : 'miss') : (i===idx ? 'now' : '');
+    return `<i class="${cls}">${i<idx ? (results[i] ? '⭐' : '✓') : ''}</i>`;
+  }).join('');
+}
+
+function showQuestion(){
+  const q=QUESTIONS[idx]; firstTry=true; answered=false;
+  $('lessonTag').textContent=q.lesson;
+  $('qNum').textContent=`Question ${idx+1} of ${QUESTIONS.length}`;
+  $('hint').textContent=q.hint;
+  $('qText').innerHTML=q.text.replace('___','<span class="blank"></span>');
+  $('feedback').innerHTML=''; $('feedback').className='feedback';
+  $('nextBtn').classList.add('hidden');
+  drawProgress();
+  const cards=$('cards'); cards.innerHTML=''; cards.className='cards '+(q.type==='pic'?'pics':'words');
+  shuffle(q.options).forEach(([val,ok],i)=>{
+    const b=document.createElement('button'); b.className='card'; b.dataset.ok=ok?'1':'0';
+    const letter=`<span class="letter">${'ABCD'[i]}</span>`;
+    b.innerHTML = q.type==='pic'
+      ? letter + (PICS[val] || `<span class="emo">${val}</span>`)
+      : letter + `<span>${esc(val)}</span>`;
+    b.onclick=()=>choose(b,ok);
+    cards.appendChild(b);
+  });
+  setTimeout(()=>speak(q.say), 350);
+}
+
+function choose(btn,ok){
+  if(answered || btn.classList.contains('wrong')) return;
+  const q=QUESTIONS[idx];
+  if(ok){
+    answered=true; results[idx]=firstTry;
+    if(firstTry) {
+      stars++;
+      answersRecord[idx] = 0;
+    } else {
+      answersRecord[idx] = 1;
+    }
+    btn.classList.add('right');
+    [...$('cards').children].forEach(c=>{ if(c!==btn) c.classList.add('fade'); });
+    const word=PRAISE[Math.floor(Math.random()*PRAISE.length)];
+    $('feedback').innerHTML=`<b>🎉 ${word} 🎉</b><small>${esc(q.yay)}</small>`; $('feedback').className='feedback good';
+    happySound(); confetti(); setTimeout(()=>speak(word+' '+q.yay),300);
+    $('nextBtn').textContent = idx===QUESTIONS.length-1 ? 'Finish 🏁' : 'Next ▶';
+    $('nextBtn').classList.remove('hidden');
+  } else {
+    firstTry=false; btn.classList.add('wrong');
+    $('feedback').innerHTML='<b>Not quite! Try again 😊</b>'; $('feedback').className='feedback try';
+    oopsSound(); speak('Not quite! Try again!');
+  }
+}
+
+function next(){ idx++; if(idx>=QUESTIONS.length) return finish(); showQuestion(); window.scrollTo(0,0); }
+
+async function finish(){
+  $('quiz').classList.add('hidden'); $('end').classList.remove('hidden');
+  const greeting = studentName ? `Well done, ${studentName}!` : 'Well Done!';
+  $('endTitle').textContent = greeting;
+  $('endText').textContent=`You scored ${stars} out of ${QUESTIONS.length}!`;
+  $('endStars').textContent='⭐'.repeat(stars)+'☆'.repeat(QUESTIONS.length-stars);
+  happySound(); confetti(); setTimeout(confetti,900);
+  speak(`${greeting} You scored ${stars} out of ${QUESTIONS.length}! You are a computer star!`);
+
+  // Submit attempt to server if attemptId exists
+  if (attemptId) {
+    try {
+      await api('POST', '/api/submit', { attemptId, answers: answersRecord });
+    } catch (e) {
+      console.warn('Could not submit attempt:', e);
+    }
+  }
+}
+
+async function start(){
+  const name = $('childName').value.trim();
+  const school = $('childSchool').value.trim() || 'Precious Innovators';
+  $('nameErr').textContent = '';
+  if (name.length < 2) {
+    $('nameErr').textContent = 'Please type your name!';
+    $('childName').focus();
+    return;
+  }
+  studentName = name;
+  studentSchool = school;
+  idx = 0; stars = 0; results = [];
+  answersRecord = new Array(QUESTIONS.length).fill(null);
+
+  // Register attempt with backend
+  try {
+    const res = await api('POST', '/api/start', { name: studentName, school: studentSchool, classId: 'year-2' });
+    attemptId = res.attemptId;
+  } catch (e) {
+    console.warn('Local mode (offline attempt):', e);
+  }
+
+  $('start').classList.add('hidden'); $('end').classList.add('hidden'); $('quiz').classList.remove('hidden');
+  showQuestion();
+}
+
+$('mascotStart').innerHTML=PICS.mascot;
+$('startBtn').onclick=start;
+$('againBtn').onclick=() => {
+  $('end').classList.add('hidden');
+  $('start').classList.remove('hidden');
+};
+$('nextBtn').onclick=next;
+$('sayBtn').onclick=()=>speak(QUESTIONS[idx].say);
+$('soundBtn').onclick=()=>{ soundOn=!soundOn; $('soundBtn').textContent=soundOn?'🔊':'🔇'; if(!soundOn && 'speechSynthesis' in window) speechSynthesis.cancel(); };
+
+// If student details were already captured from the homepage, launch directly into Question 1!
+if (urlParams.get('name')) {
+  start();
+}
+
+(function(){
+  const c=['#ff6b9a','#4cb8ff','#ffc93c','#36c46b','#7a5cff'], box=document.querySelector('.bubbles');
+  for(let i=0;i<9;i++){ const s=document.createElement('span'), size=40+Math.random()*90;
+    Object.assign(s.style,{width:size+'px',height:size+'px',left:Math.random()*95+'vw',top:Math.random()*90+'vh',background:c[i%c.length],animationDelay:(Math.random()*5)+'s'});
+    box.appendChild(s); }
+})();
+</script>
+</body>
+</html>
