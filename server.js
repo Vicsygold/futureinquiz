@@ -337,7 +337,14 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
 function sendFile(res, file, extra = {}) {
   fs.readFile(file, (err, buf) => {
     if (err) { res.writeHead(404, { 'Content-Type': 'text/plain' }); return res.end('Not found'); }
-    res.writeHead(200, { 'Content-Type': TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream', ...extra });
+    const ext = path.extname(file).toLowerCase();
+    const headers = { 'Content-Type': TYPES[ext] || 'application/octet-stream', ...extra };
+    if (ext === '.html' && !headers['Cache-Control']) {
+      headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+      headers['Pragma'] = 'no-cache';
+      headers['Expires'] = '0';
+    }
+    res.writeHead(200, headers);
     res.end(buf);
   });
 }

@@ -22,6 +22,18 @@
   .c-opt.sel .l { background: var(--yellow); color: var(--night); }
   .c-nav { display: flex; gap: 10px; }
   .c-nav .primary { flex: 1; }
+  .c-divider { display: flex; align-items: center; gap: 12px; margin: 24px 0 14px; color: var(--faint); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+  .c-divider::before, .c-divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .c-class-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  @media (max-width: 500px) { .c-class-grid { grid-template-columns: 1fr; } }
+  .c-class-btn { display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: var(--night); border: 1.5px solid var(--line); border-radius: 14px; color: var(--ink); text-decoration: none; font-weight: 600; font-size: 15px; transition: transform .15s, border-color .15s, background .15s; cursor: pointer; }
+  .c-class-btn:hover { border-color: var(--violet); background: var(--surface-2); transform: translateY(-2px); }
+  .c-class-btn .icon { font-size: 26px; flex: none; }
+  .c-class-btn .info { display: flex; flex-direction: column; text-align: left; line-height: 1.25; }
+  .c-class-btn .title { font-size: 15px; font-weight: 700; color: #fff; }
+  .c-class-btn .meta { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .c-class-btn.featured { border-color: rgba(20, 168, 160, 0.6); }
+  .c-class-btn.featured:hover { border-color: #14a8a0; }
   .c-center { text-align: center; }
   .c-big { font-family: var(--display); font-weight: 800; letter-spacing: -.04em; font-size: 76px; line-height: 1; color: var(--yellow); margin: 16px 0 8px; font-variant-numeric: tabular-nums; }
   .c-notice-icon { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 14px; display: grid; place-items: center; background: rgba(255, 198, 41, .12); color: var(--yellow); font-size: 30px; }
@@ -49,6 +61,26 @@
         <div class="err" id="c_err" role="alert"></div>
         <button class="primary wide" type="submit" id="c_go">Start quiz</button>
       </form>
+
+      <div class="c-divider">Or click your class directly</div>
+      <div class="c-class-grid">
+        <a href="/quiz/nursery-2" class="c-class-btn" data-class="nursery-2">
+          <span class="icon">🧸</span>
+          <span class="info"><span class="title">Nursery 2</span><span class="meta">15 picture cards</span></span>
+        </a>
+        <a href="/quiz/year-1" class="c-class-btn" data-class="year-1">
+          <span class="icon">🎒</span>
+          <span class="info"><span class="title">Year 1</span><span class="meta">15 questions</span></span>
+        </a>
+        <a href="/quiz/year-2" class="c-class-btn" data-class="year-2">
+          <span class="icon">🚀</span>
+          <span class="info"><span class="title">Year 2</span><span class="meta">15 questions</span></span>
+        </a>
+        <a href="/quiz/year-3" class="c-class-btn featured" data-class="year-3">
+          <span class="icon">💻</span>
+          <span class="info"><span class="title">Year 3</span><span class="meta">20 questions · New</span></span>
+        </a>
+      </div>
     </div>
 
     <div class="card c-center" id="c_none" hidden>
@@ -183,6 +215,19 @@
   function reset() { st = null; $('c_name').value = ''; $('c_school').value = ''; document.title = 'FutureIN Quiz'; show('c_start'); }
   $('c_again').onclick = reset;
   $('c_noneBack').onclick = () => show('c_start');
+  document.querySelectorAll('.c-class-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const name = $('c_name').value.trim();
+      const school = $('c_school').value.trim();
+      if (name) {
+        e.preventDefault();
+        const base = btn.getAttribute('href');
+        let dest = base + '?name=' + encodeURIComponent(name);
+        if (school) dest += '&school=' + encodeURIComponent(school);
+        location.href = dest;
+      }
+    });
+  });
 
   loadClasses();
 })();
