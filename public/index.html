@@ -382,7 +382,7 @@
     try {
       const d = await api('POST', '/api/start', { name, school, classId });
       if (d.noQuiz) { $('c_noneClass').textContent = d.classLabel; show('c_none'); return; }
-      st = { id: d.attemptId, qs: d.questions, answers: new Array(d.questions.length).fill(null), i: 0, t0: Date.now(), name };
+      st = { id: d.attemptId, qs: d.questions, answers: new Array(d.questions.length).fill(null), i: 0, t0: Date.now(), name, school, cls: classId };
       document.title = d.classLabel + ' Quiz · FutureIN';
       show('c_quiz'); render();
       clearInterval(tick);
@@ -446,12 +446,25 @@
     if (st.i < st.qs.length - 1) { st.i++; render(); return; }
     $('c_next').disabled = true;
     try {
-      const d = await api('POST', '/api/submit', { attemptId: st.id, answers: st.answers });
+      const payload = {
+        attemptId: st.id,
+        name: st.name,
+        school: st.school,
+        classId: st.cls,
+        answers: st.answers,
+        durationMs: Math.max(1000, Date.now() - st.t0)
+      };
+      let d = null;
+      if (typeof saveAndSubmitQuizAttempt === 'function') {
+        d = await saveAndSubmitQuizAttempt(payload);
+      } else {
+        d = await api('POST', '/api/submit', payload);
+      }
       clearInterval(tick);
       chime();
       $('c_doneName').textContent = st.name.split(' ')[0];
-      $('c_doneScore').textContent = d.score + ' / ' + d.total;
-      $('c_doneTime').textContent = 'You finished in ' + clock(d.durationMs) + '.';
+      $('c_doneScore').textContent = (d ? d.score : 0) + ' / ' + (d ? d.total : st.qs.length);
+      $('c_doneTime').textContent = 'You finished in ' + clock(d ? d.durationMs : (Date.now() - st.t0)) + '.';
       show('c_done');
     } catch (err) {
       $('c_qerr').textContent = err.status === 0 ? 'No connection. Tap Finish again.' : err.message;

@@ -87,6 +87,8 @@ const q = {
   settings: db.prepare(`SELECT class_id, published, updated_at FROM class_settings`),
   insertAttempt: db.prepare(`INSERT INTO attempts (id, name, school, class_id, name_key, school_key, started_at, answer_key)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`),
+  insertDirectAttempt: db.prepare(`INSERT OR REPLACE INTO attempts (id, name, school, class_id, name_key, school_key, started_at, finished_at, score, total, duration_ms, answer_key, answers)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
   getAttempt: db.prepare(`SELECT * FROM attempts WHERE id = ?`),
   finishAttempt: db.prepare(`UPDATE attempts SET finished_at = ?, score = ?, total = ?, duration_ms = ?, answers = ?
     WHERE id = ? AND finished_at IS NULL`),
@@ -96,6 +98,58 @@ const q = {
   purgeSessions: db.prepare(`DELETE FROM sessions WHERE expires_at < ?`),
   purgeOpenAttempts: db.prepare(`DELETE FROM attempts WHERE finished_at IS NULL AND started_at < ?`),
 };
+
+const BACKUP_FILE = path.join(DATA_DIR, 'attempts_backup.json');
+
+function logAttemptBackup(item) {
+  try {
+    fs.appendFileSync(BACKUP_FILE, JSON.stringify(item) + '\n', 'utf8');
+  } catch (e) {
+    console.warn('[BACKUP] Append failed:', e.message);
+  }
+}
+
+function restoreFromBackup() {
+  try {
+    if (!fs.existsSync(BACKUP_FILE)) return;
+    const lines = fs.readFileSync(BACKUP_FILE, 'utf8').split('\n').filter(Boolean);
+    let count = 0;
+    for (const line of lines) {
+      try {
+        const item = JSON.parse(line);
+        if (item && item.id && item.name && item.school && item.classId) {
+          const existing = q.getAttempt.get(item.id);
+          if (!existing) {
+            const finishedAt = Number(item.finishedAt) || Date.now();
+            const dur = Number(item.durationMs) || 60000;
+            const startedAt = finishedAt - dur;
+            q.insertDirectAttempt.run(
+              item.id,
+              item.name,
+              item.school,
+              item.classId,
+              item.name.toLowerCase(),
+              item.school.toLowerCase(),
+              startedAt,
+              finishedAt,
+              Number(item.score) || 0,
+              Number(item.total) || 15,
+              dur,
+              '[]',
+              '[]'
+            );
+            count++;
+          }
+        }
+      } catch {}
+    }
+    if (count > 0) console.log(`[BACKUP] Restored ${count} attempt(s) from ${BACKUP_FILE}`);
+  } catch (e) {
+    console.warn('[BACKUP] Restore failed:', e.message);
+  }
+}
+restoreFromBackup();
+
 
 function seedNursery() {
   try {
@@ -526,16 +580,71 @@ async function startQuiz(req, res) {
 
 async function submitQuiz(req, res) {
   const body = await readBody(req, 50_000);
-  const attempt = q.getAttempt.get(String(body.attemptId || ''));
-  if (!attempt) return sendJson(res, 404, { error: 'This quiz session has ended. Please start again.' });
-  if (attempt.finished_at) return sendJson(res, 200, { score: attempt.score, total: attempt.total, durationMs: attempt.duration_ms });
-  const key = JSON.parse(attempt.answer_key);
-  const answers = Array.isArray(body.answers) ? body.answers.slice(0, key.length) : [];
-  const score = key.reduce((n, correct, i) => n + (answers[i] !== null && answers[i] !== undefined && Number(answers[i]) === correct ? 1 : 0), 0);
   const now = Date.now();
-  const durationMs = now - attempt.started_at;
-  q.finishAttempt.run(now, score, key.length, durationMs, JSON.stringify(answers), attempt.id);
-  sendJson(res, 200, { score, total: key.length, durationMs });
+  const attemptId = String(body.attemptId || '').trim();
+  let attempt = attemptId ? q.getAttempt.get(attemptId) : null;
+
+  if (attempt && attempt.finished_at) {
+    return sendJson(res, 200, { score: attempt.score, total: attempt.total, durationMs: attempt.duration_ms });
+  }
+
+  // Active attempt path
+  if (attempt) {
+    const key = JSON.parse(attempt.answer_key || '[]');
+    const answers = Array.isArray(body.answers) ? body.answers.slice(0, Math.max(key.length, body.answers.length)) : [];
+    let score;
+    if (typeof body.score === 'number' && body.score >= 0) {
+      score = body.score;
+    } else {
+      score = key.reduce((n, correct, i) => n + (answers[i] !== null && answers[i] !== undefined && Number(answers[i]) === correct ? 1 : 0), 0);
+    }
+    const total = key.length || Number(body.total) || answers.length || 15;
+    const durationMs = Number(body.durationMs) || Math.max(1000, now - attempt.started_at);
+    q.finishAttempt.run(now, score, total, durationMs, JSON.stringify(answers), attempt.id);
+    logAttemptBackup({ id: attempt.id, name: attempt.name, school: attempt.school, classId: attempt.class_id, score, total, durationMs, finishedAt: now });
+    return sendJson(res, 200, { score, total, durationMs });
+  }
+
+  // Resilient fallback: Server restarted or attemptId lost/expired during the quiz, but student finished!
+  const name = clean(body.name);
+  const school = clean(body.school);
+  const cls = CLASS_BY_ID.get(String(body.classId || ''));
+  if (name.length >= 2 && school.length >= 2 && cls) {
+    const id = attemptId || crypto.randomUUID();
+    const questions = q.questionsFor.all(cls.id);
+    const key = questions.map((x) => x.answer);
+    const answers = Array.isArray(body.answers) ? body.answers : [];
+    let score;
+    if (typeof body.score === 'number' && body.score >= 0) {
+      score = body.score;
+    } else if (key.length > 0) {
+      score = key.reduce((n, correct, i) => n + (answers[i] !== null && answers[i] !== undefined && Number(answers[i]) === correct ? 1 : 0), 0);
+    } else {
+      score = 0;
+    }
+    const total = key.length || Number(body.total) || answers.length || 15;
+    const durationMs = Number(body.durationMs) || 60000;
+    const startedAt = now - durationMs;
+    q.insertDirectAttempt.run(
+      id,
+      name,
+      school,
+      cls.id,
+      name.toLowerCase(),
+      school.toLowerCase(),
+      startedAt,
+      now,
+      score,
+      total,
+      durationMs,
+      JSON.stringify(key),
+      JSON.stringify(answers)
+    );
+    logAttemptBackup({ id, name, school, classId: cls.id, score, total, durationMs, finishedAt: now });
+    return sendJson(res, 200, { score, total, durationMs });
+  }
+
+  return sendJson(res, 404, { error: 'This quiz session has ended. Please start again.' });
 }
 
 async function adminLogin(req, res) {

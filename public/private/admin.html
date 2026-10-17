@@ -294,7 +294,7 @@ C. Apple Interface</pre>
     if (dirty()) { $('q_saveMsg').textContent = 'Save or discard your changes before switching class.'; $('q_savebar').hidden = false; setTab('questions'); return; }
     sel = id; pendingImport = null; $('q_importMsg').hidden = true; $('q_err').textContent = '';
     drawClassList();
-    if (tab === 'results') { $('r_class').value = id; loadResults(); }
+    if (tab === 'results') { loadResults(); }
     try {
       const d = await api('GET', '/api/admin/classes/' + id + '/questions');
       qs = d.questions.map((x) => ({ text: x.text, options: x.options.slice(), answer: x.answer }));
@@ -309,7 +309,7 @@ C. Apple Interface</pre>
     document.querySelectorAll('.a-tabs .seg button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
     $('t_questions').hidden = t !== 'questions'; $('t_results').hidden = t !== 'results'; $('t_links').hidden = t !== 'links';
     clearInterval(rTimer);
-    if (t === 'results') { if (!$('r_class').value && sel) $('r_class').value = sel; loadResults(); rTimer = setInterval(loadResults, 20000); }
+    if (t === 'results') { loadResults(); rTimer = setInterval(loadResults, 20000); }
   }
   document.querySelectorAll('.a-tabs .seg button').forEach((b) => { b.onclick = () => setTab(b.dataset.tab); });
 

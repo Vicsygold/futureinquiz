@@ -22,3 +22,52 @@ window.api = async function api(method, path, body) {
   }
   return data;
 };
+
+// Resilient attempt submission with localStorage offline queue
+window.saveAndSubmitQuizAttempt = async function saveAndSubmitQuizAttempt(payload) {
+  try {
+    const queue = JSON.parse(localStorage.getItem('fin_pending_attempts') || '[]');
+    const isDup = queue.some(q => (q.attemptId && q.attemptId === payload.attemptId) || (q.name === payload.name && q.classId === payload.classId && q.finishedAt === payload.finishedAt));
+    if (!isDup) {
+      queue.push({ ...payload, queuedAt: Date.now() });
+      localStorage.setItem('fin_pending_attempts', JSON.stringify(queue));
+    }
+  } catch (_) {}
+
+  try {
+    const res = await window.api('POST', '/api/submit', payload);
+    try {
+      let queue = JSON.parse(localStorage.getItem('fin_pending_attempts') || '[]');
+      queue = queue.filter(q => {
+        if (payload.attemptId && q.attemptId === payload.attemptId) return false;
+        if (q.name === payload.name && q.classId === payload.classId) return false;
+        return true;
+      });
+      localStorage.setItem('fin_pending_attempts', JSON.stringify(queue));
+    } catch (_) {}
+    return res;
+  } catch (err) {
+    console.warn('[QUIZ] Submit failed, saved locally to retry:', err.message);
+    return null;
+  }
+};
+
+async function flushPendingAttempts() {
+  try {
+    const queue = JSON.parse(localStorage.getItem('fin_pending_attempts') || '[]');
+    if (!queue.length) return;
+    const remaining = [];
+    for (const item of queue) {
+      try {
+        await window.api('POST', '/api/submit', item);
+      } catch (err) {
+        remaining.push(item);
+      }
+    }
+    localStorage.setItem('fin_pending_attempts', JSON.stringify(remaining));
+  } catch (_) {}
+}
+
+window.addEventListener('online', flushPendingAttempts);
+setInterval(flushPendingAttempts, 30000);
+setTimeout(flushPendingAttempts, 2000);

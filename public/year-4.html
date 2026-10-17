@@ -491,17 +491,26 @@ async function finish(){
   happySound(); confetti(); setTimeout(confetti,900);
   speak(`${greeting} You scored ${stars} out of ${n}! You are a computer star!`);
 
-  // Submit attempt to server if attemptId exists
-  if (attemptId) {
-    try {
-      await api('POST', '/api/submit', { attemptId, answers: answersRecord });
-    } catch (e) {
-      console.warn('Could not submit attempt:', e);
-    }
+  // Submit attempt to server with fail-safe persistence
+  const payload = {
+    attemptId,
+    name: studentName,
+    school: studentSchool,
+    classId: 'year-4',
+    score: stars,
+    total: n,
+    durationMs: Math.max(1000, Date.now() - (window._quizStartTime || Date.now())),
+    answers: answersRecord
+  };
+  if (typeof saveAndSubmitQuizAttempt === 'function') {
+    saveAndSubmitQuizAttempt(payload);
+  } else if (attemptId) {
+    api('POST', '/api/submit', payload).catch(e => console.warn(e));
   }
 }
 
 async function start(){
+  window._quizStartTime = Date.now();
   const name = $('childName').value.trim();
   const school = $('childSchool').value.trim() || 'Precious Innovators';
   $('nameErr').textContent = '';
