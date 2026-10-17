@@ -150,6 +150,94 @@ function restoreFromBackup() {
 }
 restoreFromBackup();
 
+// ---------- Cloud Database Sync (Supabase PostgreSQL) ----------
+const SUPABASE_URL = (process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
+const SUPABASE_KEY = (process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+
+let lastSupabaseSync = 0;
+async function syncAttemptsFromSupabase(force = false) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+  const now = Date.now();
+  if (!force && now - lastSupabaseSync < 10000) return;
+  lastSupabaseSync = now;
+  try {
+    const url = `${SUPABASE_URL}/rest/v1/attempts?select=*&order=finished_at.desc&limit=5000`;
+    const res = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+      }
+    });
+    if (!res.ok) {
+      console.warn('[SUPABASE] Sync failed status:', res.status);
+      return;
+    }
+    const rows = await res.json();
+    if (!Array.isArray(rows)) return;
+    let count = 0;
+    for (const r of rows) {
+      if (r && r.id && r.name && r.class_id) {
+        const existing = q.getAttempt.get(r.id);
+        if (!existing) {
+          const finishedAt = Number(r.finished_at) || Date.now();
+          const dur = Number(r.duration_ms) || 60000;
+          const startedAt = Number(r.started_at) || (finishedAt - dur);
+          q.insertDirectAttempt.run(
+            r.id,
+            r.name,
+            r.school || '',
+            r.class_id,
+            (r.name_key || r.name).toLowerCase(),
+            (r.school_key || r.school || '').toLowerCase(),
+            startedAt,
+            finishedAt,
+            Number(r.score) || 0,
+            Number(r.total) || 15,
+            dur,
+            r.answer_key || '[]',
+            r.answers || '[]'
+          );
+          count++;
+        }
+      }
+    }
+    if (count > 0) {
+      console.log(`[SUPABASE] Synced ${count} attempt(s) from Supabase cloud into local database.`);
+    }
+  } catch (err) {
+    console.warn('[SUPABASE] Sync error:', err.message);
+  }
+}
+
+async function saveAttemptToSupabase(item) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+  try {
+    const url = `${SUPABASE_URL}/rest/v1/attempts`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify(item)
+    });
+    if (!res.ok) {
+      const txt = await res.text();
+      console.warn('[SUPABASE] Save failed status:', res.status, txt);
+    } else {
+      console.log(`[SUPABASE] Attempt for "${item.name}" (${item.class_id}) saved to cloud.`);
+    }
+  } catch (err) {
+    console.warn('[SUPABASE] Save network error:', err.message);
+  }
+}
+
+// Initial sync on boot if credentials are present
+syncAttemptsFromSupabase(true).catch(() => {});
+
+
 
 function seedNursery() {
   try {
@@ -602,6 +690,21 @@ async function submitQuiz(req, res) {
     const durationMs = Number(body.durationMs) || Math.max(1000, now - attempt.started_at);
     q.finishAttempt.run(now, score, total, durationMs, JSON.stringify(answers), attempt.id);
     logAttemptBackup({ id: attempt.id, name: attempt.name, school: attempt.school, classId: attempt.class_id, score, total, durationMs, finishedAt: now });
+    saveAttemptToSupabase({
+      id: attempt.id,
+      name: attempt.name,
+      school: attempt.school,
+      class_id: attempt.class_id,
+      name_key: attempt.name.toLowerCase(),
+      school_key: attempt.school.toLowerCase(),
+      started_at: attempt.started_at,
+      finished_at: now,
+      score,
+      total,
+      duration_ms: durationMs,
+      answer_key: attempt.answer_key,
+      answers: JSON.stringify(answers)
+    }).catch(() => {});
     return sendJson(res, 200, { score, total, durationMs });
   }
 
@@ -641,6 +744,21 @@ async function submitQuiz(req, res) {
       JSON.stringify(answers)
     );
     logAttemptBackup({ id, name, school, classId: cls.id, score, total, durationMs, finishedAt: now });
+    saveAttemptToSupabase({
+      id,
+      name,
+      school,
+      class_id: cls.id,
+      name_key: name.toLowerCase(),
+      school_key: school.toLowerCase(),
+      started_at: startedAt,
+      finished_at: now,
+      score,
+      total,
+      duration_ms: durationMs,
+      answer_key: JSON.stringify(key),
+      answers: JSON.stringify(answers)
+    }).catch(() => {});
     return sendJson(res, 200, { score, total, durationMs });
   }
 
@@ -718,10 +836,12 @@ async function adminRoutes(req, res, p, url) {
   }
 
   if (p === '/api/admin/leaderboard') {
+    await syncAttemptsFromSupabase();
     const classId = CLASS_BY_ID.has(url.searchParams.get('class')) ? url.searchParams.get('class') : null;
     return sendJson(res, 200, { rows: leaderboard(classId) });
   }
   if (p === '/api/admin/attempts') {
+    await syncAttemptsFromSupabase();
     const classId = CLASS_BY_ID.has(url.searchParams.get('class')) ? url.searchParams.get('class') : null;
     return sendJson(res, 200, { rows: allAttempts(classId) });
   }
