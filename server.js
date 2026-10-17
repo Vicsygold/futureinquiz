@@ -151,8 +151,30 @@ function restoreFromBackup() {
 restoreFromBackup();
 
 // ---------- Cloud Database Sync (Supabase PostgreSQL) ----------
-const SUPABASE_URL = (process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
-const SUPABASE_KEY = (process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+let rawUrl = (process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
+let rawKey = (process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+
+// Auto-detect if user swapped URL and Key in Render Environment settings
+if ((rawUrl.startsWith('sb_') || rawUrl.startsWith('eyJ')) && (rawKey.startsWith('http://') || rawKey.startsWith('https://'))) {
+  console.log('[SUPABASE] Detected swapped SUPABASE_URL and SUPABASE_KEY in environment variables. Auto-correcting...');
+  const tmp = rawUrl;
+  rawUrl = rawKey;
+  rawKey = tmp;
+}
+
+// If someone provided "xxxx.supabase.co" without https://
+if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+  if (rawUrl.includes('supabase.co')) {
+    rawUrl = 'https://' + rawUrl;
+  }
+}
+
+const SUPABASE_URL = (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) ? rawUrl : '';
+const SUPABASE_KEY = rawKey;
+
+if (process.env.SUPABASE_URL && !SUPABASE_URL) {
+  console.warn(`[SUPABASE] Configuration Notice: SUPABASE_URL is currently set to "${process.env.SUPABASE_URL}". It should be your Project URL starting with "https://" (e.g. https://xyz.supabase.co). The API key "${rawKey || process.env.SUPABASE_URL}" belongs in SUPABASE_KEY.`);
+}
 
 let lastSupabaseSync = 0;
 async function syncAttemptsFromSupabase(force = false) {
@@ -162,6 +184,7 @@ async function syncAttemptsFromSupabase(force = false) {
   lastSupabaseSync = now;
   try {
     const url = `${SUPABASE_URL}/rest/v1/attempts?select=*&order=finished_at.desc&limit=5000`;
+
     const res = await fetch(url, {
       headers: {
         'apikey': SUPABASE_KEY,
