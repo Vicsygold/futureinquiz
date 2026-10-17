@@ -180,7 +180,7 @@ C. Apple Interface</pre>
       <!-- RESULTS -->
       <section id="t_results" class="a-main" hidden>
         <div class="a-head">
-          <div><h1>Score<span class="in-violet">board</span></h1>
+          <div><h1 id="r_title">Score<span class="in-violet">board</span></h1>
             <div class="muted small">Most correct answers first. Ties go to the faster child. Repeat attempts keep the child's best.</div></div>
           <div class="acts">
             <select id="r_class" style="width:auto"></select>
@@ -294,7 +294,10 @@ C. Apple Interface</pre>
     if (dirty()) { $('q_saveMsg').textContent = 'Save or discard your changes before switching class.'; $('q_savebar').hidden = false; setTab('questions'); return; }
     sel = id; pendingImport = null; $('q_importMsg').hidden = true; $('q_err').textContent = '';
     drawClassList();
-    if (tab === 'results') { loadResults(); }
+    if (tab === 'results') {
+      $('r_class').value = id;
+      loadResults();
+    }
     try {
       const d = await api('GET', '/api/admin/classes/' + id + '/questions');
       qs = d.questions.map((x) => ({ text: x.text, options: x.options.slice(), answer: x.answer }));
@@ -309,7 +312,11 @@ C. Apple Interface</pre>
     document.querySelectorAll('.a-tabs .seg button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
     $('t_questions').hidden = t !== 'questions'; $('t_results').hidden = t !== 'results'; $('t_links').hidden = t !== 'links';
     clearInterval(rTimer);
-    if (t === 'results') { loadResults(); rTimer = setInterval(loadResults, 20000); }
+    if (t === 'results') {
+      if (sel) $('r_class').value = sel;
+      loadResults();
+      rTimer = setInterval(loadResults, 20000);
+    }
   }
   document.querySelectorAll('.a-tabs .seg button').forEach((b) => { b.onclick = () => setTab(b.dataset.tab); });
 
@@ -572,9 +579,10 @@ C. Apple Interface</pre>
   /* ---------- Scoreboard ---------- */
   function fillResultClasses() {
     const s = $('r_class'), cur = s.value;
-    s.innerHTML = '<option value="">All classes</option>';
+    s.innerHTML = '';
     classes.forEach((c) => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.label; s.appendChild(o); });
-    s.value = cur;
+    const oAll = document.createElement('option'); oAll.value = ''; oAll.textContent = 'All classes (combined)'; s.appendChild(oAll);
+    s.value = cur !== undefined && cur !== null && cur !== '' ? cur : (sel || classes[0].id);
   }
   async function loadResults() {
     const c = $('r_class').value; const qsx = c ? '?class=' + c : '';
@@ -591,7 +599,11 @@ C. Apple Interface</pre>
   }
   function td(tr, v, cls) { const c = document.createElement('td'); if (cls) c.className = cls; if (v instanceof Node) c.appendChild(v); else c.textContent = v; tr.appendChild(c); return c; }
   function drawResults() {
-    const allClasses = !$('r_class').value;
+    const curClass = $('r_class').value;
+    const allClasses = !curClass;
+    if ($('r_title')) {
+      $('r_title').innerHTML = (allClasses ? 'All Classes' : esc(clsLabel(curClass))) + ' <span class="in-violet">Scoreboard</span>';
+    }
     $('r_children').textContent = rRows.length;
     $('r_schools').textContent = new Set(rRows.map((r) => r.school.toLowerCase())).size;
     $('r_attempts').textContent = rAll.length;
@@ -623,9 +635,16 @@ C. Apple Interface</pre>
       td(tr, fmtDate(r.finished_at)).style.color = 'var(--muted)';
       body.appendChild(tr);
     });
+    $('r_empty').textContent = 'No results for ' + (allClasses ? 'any class' : clsLabel(curClass)) + ' yet.';
     $('r_empty').hidden = rows.length > 0;
   }
-  $('r_class').onchange = loadResults; $('r_q').oninput = drawResults; $('r_school').onchange = drawResults;
+  $('r_class').onchange = () => {
+    if ($('r_class').value) {
+      sel = $('r_class').value;
+      drawClassList();
+    }
+    loadResults();
+  }; $('r_q').oninput = drawResults; $('r_school').onchange = drawResults;
   $('r_tRank').onclick = () => { rView = 'rank'; $('r_tRank').classList.add('on'); $('r_tAll').classList.remove('on'); drawResults(); };
   $('r_tAll').onclick = () => { rView = 'all'; $('r_tAll').classList.add('on'); $('r_tRank').classList.remove('on'); drawResults(); };
   $('r_csv').onclick = () => {
