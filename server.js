@@ -889,7 +889,19 @@ const server = http.createServer(requestHandler);
 async function requestHandler(req, res) {
   for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v);
   const url = new URL(req.url, 'http://localhost');
-  const p = decodeURIComponent(url.pathname).replace(/\/+$/, '') || '/';
+  const forwarded = url.searchParams.get('__path')
+    || req.headers['x-matched-path']
+    || req.headers['x-forwarded-uri']
+    || req.headers['x-original-url']
+    || req.originalUrl;
+  
+  if (url.searchParams.has('__path')) url.searchParams.delete('__path');
+
+  const rawPath = (forwarded && !forwarded.startsWith('/api/index'))
+    ? forwarded
+    : (!url.pathname.startsWith('/api/index') ? url.pathname : '/');
+
+  const p = decodeURIComponent(rawPath.split('?')[0]).replace(/\/+$/, '') || '/';
   const lower = p.toLowerCase();
   try {
     if (lower === '/api/classes') return sendJson(res, 200, { classes: CLASSES });
