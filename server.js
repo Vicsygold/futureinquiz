@@ -572,6 +572,41 @@ function noteFailure(ip) {
 }
 
 const sha256 = (s) => crypto.createHash('sha256').update(s).digest('hex');
+
+function getSessionSecret() {
+  const admin = loadAdmin();
+  const base = (process.env.SESSION_SECRET || '') + '::' + (admin ? admin.passwordHash : DEFAULT_ADMIN_HASH);
+  return crypto.createHash('sha256').update(base).digest();
+}
+
+function createSessionToken(username, maxAgeSec = SESSION_HOURS * 3600) {
+  const exp = Date.now() + maxAgeSec * 1000;
+  const payload = Buffer.from(JSON.stringify({ u: username, exp })).toString('base64url');
+  const sig = crypto.createHmac('sha256', getSessionSecret()).update(payload).digest('base64url');
+  return `${payload}.${sig}`;
+}
+
+function verifySessionToken(token) {
+  if (!token || typeof token !== 'string') return null;
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+  const [payloadB64, sig] = parts;
+  try {
+    const expectedSig = crypto.createHmac('sha256', getSessionSecret()).update(payloadB64).digest('base64url');
+    if (sig.length !== expectedSig.length) return null;
+    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expectedSig))) return null;
+
+    const data = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+    if (!data || !data.u || typeof data.exp !== 'number') return null;
+    if (Date.now() > data.exp) return null;
+    const admin = loadAdmin();
+    if (!admin || cleanVal(admin.username).toLowerCase() !== cleanVal(data.u).toLowerCase()) return null;
+    return data.u;
+  } catch {
+    return null;
+  }
+}
+
 function parseCookies(req) {
   const out = {};
   (req.headers.cookie || '').split(';').forEach((p) => {
@@ -580,21 +615,33 @@ function parseCookies(req) {
   });
   return out;
 }
+
 function sessionUser(req) {
   const token = parseCookies(req).fin_admin;
   if (!token) return null;
-  const s = q.getSession.get(sha256(token));
-  if (!s || s.expires_at < Date.now()) return null;
-  // Changing the password signs everyone out: the session must match the current password hash.
-  const admin = loadAdmin();
-  if (!admin || s.pw_fp !== sha256(admin.passwordHash)) return null;
-  return s.username;
+
+  // 1. Stateless HMAC verification (works across all serverless lambda containers)
+  const user = verifySessionToken(token);
+  if (user) return user;
+
+  // 2. Fallback to SQLite sessions table
+  try {
+    const s = q.getSession.get(sha256(token));
+    if (s && s.expires_at >= Date.now()) {
+      const admin = loadAdmin();
+      if (admin && s.pw_fp === sha256(admin.passwordHash)) return s.username;
+    }
+  } catch {}
+
+  return null;
 }
+
 function isHttps(req) {
   return req.socket.encrypted || String(req.headers['x-forwarded-proto'] || '').startsWith('https');
 }
+
 function cookie(req, value, maxAgeSec) {
-  return `fin_admin=${value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAgeSec}${isHttps(req) ? '; Secure' : ''}`;
+  return `fin_admin=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSec}${isHttps(req) ? '; Secure' : ''}`;
 }
 function clientIp(req) {
   return String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
@@ -816,9 +863,11 @@ async function adminLogin(req, res) {
     return sendJson(res, 401, { error: 'Wrong username or password.' });
   }
   failures.delete(ip);
-  const token = crypto.randomBytes(32).toString('base64url');
-  q.purgeSessions.run(Date.now());
-  q.insertSession.run(sha256(token), admin.username, sha256(admin.passwordHash), Date.now() + SESSION_HOURS * 3600 * 1000);
+  const token = createSessionToken(admin.username, SESSION_HOURS * 3600);
+  try {
+    q.purgeSessions.run(Date.now());
+    q.insertSession.run(sha256(token), admin.username, sha256(admin.passwordHash), Date.now() + SESSION_HOURS * 3600 * 1000);
+  } catch {}
   sendJson(res, 200, { ok: true, username: admin.username }, { 'Set-Cookie': cookie(req, token, SESSION_HOURS * 3600) });
 }
 
