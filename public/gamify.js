@@ -1,4 +1,4 @@
-// FutureIN Quiz — Gamification Engine (Streaks, Live Badges & Animated Mascot Companion)
+// FutureIN Quiz — Gamification Engine (Streaks, Celebrations, Live Badges & Pedagogical Excellence)
 // Zero external dependencies: Uses HTML5 Canvas and native Web Audio API.
 
 (function (root) {
@@ -238,6 +238,85 @@
     `;
   }
 
+  /* ---------- Pedagogical "Did You Know?" Knowledge Library (Phase 2) ---------- */
+  const TECH_FACTS = [
+    {
+      keys: ['mouse', 'click', 'scroll', 'pointer'],
+      text: "The first computer mouse in 1964 was carved out of wood and had only one button!",
+      short: "The first computer mouse was made of wood in 1964!"
+    },
+    {
+      keys: ['keyboard', 'type', 'key', 'spacebar', 'qwerty'],
+      text: "The spacebar is pressed over 6 million times every single second around the world!",
+      short: "The spacebar is tapped 6 million times every second!"
+    },
+    {
+      keys: ['monitor', 'screen', 'display', 'pixel', 'television', 'tv'],
+      text: "Computer screens create millions of vivid colors by mixing just Red, Green, and Blue light (RGB)!",
+      short: "Screens create all colors with Red, Green, and Blue light!"
+    },
+    {
+      keys: ['tower', 'system unit', 'cpu', 'brain', 'processor', 'chip'],
+      text: "A modern computer chip can perform billions of calculations every second—far faster than the rockets that sent astronauts to the Moon!",
+      short: "Computer chips think billions of times faster than Moon rockets!"
+    },
+    {
+      keys: ['cd', 'dvd', 'flash', 'drive', 'usb', 'storage', 'memory', 'disk'],
+      text: "A tiny USB thumb drive today can hold more books and photos than an entire multi-story city library!",
+      short: "One tiny USB flash drive holds more books than a whole library!"
+    },
+    {
+      keys: ['laptop', 'portable', 'battery'],
+      text: "Astronauts aboard the International Space Station use floating laptops in zero gravity to control experiments and chat with Earth!",
+      short: "Astronauts use floating laptops in space every single day!"
+    },
+    {
+      keys: ['plug', 'power', 'electric', 'electricity', 'energy'],
+      text: "Electrical signals race inside computer circuits at nearly the speed of light—almost 300,000 kilometers every second!",
+      short: "Electricity travels inside computers near the speed of light!"
+    },
+    {
+      keys: ['internet', 'network', 'web', 'online', 'wi-fi', 'wifi', 'ict'],
+      text: "The very first message sent across the Internet in 1969 was supposed to be 'LOGIN', but the network crashed after just 'LO'!",
+      short: "The first Internet message was just 'LO' in 1969!"
+    },
+    {
+      keys: ['code', 'program', 'algorithm', 'software', 'scratch', 'loop'],
+      text: "The world's very first computer programmer was a brilliant woman named Ada Lovelace in 1843—long before modern computers even existed!",
+      short: "Ada Lovelace wrote the world's first computer code in 1843!"
+    },
+    {
+      keys: ['robot', 'bot', 'ai', 'artificial intelligence', 'machine learning'],
+      text: "The word 'Robot' was introduced in 1920 from a word meaning 'helpful worker'—and today robot rovers explore Mars all by themselves!",
+      short: "The word Robot means 'helpful worker'—and rovers explore Mars!"
+    },
+    {
+      keys: ['data', 'binary', 'byte', 'bit', '0 and 1'],
+      text: "Computers talk in a secret code called Binary, which stores every movie, photo, and game using only 0 and 1!",
+      short: "Computers store every photo and song using only 0 and 1!"
+    },
+    {
+      keys: ['bug', 'virus', 'security', 'malware', 'password'],
+      text: "The famous term 'Computer Bug' became popular in 1947 when engineers found an actual real moth trapped inside a giant computer relay!",
+      short: "The term 'computer bug' came from a real moth in 1947!"
+    },
+    {
+      keys: ['radio', 'television', 'phone', 'telephone', 'device', 'gadget'],
+      text: "The first mobile phone in 1973 was nicknamed 'The Brick' because it weighed over a kilogram and was as large as a shoebox!",
+      short: "The first mobile phone in 1973 was as big as a shoe!"
+    },
+    {
+      keys: ['printer', 'scanner', 'paper', 'print'],
+      text: "Advanced 3D printers can now print real objects using plastic, metal, chocolate, and even materials to build small houses!",
+      short: "3D printers can create real toys, tools, and chocolate!"
+    },
+    {
+      keys: ['machine', 'computer', 'electronic'],
+      text: "Computers are electronic machines that take input, process instructions at lightning speed, and give helpful output!",
+      short: "Computers process instructions in fractions of a microsecond!"
+    }
+  ];
+
   /* ---------- Gamification Controller ---------- */
   class GamifyController {
     constructor() {
@@ -253,6 +332,10 @@
       this.mascotAvatar = null;
       this.mascotBubble = null;
       this.speechTimeout = null;
+
+      // Phase 2 Settings
+      this.autoReadEnabled = (typeof localStorage !== 'undefined' && localStorage.getItem('fin_autoread') !== null) ? (localStorage.getItem('fin_autoread') === '1') : true;
+      this.zoomModalSetup = false;
 
       // Auto-inject HUD on DOM ready
       if (document.readyState === 'loading') {
@@ -270,6 +353,7 @@
       this.hasMistake = false;
       this.streakMasterUnlocked = false;
 
+      this.clearFact();
       this.checkVisibility();
       this.updateHUD();
       this.setMascotMood('happy', "Hi! I'm Sparky! 🚀 Tap the right picture to win stars!");
@@ -277,6 +361,7 @@
 
     startQuiz() {
       this.ensureQuizHUD();
+      this.clearFact();
       this.checkVisibility();
       this.updateHUD();
       this.setMascotMood('happy', "Hi! I'm Sparky! 🚀 Tap the right picture to win stars!");
@@ -318,6 +403,10 @@
               <span>Speedstar</span>
               <span class="fin-quest-status">Active</span>
             </span>
+            <button type="button" class="fin-autoread-btn ${this.autoReadEnabled ? 'on' : ''}" id="finAutoReadToggle" title="Toggle Auto Read-Aloud">
+              <span>🗣️</span>
+              <span id="finAutoReadLabel">Auto-Read: ${this.autoReadEnabled ? 'ON' : 'OFF'}</span>
+            </button>
           </div>
         `;
 
@@ -329,6 +418,22 @@
           quizSection.prepend(this.hudWrap);
         } else if (quizSection.appendChild) {
           quizSection.appendChild(this.hudWrap);
+        }
+
+        // Auto-Read Toggle Button Event
+        const autoBtn = this.hudWrap.querySelector('#finAutoReadToggle');
+        if (autoBtn) {
+          autoBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.autoReadEnabled = !this.autoReadEnabled;
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem('fin_autoread', this.autoReadEnabled ? '1' : '0');
+            }
+            autoBtn.className = 'fin-autoread-btn' + (this.autoReadEnabled ? ' on' : '');
+            const lbl = autoBtn.querySelector('#finAutoReadLabel');
+            if (lbl) lbl.textContent = `Auto-Read: ${this.autoReadEnabled ? 'ON' : 'OFF'}`;
+            playTone(this.autoReadEnabled ? 659 : 440, 0, 0.1, 'sine');
+          };
         }
       }
 
@@ -368,7 +473,10 @@
         }
       }
 
-      // 3. Auto screen visibility
+      // 3. Setup diagram zoom modal
+      this.setupZoomModal();
+
+      // 4. Auto screen visibility
       this.checkVisibility();
       if (!this.observerSetup) {
         this.observerSetup = true;
@@ -478,11 +586,102 @@
           if (this.mascotBubble && this.streak === 0) {
             this.mascotBubble.textContent = "Focus on the next one! You've got this! 🌟";
           }
-        }, 4000);
+        }, 4500);
       }
     }
 
-    recordAnswer(isCorrect, eventOrBtn = null) {
+    /* ---------- Phase 2: TTS Read-Aloud Engine ---------- */
+    speak(text, onStart, onEnd) {
+      if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+      try {
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = 0.88;
+        u.pitch = 1.15;
+        u.lang = 'en-GB';
+
+        const qBox = document.querySelector('.question') || document.getElementById('c_q');
+        const sayBtn = document.getElementById('sayBtn');
+
+        if (qBox) qBox.classList.add('fin-speaking');
+        if (sayBtn) sayBtn.classList.add('fin-speaking-btn');
+
+        const cleanup = () => {
+          if (qBox) qBox.classList.remove('fin-speaking');
+          if (sayBtn) sayBtn.classList.remove('fin-speaking-btn');
+          if (onEnd) onEnd();
+        };
+
+        u.onstart = () => {
+          if (onStart) onStart();
+        };
+        u.onend = cleanup;
+        u.onerror = cleanup;
+
+        speechSynthesis.speak(u);
+      } catch (_) {}
+    }
+
+    onQuestionChange(q) {
+      this.clearFact();
+      this.updateHUD();
+
+      // If Auto-Read is active, read the question aloud after short pause
+      if (this.autoReadEnabled && q && (q.say || q.text)) {
+        setTimeout(() => {
+          this.speak(q.say || q.text);
+        }, 300);
+      }
+    }
+
+    /* ---------- "Did You Know?" Micro-Learning Fact System (Disabled to reduce screen clutter) ---------- */
+    showFactCard(q) {
+      // Disabled for now per user feedback to reduce screen clutter and keep children focused
+      this.clearFact();
+    }
+
+    clearFact() {
+      const existing = document.getElementById('finDidYouKnowCard');
+      if (existing) {
+        if (existing.parentNode) existing.parentNode.removeChild(existing);
+        else if (existing.remove) existing.remove();
+      }
+    }
+
+    /* ---------- Phase 2: Diagram & Image Zoom Modal ---------- */
+    setupZoomModal() {
+      if (this.zoomModalSetup || typeof document === 'undefined') return;
+      this.zoomModalSetup = true;
+
+      document.addEventListener('click', (e) => {
+        const promptImg = e.target.closest ? e.target.closest('.prompt-img') : null;
+        if (promptImg && promptImg.innerHTML && promptImg.innerHTML.trim() && !promptImg.classList.contains('hidden')) {
+          this.openZoomModal(promptImg.innerHTML);
+        }
+      });
+    }
+
+    openZoomModal(contentHtml) {
+      const modal = document.createElement('div');
+      modal.className = 'fin-zoom-modal';
+      modal.innerHTML = `
+        <div class="fin-zoom-content" onclick="event.stopPropagation()">
+          ${contentHtml}
+          <button type="button" class="fin-zoom-close" id="finZoomClose">✕ Close Diagram</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const close = () => {
+        if (modal.parentNode) modal.parentNode.removeChild(modal);
+      };
+      modal.onclick = close;
+      const closeBtn = modal.querySelector('#finZoomClose');
+      if (closeBtn) closeBtn.onclick = close;
+    }
+
+    /* ---------- Quiz Answer Recording ---------- */
+    recordAnswer(isCorrect, eventOrBtn = null, questionData = null) {
       this.ensureQuizHUD();
       this.totalAnswered++;
 
@@ -495,6 +694,8 @@
           clickY = rect.top + rect.height / 2;
         }
       }
+
+      const q = questionData || (typeof window !== 'undefined' && window.QUESTIONS && window.idx !== undefined && window.QUESTIONS[window.idx]) || null;
 
       if (isCorrect) {
         this.correctCount++;
@@ -536,6 +737,7 @@
           playStreakSound(1);
           this.setMascotMood('excited', `🎉 Spot on! +1 Star! Streak started! ⭐`);
         }
+
       } else {
         this.hasMistake = true;
         this.streak = 0;
@@ -585,6 +787,7 @@
       setTimeout(() => {
         toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
         toast.style.opacity = '0';
+        toast.style.transform = 'translate(-50%, -40px) scale(0.85)';
         setTimeout(() => {
           if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
         }, 450);
@@ -673,6 +876,9 @@
     renderBadges(containerOrId, stats = {}) {
       // Hide top HUD during finish screen so badges take center stage
       if (this.hudWrap) this.hudWrap.style.display = 'none';
+
+      // Clear micro-learning fact
+      this.clearFact();
 
       // Cheer the student on the finish screen
       this.setMascotMood('celebrate', "🏆 YOU DID IT! Check out your awesome badges! 🌟");

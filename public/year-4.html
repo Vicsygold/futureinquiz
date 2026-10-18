@@ -399,8 +399,12 @@ function tone(freq,start,dur,type='sine',vol=.18){
 const happySound=()=>[523,659,784,1047].forEach((f,i)=>tone(f,i*.1,.3,'triangle'));
 const oopsSound=()=>{ tone(330,0,.18); tone(262,.16,.25); };
 function speak(text){
-  if(!soundOn || !('speechSynthesis' in window)) return;
-  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.rate=.92; u.pitch=1.1; u.lang='en-GB'; speechSynthesis.speak(u); }catch(e){}
+  if(!soundOn) return;
+  if(window.Gamify && Gamify.speak) {
+    Gamify.speak(text);
+  } else if('speechSynthesis' in window) {
+    try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.rate=.92; u.pitch=1.1; u.lang='en-GB'; speechSynthesis.speak(u); }catch(e){}
+  }
 }
 function confetti(){
   const bits=['⭐','🎉','🌟','✨'], colors=['#ff6b9a','#3aa8f0','#ffc93c','#36c46b','#4a5be0'];
@@ -435,6 +439,7 @@ function drawProgress(){
 
 function showQuestion(){
   const q=QUESTIONS[idx]; firstTry=true; answered=false;
+  if(window.Gamify) Gamify.onQuestionChange(q);
   $('lessonTag').textContent=q.lesson;
   $('qNum').textContent=`Question ${idx+1} of ${QUESTIONS.length}`;
   $('hint').textContent=q.hint;
@@ -470,7 +475,7 @@ function choose(btn,ok){
     }
     btn.classList.add('right');
     [...$('cards').children].forEach(c=>{ if(c!==btn) c.classList.add('fade'); });
-    if(window.Gamify) Gamify.recordAnswer(firstTry, btn);
+    if(window.Gamify) Gamify.recordAnswer(firstTry, btn, q);
     const word=PRAISE[Math.floor(Math.random()*PRAISE.length)];
     $('feedback').innerHTML=`<b>🎉 ${word} 🎉</b><small>${esc(q.yay)}</small>`; $('feedback').className='feedback good';
     happySound(); confetti(); setTimeout(()=>speak(word+' '+q.yay),300);
@@ -484,7 +489,13 @@ function choose(btn,ok){
   }
 }
 
-function next(){ idx++; if(idx>=QUESTIONS.length) return finish(); showQuestion(); window.scrollTo(0,0); }
+function next(){
+  if(window.Gamify) Gamify.clearFact();
+  idx++;
+  if(idx>=QUESTIONS.length) return finish();
+  showQuestion();
+  window.scrollTo(0,0);
+}
 
 async function finish(){
   $('quiz').classList.add('hidden'); $('end').classList.remove('hidden');

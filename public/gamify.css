@@ -438,3 +438,125 @@
   60% { transform: scale(1.18) rotate(5deg); opacity: 1; }
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
+
+/* ---------- "Did You Know?" Micro-Learning Card (Disabled to reduce screen clutter) ---------- */
+.fin-dyk-card {
+  display: none !important;
+}
+
+/* ---------- 7. TTS Active Speaking Glow & Audio Wave (Phase 2) ---------- */
+.fin-speaking {
+  animation: finSpeakingPulse 0.8s infinite alternate !important;
+  border-color: #3aa8f0 !important;
+  box-shadow: 0 0 22px rgba(58, 168, 240, 0.45) !important;
+}
+
+@keyframes finSpeakingPulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.025); }
+}
+
+.say.fin-speaking-btn {
+  animation: finBtnBounce 0.5s infinite alternate !important;
+  background: #23974f !important;
+  box-shadow: 0 0 16px rgba(35, 151, 79, 0.7), 0 5px 0 #1b743c !important;
+}
+
+@keyframes finBtnBounce {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-4px) scale(1.12); }
+}
+
+/* Auto-Read Toggle Button */
+.fin-autoread-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 2px solid #bfe6ff;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-family: 'Fredoka', sans-serif;
+  font-size: clamp(11px, 2vw, 13px);
+  font-weight: 700;
+  color: #1e1338;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #bfe6ff;
+  transition: all 0.2s ease;
+}
+
+.fin-autoread-btn:hover {
+  background: #f0f9ff;
+  transform: translateY(-1px);
+}
+
+.fin-autoread-btn:active {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+.fin-autoread-btn.on {
+  border-color: #36c46b;
+  background: #f0fff4;
+  color: #145a2b;
+  box-shadow: 0 3px 0 #289b53;
+}
+
+/* ---------- 8. Diagram & Image Zoom Inspection (Phase 2) ---------- */
+.prompt-img {
+  cursor: zoom-in;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.prompt-img:hover {
+  transform: scale(1.04);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+.fin-zoom-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: rgba(14, 0, 44, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: finFadeIn 0.25s ease;
+  cursor: zoom-out;
+}
+
+.fin-zoom-content {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 24px;
+  max-width: min(540px, 92vw);
+  max-height: 85vh;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 0 0 4px #ffc93c;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: finCardPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fin-zoom-content svg, .fin-zoom-content img {
+  width: 100%;
+  height: auto;
+  max-height: 55vh;
+  display: block;
+}
+
+.fin-zoom-close {
+  background: #ff6b9a;
+  color: #ffffff;
+  border: none;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 8px 24px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #d6457a;
+}
