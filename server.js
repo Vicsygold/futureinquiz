@@ -17,7 +17,7 @@ const path = require('path');
 const fs = require('fs');
 
 const PORT = Number(process.env.PORT) || 3000;
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+const DATA_DIR = process.env.DATA_DIR || (process.env.VERCEL ? '/tmp/data' : path.join(__dirname, 'data'));
 const DB_PATH = process.env.DB_PATH || path.join(DATA_DIR, 'quiz.db');
 const ADMIN_FILE = path.join(DATA_DIR, 'admin.json');
 const ADMIN_PATH = ('/' + (process.env.ADMIN_PATH || 'admin').replace(/^\/+|\/+$/g, '')).toLowerCase();
@@ -625,6 +625,12 @@ function sendFile(res, file, extra = {}) {
   });
 }
 function readBody(req, limit = 2_000_000) {
+  if (req.body && typeof req.body === 'object') {
+    return Promise.resolve(req.body);
+  }
+  if (typeof req.body === 'string') {
+    try { return Promise.resolve(JSON.parse(req.body)); } catch { return Promise.resolve({}); }
+  }
   return new Promise((resolve, reject) => {
     let data = '';
     req.on('data', (c) => { data += c; if (data.length > limit) { reject(new Error('too_large')); req.destroy(); } });
@@ -713,21 +719,23 @@ async function submitQuiz(req, res) {
     const durationMs = Number(body.durationMs) || Math.max(1000, now - attempt.started_at);
     q.finishAttempt.run(now, score, total, durationMs, JSON.stringify(answers), attempt.id);
     logAttemptBackup({ id: attempt.id, name: attempt.name, school: attempt.school, classId: attempt.class_id, score, total, durationMs, finishedAt: now });
-    saveAttemptToSupabase({
-      id: attempt.id,
-      name: attempt.name,
-      school: attempt.school,
-      class_id: attempt.class_id,
-      name_key: attempt.name.toLowerCase(),
-      school_key: attempt.school.toLowerCase(),
-      started_at: attempt.started_at,
-      finished_at: now,
-      score,
-      total,
-      duration_ms: durationMs,
-      answer_key: attempt.answer_key,
-      answers: JSON.stringify(answers)
-    }).catch(() => {});
+    try {
+      await saveAttemptToSupabase({
+        id: attempt.id,
+        name: attempt.name,
+        school: attempt.school,
+        class_id: attempt.class_id,
+        name_key: attempt.name.toLowerCase(),
+        school_key: attempt.school.toLowerCase(),
+        started_at: attempt.started_at,
+        finished_at: now,
+        score,
+        total,
+        duration_ms: durationMs,
+        answer_key: attempt.answer_key,
+        answers: JSON.stringify(answers)
+      });
+    } catch {}
     return sendJson(res, 200, { score, total, durationMs });
   }
 
@@ -767,21 +775,23 @@ async function submitQuiz(req, res) {
       JSON.stringify(answers)
     );
     logAttemptBackup({ id, name, school, classId: cls.id, score, total, durationMs, finishedAt: now });
-    saveAttemptToSupabase({
-      id,
-      name,
-      school,
-      class_id: cls.id,
-      name_key: name.toLowerCase(),
-      school_key: school.toLowerCase(),
-      started_at: startedAt,
-      finished_at: now,
-      score,
-      total,
-      duration_ms: durationMs,
-      answer_key: JSON.stringify(key),
-      answers: JSON.stringify(answers)
-    }).catch(() => {});
+    try {
+      await saveAttemptToSupabase({
+        id,
+        name,
+        school,
+        class_id: cls.id,
+        name_key: name.toLowerCase(),
+        school_key: school.toLowerCase(),
+        started_at: startedAt,
+        finished_at: now,
+        score,
+        total,
+        duration_ms: durationMs,
+        answer_key: JSON.stringify(key),
+        answers: JSON.stringify(answers)
+      });
+    } catch {}
     return sendJson(res, 200, { score, total, durationMs });
   }
 
@@ -874,7 +884,9 @@ async function adminRoutes(req, res, p, url) {
 // ---------- Server ----------
 const SECURITY_HEADERS = { 'X-Frame-Options': 'DENY', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'same-origin' };
 
-const server = http.createServer(async (req, res) => {
+const server = http.createServer(requestHandler);
+
+async function requestHandler(req, res) {
   for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v);
   const url = new URL(req.url, 'http://localhost');
   const p = decodeURIComponent(url.pathname).replace(/\/+$/, '') || '/';
@@ -907,16 +919,21 @@ const server = http.createServer(async (req, res) => {
     console.error(e);
     sendJson(res, 500, { error: 'Something went wrong on the server.' });
   }
-});
+}
 
-// Tidy up abandoned quiz sessions and expired logins once an hour.
-setInterval(() => {
-  q.purgeSessions.run(Date.now());
-  q.purgeOpenAttempts.run(Date.now() - 24 * 3600 * 1000);
-}, 3600 * 1000).unref();
+if (!process.env.VERCEL) {
+  // Tidy up abandoned quiz sessions and expired logins once an hour.
+  setInterval(() => {
+    q.purgeSessions.run(Date.now());
+    q.purgeOpenAttempts.run(Date.now() - 24 * 3600 * 1000);
+  }, 3600 * 1000).unref();
 
-server.listen(PORT, () => {
-  console.log(`FutureIN Quiz:   http://localhost:${PORT}`);
-  console.log(`Admin dashboard: http://localhost:${PORT}${ADMIN_PATH}`);
-  if (!loadAdmin()) console.log('No admin account yet. Run:  npm run set-admin');
-});
+  server.listen(PORT, () => {
+    console.log(`FutureIN Quiz:   http://localhost:${PORT}`);
+    console.log(`Admin dashboard: http://localhost:${PORT}${ADMIN_PATH}`);
+    if (!loadAdmin()) console.log('No admin account yet. Run:  npm run set-admin');
+  });
+}
+
+module.exports = requestHandler;
+module.exports.server = server;

@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "public/**",
+      "maxDuration": 15
+    }
+  },
+  "rewrites": [
+    { "source": "/quiz/nursery-2", "destination": "/nursery.html" },
+    { "source": "/quiz/nursery", "destination": "/nursery.html" },
+    { "source": "/nursery-2", "destination": "/nursery.html" },
+    { "source": "/nursery", "destination": "/nursery.html" },
+    { "source": "/quiz/year-1", "destination": "/year-1.html" },
+    { "source": "/year-1", "destination": "/year-1.html" },
+    { "source": "/quiz/year-2", "destination": "/year-2.html" },
+    { "source": "/year-2", "destination": "/year-2.html" },
+    { "source": "/quiz/year-3", "destination": "/year-3.html" },
+    { "source": "/year-3", "destination": "/year-3.html" },
+    { "source": "/quiz/year-4", "destination": "/year-4.html" },
+    { "source": "/year-4", "destination": "/year-4.html" },
+    { "source": "/quiz/year-5", "destination": "/year-5.html" },
+    { "source": "/year-5", "destination": "/year-5.html" },
+    { "source": "/quiz/year-6", "destination": "/year-6.html" },
+    { "source": "/year-6", "destination": "/year-6.html" },
+    { "source": "/admin", "destination": "/api/index.js" },
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/quiz/(.*)", "destination": "/index.html" }
+  ]
+}

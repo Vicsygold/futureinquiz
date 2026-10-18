@@ -8,6 +8,6 @@
     "set-admin": "node scripts/set-admin.js"
   },
   "engines": {
-    "node": ">=22.13"
+    "node": "22.x"
   }
 }
