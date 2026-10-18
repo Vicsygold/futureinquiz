@@ -911,8 +911,12 @@ async function requestHandler(req, res) {
     if (lower.startsWith('/api/')) return sendJson(res, 404, { error: 'Not found' });
     if (req.method !== 'GET' && req.method !== 'HEAD') return sendJson(res, 405, { error: 'Method not allowed' });
 
-    if (lower === ADMIN_PATH) return sendFile(res, path.join(PUBLIC_DIR, 'private', 'admin.html'),
-      { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' });
+    if (lower === ADMIN_PATH || lower === '/admin.html') {
+      const adminFile = fs.existsSync(path.join(PUBLIC_DIR, 'admin.html'))
+        ? path.join(PUBLIC_DIR, 'admin.html')
+        : path.join(PUBLIC_DIR, 'private', 'admin.html');
+      return sendFile(res, adminFile, { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' });
+    }
     if (lower === '/nursery' || lower === '/nursery-2' || lower === '/quiz/nursery-2' || lower === '/quiz/nursery') return sendFile(res, path.join(PUBLIC_DIR, 'nursery.html'));
     if (lower === '/year-1' || lower === '/quiz/year-1' || lower === '/year1' || lower === '/quiz/year1') return sendFile(res, path.join(PUBLIC_DIR, 'year-1.html'));
     if (lower === '/year-2' || lower === '/quiz/year-2' || lower === '/year2' || lower === '/quiz/year2') return sendFile(res, path.join(PUBLIC_DIR, 'year-2.html'));
