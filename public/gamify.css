@@ -1,0 +1,440 @@
+/* FutureIN Gamification Styles — Mascot Companion, Streaks, Live Badges & Celebrations */
+
+:root {
+  --fin-gold: #ffc93c;
+  --fin-fire: #ff6b4a;
+  --fin-violet: #8338ec;
+  --fin-blue: #3aa8f0;
+  --fin-green: #36c46b;
+}
+
+/* ---------- 1. Top HUD: Streak, Multiplier & Live Badges ---------- */
+.fin-hud-wrap {
+  width: 100%;
+  max-width: 960px;
+  margin: 8px auto 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: finFadeIn 0.4s ease-out;
+  position: relative;
+  z-index: 10;
+}
+
+@keyframes finFadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Row 1: Streak Flame & Combo Multiplier Bar */
+.fin-hud-streak-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px 16px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08), 0 0 0 2px rgba(255, 201, 60, 0.4);
+  backdrop-filter: blur(8px);
+}
+
+.fin-hud-streak-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Fredoka', 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: clamp(14px, 2.5vw, 17px);
+  color: #1e1338;
+}
+
+.fin-hud-flame {
+  font-size: 1.4em;
+  display: inline-block;
+  animation: finFlamePulse 1s infinite alternate;
+  filter: drop-shadow(0 2px 6px rgba(255, 107, 74, 0.5));
+}
+
+@keyframes finFlamePulse {
+  0% { transform: scale(1) rotate(-3deg); }
+  100% { transform: scale(1.22) rotate(4deg); }
+}
+
+.fin-hud-multiplier {
+  background: linear-gradient(135deg, #ffc93c, #ff8a2a);
+  color: #1e1338;
+  font-weight: 800;
+  font-size: clamp(12px, 2.2vw, 15px);
+  padding: 4px 12px;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(255, 138, 42, 0.35);
+  letter-spacing: 0.5px;
+  transition: transform 0.2s, background 0.3s;
+}
+
+.fin-hud-multiplier.super {
+  background: linear-gradient(135deg, #ff007f, #7928ca, #ffc93c);
+  color: #fff;
+  animation: finSuperPulse 0.9s infinite alternate;
+}
+
+@keyframes finSuperPulse {
+  0% { transform: scale(1); box-shadow: 0 2px 8px rgba(255, 0, 127, 0.5); }
+  100% { transform: scale(1.08); box-shadow: 0 4px 16px rgba(255, 0, 127, 0.8); }
+}
+
+.fin-hud-meter {
+  flex: 1;
+  max-width: 200px;
+  height: 8px;
+  background: #eee6ff;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.fin-hud-meter-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ffc93c, #ff6b4a);
+  border-radius: 999px;
+  transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Row 2: Live Badges in Play / Quest Ribbon */
+.fin-hud-badges-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+  padding: 4px;
+}
+
+.fin-quest-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid #d9d0ea;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: clamp(12px, 2.2vw, 13.5px);
+  font-weight: 700;
+  color: #3b2d5a;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.fin-quest-chip.active {
+  border-color: #36c46b;
+  background: #f0fff4;
+  color: #145a2b;
+}
+
+.fin-quest-chip.unlocked {
+  border-color: #ffc93c;
+  background: linear-gradient(135deg, #fff9e6, #fff0c2);
+  color: #7a5000;
+  box-shadow: 0 2px 8px rgba(255, 201, 60, 0.4);
+  animation: finBadgeChipGlow 1.5s infinite alternate;
+}
+
+.fin-quest-chip.failed {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+@keyframes finBadgeChipGlow {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.04); border-color: #ff9a3c; }
+}
+
+.fin-quest-icon {
+  font-size: 1.25em;
+  line-height: 1;
+}
+
+.fin-quest-status {
+  font-size: 0.85em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+  font-weight: 800;
+}
+
+.fin-quest-chip.unlocked .fin-quest-status {
+  background: #ffc93c;
+  color: #000;
+}
+
+/* ---------- 2. Interactive Robot Mascot Companion ("Sparky") ---------- */
+.fin-mascot-dock {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: auto;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fin-mascot-avatar {
+  width: clamp(75px, 12vw, 100px);
+  height: clamp(75px, 12vw, 100px);
+  cursor: pointer;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.22));
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: finMascotIdle 3s ease-in-out infinite;
+}
+
+.fin-mascot-avatar:hover {
+  transform: scale(1.1) rotate(4deg);
+}
+
+.fin-mascot-avatar:active {
+  transform: scale(0.92) rotate(-3deg);
+}
+
+@keyframes finMascotIdle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px) rotate(2deg); }
+}
+
+.fin-mascot-avatar.jump {
+  animation: finMascotJumpAnim 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes finMascotJumpAnim {
+  0% { transform: scale(1) translateY(0); }
+  35% { transform: scale(1.18, 0.85) translateY(10px); }
+  60% { transform: scale(0.95, 1.15) translateY(-32px) rotate(-6deg); }
+  85% { transform: scale(1.05) translateY(-5px) rotate(2deg); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+.fin-mascot-avatar.wobble {
+  animation: finMascotWobble 0.6s ease-in-out;
+}
+
+@keyframes finMascotWobble {
+  20%, 60% { transform: translateX(-8px) rotate(-5deg); }
+  40%, 80% { transform: translateX(8px) rotate(5deg); }
+  100% { transform: translateX(0); }
+}
+
+/* Mascot Speech Bubble */
+.fin-mascot-bubble {
+  position: relative;
+  background: #ffffff;
+  color: #1e1338;
+  font-family: 'Fredoka', 'Poppins', sans-serif;
+  font-size: clamp(12px, 2.2vw, 14px);
+  font-weight: 700;
+  line-height: 1.35;
+  padding: 10px 14px;
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16), 0 0 0 2.5px #ffc93c;
+  max-width: clamp(180px, 32vw, 260px);
+  text-align: left;
+  animation: finBubblePop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fin-mascot-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -9px;
+  right: 28px;
+  border-width: 9px 8px 0 8px;
+  border-style: solid;
+  border-color: #ffffff transparent transparent transparent;
+}
+
+@keyframes finBubblePop {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Mascot SVG Elements */
+.fin-mascot-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Responsive adjustment for small screens */
+@media (max-width: 600px) {
+  .fin-mascot-dock {
+    bottom: 12px;
+    right: 12px;
+  }
+  .fin-mascot-bubble {
+    max-width: 190px;
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+}
+
+/* ---------- 3. Mid-Quiz Live Badge Unlock Banner ---------- */
+.fin-badge-toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #1f0e4a, #2a0845);
+  color: #fff;
+  border: 3px solid #ffc93c;
+  padding: 12px 24px;
+  border-radius: 999px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 201, 60, 0.6);
+  font-family: 'Fredoka', 'Lexend', sans-serif;
+  animation: finBadgeDropIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+}
+
+@keyframes finBadgeDropIn {
+  from { transform: translate(-50%, -80px) scale(0.7); opacity: 0; }
+  to { transform: translate(-50%, 0) scale(1); opacity: 1; }
+}
+
+.fin-badge-toast-icon {
+  font-size: 2em;
+  filter: drop-shadow(0 2px 8px rgba(255, 201, 60, 0.8));
+  animation: finIconSpin 0.6s ease;
+}
+
+@keyframes finIconSpin {
+  0% { transform: rotate(-30deg) scale(0.5); }
+  60% { transform: rotate(15deg) scale(1.3); }
+  100% { transform: rotate(0) scale(1); }
+}
+
+.fin-badge-toast-content h4 {
+  margin: 0;
+  font-size: clamp(14px, 2.8vw, 17px);
+  color: #ffc93c;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fin-badge-toast-content p {
+  margin: 2px 0 0;
+  font-size: clamp(12px, 2.2vw, 14px);
+  color: #f0e6ff;
+  font-weight: 500;
+}
+
+/* ---------- 4. Canvas Confetti Overlay ---------- */
+.fin-confetti-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ---------- 5. Finish Screen Badges Showcase ---------- */
+.fin-badges-section {
+  width: 100%;
+  max-width: 680px;
+  margin: 20px auto 0;
+  text-align: center;
+}
+
+.fin-badges-title {
+  font-family: 'Fredoka', 'Lexend', sans-serif;
+  font-size: clamp(20px, 3.8vw, 26px);
+  font-weight: 700;
+  color: #ffc93c;
+  margin: 0 0 14px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.fin-badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px;
+  justify-content: center;
+}
+
+.fin-badge-card {
+  position: relative;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(240, 230, 255, 0.9));
+  color: #1e1338;
+  border: 3px solid #ffc93c;
+  border-radius: 20px;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: finBadgeUnlock 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+.fin-badge-card:hover {
+  transform: translateY(-6px) scale(1.05);
+  box-shadow: 0 16px 32px rgba(255, 201, 60, 0.35);
+}
+
+.fin-badge-icon {
+  font-size: clamp(34px, 7vw, 44px);
+  line-height: 1;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
+}
+
+.fin-badge-name {
+  font-family: 'Fredoka', 'Lexend', sans-serif;
+  font-weight: 700;
+  font-size: clamp(13px, 2.4vw, 15px);
+  color: #2b1f47;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.fin-badge-desc {
+  font-size: 11px;
+  color: #6a5a87;
+  margin: 0;
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.fin-badge-tag {
+  display: inline-block;
+  background: #36c46b;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-top: 4px;
+}
+
+@keyframes finBadgeUnlock {
+  0% { transform: scale(0.2) rotate(-15deg); opacity: 0; }
+  60% { transform: scale(1.18) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}

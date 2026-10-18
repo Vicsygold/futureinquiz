@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lexend:wght@600;700;800&family=Poppins:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/brand.css">
 <script src="/api.js"></script>
+<link rel="stylesheet" href="/gamify.css">
+<script src="/gamify.js"></script>
 <style id="page-css">
   /* Floating bubbles & background sparkles */
   .bubbles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
@@ -215,6 +217,7 @@
       <h1>Well done, <span id="c_doneName" class="in-violet"></span>!</h1>
       <p class="c-big" id="c_doneScore"></p>
       <p class="sub" id="c_doneTime"></p>
+      <div id="c_doneBadges"></div>
       <button class="primary" id="c_again" type="button">Back to start</button>
     </div>
   </section>
@@ -314,7 +317,9 @@
       if (d.noQuiz) { $('c_noneClass').textContent = d.classLabel; show('c_none'); return; }
       st = { id: d.attemptId, qs: d.questions, answers: new Array(d.questions.length).fill(null), i: 0, t0: Date.now(), name, school, cls: classId };
       document.title = d.classLabel + ' Quiz · FutureIN';
-      show('c_quiz'); render();
+      show('c_quiz');
+      if (window.Gamify) Gamify.startQuiz();
+      render();
       clearInterval(tick);
       tick = setInterval(() => { $('c_timer').textContent = '⏱ ' + clock(Date.now() - st.t0); }, 500);
     } catch (err) { $('c_err').textContent = err.message; }
@@ -379,13 +384,20 @@
       $('c_doneName').textContent = st.name.split(' ')[0];
       $('c_doneScore').textContent = (d ? d.score : 0) + ' / ' + (d ? d.total : st.qs.length);
       $('c_doneTime').textContent = 'You finished in ' + clock(d ? d.durationMs : (Date.now() - st.t0)) + '.';
+      if (window.Gamify) {
+        Gamify.renderBadges('c_doneBadges', {
+          score: d ? d.score : 0,
+          total: d ? d.total : st.qs.length,
+          durationMs: d ? d.durationMs : (Date.now() - st.t0)
+        });
+      }
       show('c_done');
     } catch (err) {
       $('c_qerr').textContent = err.status === 0 ? 'No connection. Tap Finish again.' : err.message;
       $('c_next').disabled = false;
     }
   };
-  function reset() { st = null; $('c_name').value = ''; $('c_school').value = ''; document.title = 'FutureIN Quiz'; show('c_start'); }
+  function reset() { st = null; $('c_name').value = ''; $('c_school').value = ''; document.title = 'FutureIN Quiz'; if (window.Gamify) Gamify.reset(); show('c_start'); }
   $('c_again').onclick = reset;
   $('c_noneBack').onclick = () => show('c_start');
 

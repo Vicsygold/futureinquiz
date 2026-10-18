@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="/api.js"></script>
+<link rel="stylesheet" href="/gamify.css">
+<script src="/gamify.js"></script>
 <style>
   :root{
     --bg1:#fff4e6; --bg2:#e6f4ff;
@@ -168,6 +170,7 @@
     <h1 id="endTitle">Well Done!</h1>
     <p id="endText"></p>
     <div class="stars-row" id="endStars"></div>
+    <div id="badgesBox"></div>
     <button class="big-btn" id="againBtn">🔁 Play Again</button>
   </section>
 </div>
@@ -467,6 +470,7 @@ function choose(btn,ok){
     }
     btn.classList.add('right');
     [...$('cards').children].forEach(c=>{ if(c!==btn) c.classList.add('fade'); });
+    if(window.Gamify) Gamify.recordAnswer(firstTry, btn);
     const word=PRAISE[Math.floor(Math.random()*PRAISE.length)];
     $('feedback').innerHTML=`<b>🎉 ${word} 🎉</b><small>${esc(q.yay)}</small>`; $('feedback').className='feedback good';
     happySound(); confetti(); setTimeout(()=>speak(word+' '+q.yay),300);
@@ -474,6 +478,7 @@ function choose(btn,ok){
     $('nextBtn').classList.remove('hidden');
   } else {
     firstTry=false; btn.classList.add('wrong');
+    if(window.Gamify) Gamify.recordAnswer(false, btn);
     $('feedback').innerHTML='<b>Not quite! Try again 😊</b>'; $('feedback').className='feedback try';
     oopsSound(); speak('Not quite! Try again!');
   }
@@ -490,6 +495,14 @@ async function finish(){
   $('endStars').textContent='⭐'.repeat(stars)+'☆'.repeat(n-stars);
   happySound(); confetti(); setTimeout(confetti,900);
   speak(`${greeting} You scored ${stars} out of ${n}! You are a computer star!`);
+
+  if(window.Gamify){
+    Gamify.renderBadges('badgesBox', {
+      score: stars,
+      total: n,
+      durationMs: Date.now() - (window._quizStartTime || Date.now())
+    });
+  }
 
   // Submit attempt to server with fail-safe persistence
   const payload = {
@@ -523,6 +536,7 @@ async function start(){
   studentSchool = school;
   idx = 0; stars = 0; results = [];
   answersRecord = new Array(QUESTIONS.length).fill(null);
+  if(window.Gamify) Gamify.reset();
 
   // Register attempt with backend
   try {
@@ -533,6 +547,7 @@ async function start(){
   }
 
   $('start').classList.add('hidden'); $('end').classList.add('hidden'); $('quiz').classList.remove('hidden');
+  if(window.Gamify) Gamify.startQuiz();
   showQuestion();
 }
 
@@ -541,6 +556,7 @@ $('startBtn').onclick=start;
 $('againBtn').onclick=() => {
   $('end').classList.add('hidden');
   $('start').classList.remove('hidden');
+  if(window.Gamify) Gamify.reset();
 };
 $('nextBtn').onclick=next;
 $('sayBtn').onclick=()=>speak(QUESTIONS[idx].say);
