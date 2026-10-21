@@ -209,6 +209,7 @@ C. Apple Interface</pre>
             <div class="muted small">Most correct answers first. Ties go to the faster child. Repeat attempts keep the child's best.</div></div>
           <div class="acts">
             <select id="r_class" style="width:auto"></select>
+            <button class="ghost sm" type="button" id="r_refresh">🔄 Refresh</button>
             <button class="ghost sm" type="button" id="r_csv">Download CSV</button>
           </div>
         </div>
@@ -264,6 +265,7 @@ C. Apple Interface</pre>
               <button type="button" class="primary" id="comp_start_btn">🚀 Start Competition</button>
               <button type="button" class="btn-navy" id="comp_end_btn" style="border-color:#ff4757; color:#ff4757;" disabled>🛑 End Competition</button>
               <button type="button" class="ghost sm" id="comp_reset_btn" style="color:var(--muted)">🔄 Reset Arena</button>
+              <button type="button" class="ghost sm" id="comp_top_refresh_btn" style="color:var(--yellow); border-color:rgba(255,201,60,0.4);">🔄 Refresh Live Arena</button>
             </div>
           </div>
 
@@ -366,10 +368,46 @@ C. Apple Interface</pre>
               <!-- Rendered via JS -->
             </div>
           </div>
+
+          <!-- Real-time Live Submissions Feed on Arena View -->
+          <div class="panel" style="display:grid; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div>
+                <h3 style="margin:0; font-family:var(--display); display:flex; align-items:center; gap:8px;">
+                  <span>⚡</span> Recent Quiz Completions & Submissions
+                  <span class="chip live" style="font-size:11px; padding:2px 8px;">LIVE FEED</span>
+                </h3>
+                <p class="muted small" style="margin:2px 0 0">Real-time submissions appearing automatically as children complete their quiz.</p>
+              </div>
+              <div class="row" style="gap:8px;">
+                <button type="button" class="ghost sm" id="arena_refresh_btn" style="display:inline-flex; align-items:center; gap:4px;">
+                  <span>🔄</span> Refresh Now
+                </button>
+                <button type="button" class="primary sm" id="arena_view_all_btn">View Full Submissions Table →</button>
+              </div>
+            </div>
+            <div class="tablewrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student Name</th>
+                    <th>School</th>
+                    <th>Class</th>
+                    <th>Score</th>
+                    <th>Mastery</th>
+                    <th>Duration</th>
+                    <th>Finished At</th>
+                  </tr>
+                </thead>
+                <tbody id="admin_live_feed_tbody"></tbody>
+              </table>
+            </div>
+            <div class="empty-note" id="admin_live_feed_empty" hidden>No quiz submissions yet. When students complete a quiz, their results appear here instantly!</div>
+          </div>
         </div>
 
         <!-- SUB-SECTION 2: DEDICATED COMPETITION QUESTIONS -->
-        <div id="csub_questions" style="display:none; display:grid; gap:14px;">
+        <div id="csub_questions" style="display:none; gap:14px;">
           <div class="a-head">
             <div>
               <h2>📝 Competition Questions by Class</h2>
@@ -425,6 +463,7 @@ C. Apple Interface</pre>
             </div>
             <div class="acts">
               <select id="comp_attempts_class" style="width:auto"></select>
+              <button class="ghost sm" type="button" id="comp_submissions_refresh_btn">🔄 Refresh</button>
               <button class="ghost sm" type="button" id="comp_csv_btn">Download CSV</button>
             </div>
           </div>
@@ -557,12 +596,12 @@ C. Apple Interface</pre>
     clearInterval(rTimer);
     clearInterval(compTimer);
     if (t === 'results') {
-      if (sel) $('r_class').value = sel;
+      $('r_class').value = $('r_class').value || '';
       loadResults();
-      rTimer = setInterval(loadResults, 20000);
+      rTimer = setInterval(loadResults, 8000);
     } else if (t === 'competition') {
       loadCompetition();
-      compTimer = setInterval(loadCompetitionQuiet, 10000);
+      compTimer = setInterval(loadCompetitionQuiet, 5000);
     }
   }
   document.querySelectorAll('.a-tabs .seg button').forEach((b) => { b.onclick = () => setTab(b.dataset.tab); });
@@ -827,16 +866,16 @@ C. Apple Interface</pre>
   function fillResultClasses() {
     const s = $('r_class'), cur = s.value;
     s.innerHTML = '';
-    classes.forEach((c) => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.label; s.appendChild(o); });
     const oAll = document.createElement('option'); oAll.value = ''; oAll.textContent = 'All classes (combined)'; s.appendChild(oAll);
-    s.value = cur !== undefined && cur !== null && cur !== '' ? cur : (sel || classes[0].id);
+    classes.forEach((c) => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.label; s.appendChild(o); });
+    s.value = cur !== undefined && cur !== null ? cur : '';
   }
   async function loadResults() {
     const c = $('r_class').value; const qsx = c ? '?class=' + c : '';
     try {
       const [lb, all] = await Promise.all([api('GET', '/api/admin/leaderboard' + qsx), api('GET', '/api/admin/attempts' + qsx)]);
       rRows = lb.rows; rAll = all.rows;
-      $('r_updated').textContent = 'Updated ' + new Date().toLocaleTimeString() + ' · refreshes every 20 seconds';
+      $('r_updated').textContent = 'Updated ' + new Date().toLocaleTimeString() + ' · auto-refreshes every 8 seconds';
       drawResults();
     } catch (e) { if (e.status === 401) return signedOut(); $('r_updated').textContent = e.message; }
   }
@@ -1091,6 +1130,33 @@ C. Apple Interface</pre>
         </div>
       `;
     }).join('');
+
+    // 4. Real-time Submissions Feed on Arena View
+    const feedTbody = $('admin_live_feed_tbody');
+    const ticker = liveData.ticker || [];
+    if (feedTbody) {
+      if (!ticker.length) {
+        feedTbody.innerHTML = '';
+        $('admin_live_feed_empty').hidden = false;
+      } else {
+        $('admin_live_feed_empty').hidden = true;
+        feedTbody.innerHTML = ticker.map((r) => {
+          const pct = Math.round((r.score / r.total) * 100);
+          const pctColor = pct >= 90 ? 'var(--good)' : pct >= 70 ? 'var(--blue)' : 'var(--orange)';
+          return `
+            <tr>
+              <td><b>${esc(r.name)}</b></td>
+              <td>${esc(r.school || 'FutureIN')}</td>
+              <td><span class="chip" style="font-size:12px;">${esc(clsLabel(r.class_id))}</span></td>
+              <td class="num" style="font-weight:700; color:var(--yellow);">⭐ ${r.score} / ${r.total}</td>
+              <td class="num"><b style="color:${pctColor};">${pct}%</b></td>
+              <td class="num">${fmtTime(r.duration_ms)}</td>
+              <td style="color:var(--muted); font-size:12px;">${fmtDate(r.finished_at)}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
   }
 
   function renderCompControls() {
@@ -1439,6 +1505,32 @@ C. Apple Interface</pre>
     a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv' }));
     a.download = 'futurein-competition-' + (curClass || 'all-classes') + '.csv'; a.click();
   };
+
+  async function refreshCompetitionManually(btn) {
+    if (btn) {
+      btn.disabled = true;
+      const origText = btn.innerHTML;
+      btn.innerHTML = '⏳ Refreshing...';
+      try {
+        await loadCompetition();
+        btn.innerHTML = '✓ Updated!';
+      } catch (e) {
+        btn.innerHTML = 'Error';
+      }
+      setTimeout(() => {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+      }, 1200);
+    } else {
+      await loadCompetition();
+    }
+  }
+
+  $('comp_top_refresh_btn').onclick = (e) => refreshCompetitionManually(e.currentTarget);
+  $('arena_refresh_btn').onclick = (e) => refreshCompetitionManually(e.currentTarget);
+  $('comp_submissions_refresh_btn').onclick = (e) => refreshCompetitionManually(e.currentTarget);
+  $('arena_view_all_btn').onclick = () => setCompSubtab('submissions');
+  if ($('r_refresh')) $('r_refresh').onclick = () => loadResults();
 
   window.addEventListener('beforeunload', (e) => { if (dirty() || compDirty()) { e.preventDefault(); e.returnValue = ''; } });
   boot();

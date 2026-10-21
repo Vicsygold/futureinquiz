@@ -152,6 +152,8 @@ const q = {
   compAttemptCounts: db.prepare(`SELECT class_id, COUNT(*) AS n FROM comp_attempts WHERE finished_at IS NOT NULL GROUP BY class_id`),
 
   insertCompAttempt: db.prepare(`INSERT INTO comp_attempts (id, name, school, class_id, name_key, school_key, started_at, answer_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`),
+  insertDirectCompAttempt: db.prepare(`INSERT OR REPLACE INTO comp_attempts (id, name, school, class_id, name_key, school_key, started_at, finished_at, score, total, duration_ms, answer_key, answers)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`),
   getCompAttempt: db.prepare(`SELECT * FROM comp_attempts WHERE id = ?`),
   finishCompAttempt: db.prepare(`UPDATE comp_attempts SET finished_at = ?, score = ?, total = ?, duration_ms = ?, answers = ? WHERE id = ? AND finished_at IS NULL`),
 };
@@ -195,6 +197,21 @@ function restoreFromBackup() {
               '[]',
               '[]'
             );
+            q.insertDirectCompAttempt.run(
+              item.id,
+              item.name,
+              item.school,
+              item.classId,
+              item.name.toLowerCase(),
+              item.school.toLowerCase(),
+              startedAt,
+              finishedAt,
+              Number(item.score) || 0,
+              Number(item.total) || 15,
+              dur,
+              '[]',
+              '[]'
+            );
             count++;
           }
         }
@@ -206,6 +223,41 @@ function restoreFromBackup() {
   }
 }
 restoreFromBackup();
+
+// Backfill any completed quiz attempts into competition arena on boot
+function syncInitialCompAttempts() {
+  try {
+    const attempts = db.prepare(`SELECT * FROM attempts WHERE finished_at IS NOT NULL`).all();
+    let count = 0;
+    for (const a of attempts) {
+      const existing = q.getCompAttempt.get(a.id);
+      if (!existing) {
+        q.insertDirectCompAttempt.run(
+          a.id,
+          a.name,
+          a.school || '',
+          a.class_id,
+          a.name_key || a.name.toLowerCase(),
+          a.school_key || (a.school || '').toLowerCase(),
+          a.started_at,
+          a.finished_at,
+          a.score,
+          a.total,
+          a.duration_ms,
+          a.answer_key || '[]',
+          a.answers || '[]'
+        );
+        count++;
+      }
+    }
+    if (count > 0) {
+      console.log(`[COMPETITION] Synced ${count} existing attempt(s) into competition attempts.`);
+    }
+  } catch (e) {
+    console.warn('[COMPETITION] Initial sync notice:', e.message);
+  }
+}
+syncInitialCompAttempts();
 
 // ---------- Cloud Database Sync (Supabase PostgreSQL) ----------
 let rawUrl = (process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
@@ -258,10 +310,10 @@ async function syncAttemptsFromSupabase(force = false) {
     for (const r of rows) {
       if (r && r.id && r.name && r.class_id) {
         const existing = q.getAttempt.get(r.id);
+        const finishedAt = Number(r.finished_at) || Date.now();
+        const dur = Number(r.duration_ms) || 60000;
+        const startedAt = Number(r.started_at) || (finishedAt - dur);
         if (!existing) {
-          const finishedAt = Number(r.finished_at) || Date.now();
-          const dur = Number(r.duration_ms) || 60000;
-          const startedAt = Number(r.started_at) || (finishedAt - dur);
           q.insertDirectAttempt.run(
             r.id,
             r.name,
@@ -278,6 +330,24 @@ async function syncAttemptsFromSupabase(force = false) {
             r.answers || '[]'
           );
           count++;
+        }
+        const existingComp = q.getCompAttempt.get(r.id);
+        if (!existingComp) {
+          q.insertDirectCompAttempt.run(
+            r.id,
+            r.name,
+            r.school || '',
+            r.class_id,
+            (r.name_key || r.name).toLowerCase(),
+            (r.school_key || r.school || '').toLowerCase(),
+            startedAt,
+            finishedAt,
+            Number(r.score) || 0,
+            Number(r.total) || 15,
+            dur,
+            r.answer_key || '[]',
+            r.answers || '[]'
+          );
         }
       }
     }
@@ -839,7 +909,7 @@ function schoolLeaderboard() {
   });
 }
 
-function recentAttempts(limit = 15) {
+function recentAttempts(limit = 25) {
   const sql = `
     SELECT name, school, class_id, score, total, duration_ms, finished_at
     FROM comp_attempts
@@ -875,7 +945,7 @@ function competitionLive(classId) {
   }));
 
   const schools = compSchoolLeaderboard();
-  const ticker = recentAttempts(15);
+  const ticker = recentAttempts(25);
 
   const stats = db.prepare(`
     SELECT 
@@ -1145,6 +1215,26 @@ async function submitQuiz(req, res) {
     const durationMs = Number(body.durationMs) || Math.max(1000, now - attempt.started_at);
     q.finishAttempt.run(now, score, total, durationMs, JSON.stringify(answers), attempt.id);
     logAttemptBackup({ id: attempt.id, name: attempt.name, school: attempt.school, classId: attempt.class_id, score, total, durationMs, finishedAt: now });
+    // Mirror into comp_attempts so competition arena and admin area immediately show result
+    try {
+      q.insertDirectCompAttempt.run(
+        attempt.id,
+        attempt.name,
+        attempt.school,
+        attempt.class_id,
+        attempt.name.toLowerCase(),
+        attempt.school.toLowerCase(),
+        attempt.started_at,
+        now,
+        score,
+        total,
+        durationMs,
+        attempt.answer_key,
+        JSON.stringify(answers)
+      );
+    } catch (e) {
+      console.warn('[COMPETITION] Mirror failed:', e.message);
+    }
     try {
       await saveAttemptToSupabase({
         id: attempt.id,
@@ -1201,6 +1291,26 @@ async function submitQuiz(req, res) {
       JSON.stringify(answers)
     );
     logAttemptBackup({ id, name, school, classId: cls.id, score, total, durationMs, finishedAt: now });
+    // Mirror into comp_attempts so competition arena and admin area immediately show result
+    try {
+      q.insertDirectCompAttempt.run(
+        id,
+        name,
+        school,
+        cls.id,
+        name.toLowerCase(),
+        school.toLowerCase(),
+        startedAt,
+        now,
+        score,
+        total,
+        durationMs,
+        JSON.stringify(key),
+        JSON.stringify(answers)
+      );
+    } catch (e) {
+      console.warn('[COMPETITION] Mirror failed:', e.message);
+    }
     try {
       await saveAttemptToSupabase({
         id,
@@ -1226,7 +1336,8 @@ async function submitQuiz(req, res) {
 
 async function startCompAttempt(req, res) {
   const compState = getCompetitionState();
-  if (compState.status !== 'active') {
+  const body = await readBody(req, 20_000);
+  if (compState.status !== 'active' && !body.isTest) {
     return sendJson(res, 400, {
       error: compState.status === 'draft'
         ? 'The competition arena has not started yet. Please wait in the waiting room!'
@@ -1235,7 +1346,6 @@ async function startCompAttempt(req, res) {
       title: compState.title
     });
   }
-  const body = await readBody(req, 20_000);
   const name = clean(body.name);
   const school = clean(body.school);
   const cls = CLASS_BY_ID.get(String(body.classId || ''));
@@ -1244,7 +1354,10 @@ async function startCompAttempt(req, res) {
   }
   if (!cls) return sendJson(res, 400, { error: 'Please select your class.' });
 
-  const questions = q.compQuestionsFor.all(cls.id);
+  let questions = q.compQuestionsFor.all(cls.id);
+  if (questions.length === 0) {
+    questions = q.questionsFor.all(cls.id);
+  }
   if (questions.length === 0) {
     return sendJson(res, 400, { error: `No competition questions set for ${cls.label} yet.` });
   }
@@ -1285,6 +1398,42 @@ async function submitCompAttempt(req, res) {
     const total = key.length || Number(body.total) || answers.length || 10;
     const durationMs = Number(body.durationMs) || Math.max(1000, now - attempt.started_at);
     q.finishCompAttempt.run(now, score, total, durationMs, JSON.stringify(answers), attempt.id);
+    // Mirror into attempts for unified scoreboard
+    try {
+      q.insertDirectAttempt.run(
+        attempt.id,
+        attempt.name,
+        attempt.school,
+        attempt.class_id,
+        attempt.name_key,
+        attempt.school_key,
+        attempt.started_at,
+        now,
+        score,
+        total,
+        durationMs,
+        attempt.answer_key,
+        JSON.stringify(answers)
+      );
+    } catch (_) {}
+    logAttemptBackup({ id: attempt.id, name: attempt.name, school: attempt.school, classId: attempt.class_id, score, total, durationMs, finishedAt: now });
+    try {
+      await saveAttemptToSupabase({
+        id: attempt.id,
+        name: attempt.name,
+        school: attempt.school,
+        class_id: attempt.class_id,
+        name_key: attempt.name_key,
+        school_key: attempt.school_key,
+        started_at: attempt.started_at,
+        finished_at: now,
+        score,
+        total,
+        duration_ms: durationMs,
+        answer_key: attempt.answer_key,
+        answers: JSON.stringify(answers)
+      });
+    } catch (_) {}
     return sendJson(res, 200, { score, total, durationMs });
   }
 
@@ -1293,14 +1442,52 @@ async function submitCompAttempt(req, res) {
   const cls = CLASS_BY_ID.get(String(body.classId || ''));
   if (name.length >= 2 && school.length >= 2 && cls) {
     const id = attemptId || crypto.randomUUID();
-    const questions = q.compQuestionsFor.all(cls.id);
+    let questions = q.compQuestionsFor.all(cls.id);
+    if (questions.length === 0) questions = q.questionsFor.all(cls.id);
     const key = questions.map(x => x.answer);
     const answers = Array.isArray(body.answers) ? body.answers : [];
     const score = Number(body.score) || 0;
     const total = key.length || Number(body.total) || 10;
     const durationMs = Number(body.durationMs) || 60000;
-    q.insertCompAttempt.run(id, name, school, cls.id, name.toLowerCase(), school.toLowerCase(), now - durationMs, JSON.stringify(key));
+    const startedAt = now - durationMs;
+    q.insertCompAttempt.run(id, name, school, cls.id, name.toLowerCase(), school.toLowerCase(), startedAt, JSON.stringify(key));
     q.finishCompAttempt.run(now, score, total, durationMs, JSON.stringify(answers), id);
+    // Mirror into attempts for unified scoreboard
+    try {
+      q.insertDirectAttempt.run(
+        id,
+        name,
+        school,
+        cls.id,
+        name.toLowerCase(),
+        school.toLowerCase(),
+        startedAt,
+        now,
+        score,
+        total,
+        durationMs,
+        JSON.stringify(key),
+        JSON.stringify(answers)
+      );
+    } catch (_) {}
+    logAttemptBackup({ id, name, school, classId: cls.id, score, total, durationMs, finishedAt: now });
+    try {
+      await saveAttemptToSupabase({
+        id,
+        name,
+        school,
+        class_id: cls.id,
+        name_key: name.toLowerCase(),
+        school_key: school.toLowerCase(),
+        started_at: startedAt,
+        finished_at: now,
+        score,
+        total,
+        duration_ms: durationMs,
+        answer_key: JSON.stringify(key),
+        answers: JSON.stringify(answers)
+      });
+    } catch (_) {}
     return sendJson(res, 200, { score, total, durationMs });
   }
 
@@ -1448,6 +1635,7 @@ async function adminRoutes(req, res, p, url) {
     return sendJson(res, 200, { ok: true, count: v.questions.length });
   }
   if (p === '/api/admin/competition/attempts' && req.method === 'GET') {
+    await syncAttemptsFromSupabase().catch(() => {});
     const classId = url.searchParams.get('class');
     const where = classId && classId !== 'all' ? `AND class_id = ?` : ``;
     const sql = `SELECT name, school, class_id, score, total, duration_ms, finished_at FROM comp_attempts
