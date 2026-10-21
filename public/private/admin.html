@@ -71,13 +71,37 @@
   .a-tabs .seg { max-width: 100%; overflow-x: auto; }
   .a-tabs .seg button { white-space: nowrap; }
   .a-empty { text-align: center; padding: 28px 16px; color: var(--muted); border: 1px dashed var(--line-2); border-radius: 18px; }
+  .a-comp-box { background: linear-gradient(135deg, rgba(20, 9, 44, 0.95), rgba(35, 14, 80, 0.95)); border: 1.5px solid rgba(255, 201, 60, 0.4); border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .a-comp-status { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; border-radius: 999px; padding: 6px 14px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .a-comp-status.active { background: rgba(0, 245, 155, 0.15); border: 1px solid #00f59b; color: #00f59b; }
+  .a-comp-status.draft { background: rgba(255, 201, 60, 0.15); border: 1px solid #ffc93c; color: #ffc93c; }
+  .a-comp-status.ended { background: rgba(255, 71, 87, 0.15); border: 1px solid #ff4757; color: #ff4757; }
+  /* Embedded Live Arena in Admin */
+  .a-podium-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 10px; align-items: end; }
+  @media (max-width: 700px) { .a-podium-grid { grid-template-columns: minmax(0, 1fr); } }
+  .a-podium-card { background: rgba(14, 6, 30, 0.75); border: 1.5px solid var(--line); border-radius: 18px; padding: 18px 16px; text-align: center; display: flex; flex-direction: column; gap: 6px; }
+  .a-podium-card.first { border-color: var(--yellow); background: linear-gradient(180deg, rgba(255, 201, 60, 0.15), rgba(14, 6, 30, 0.85)); order: 2; transform: translateY(-8px); }
+  .a-podium-card.second { border-color: #c9c5dc; background: linear-gradient(180deg, rgba(200, 200, 220, 0.1), rgba(14, 6, 30, 0.85)); order: 1; }
+  .a-podium-card.third { border-color: #d48b59; background: linear-gradient(180deg, rgba(212, 139, 89, 0.1), rgba(14, 6, 30, 0.85)); order: 3; }
+  .a-podium-badge { font-size: 32px; line-height: 1; }
+  .a-podium-name { font-weight: 700; font-size: 16px; color: #fff; margin-top: 4px; }
+  .a-podium-school { color: var(--muted); font-size: 13px; }
+  .a-podium-score { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 800; font-size: 14px; color: var(--yellow); background: rgba(255,201,60,0.15); border-radius: 999px; padding: 4px 12px; margin: 4px auto 0; }
+  .a-heat-card { background: var(--surface); border: 1.5px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .a-heat-card.blazing { border-color: var(--yellow); background: linear-gradient(135deg, rgba(255,201,60,0.06), var(--surface)); }
 </style>
 </head>
 <body>
 <!--APP START-->
 <header class="topbar"><div class="in">
   <span class="logo"><img src="/logo.png" alt="FutureIN"><span class="sep"></span><span class="label">Quiz Admin</span></span>
-  <div class="bar-actions" id="a_userbar" hidden><span id="a_who"></span><button class="btn-navy" id="a_logout" type="button">Sign out</button></div>
+  <div class="bar-actions" id="a_userbar" hidden>
+    <a href="/projector" target="_blank" class="btn-navy" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px; color:#ffc93c;" title="Launch Big-Screen Classroom Mode">
+      <span>📺</span> Projector Mode
+    </a>
+    <span id="a_who"></span>
+    <button class="btn-navy" id="a_logout" type="button">Sign out</button>
+  </div>
 </div></header>
 
 <main class="wrap" id="adminApp">
@@ -107,6 +131,7 @@
           <button type="button" class="on" data-tab="questions">Questions</button>
           <button type="button" data-tab="results">Scoreboard</button>
           <button type="button" data-tab="links">Children's links</button>
+          <button type="button" data-tab="competition" style="color:var(--yellow); font-weight:700;">🏆 Competition Mode</button>
         </div>
       </div>
 
@@ -212,6 +237,224 @@ C. Apple Interface</pre>
         <div class="a-link"><span class="muted small">General link</span><code id="l_general"></code><button class="ghost sm" type="button" data-copy="general">Copy link</button></div>
         <div class="panel tablewrap"><table><thead><tr><th>Class</th><th>Status</th><th>Link</th><th></th></tr></thead><tbody id="l_body"></tbody></table></div>
       </section>
+
+      <!-- COMPETITION MODE -->
+      <section id="t_competition" class="a-main" hidden>
+        <!-- Header -->
+        <div class="a-head">
+          <div>
+            <h1>🏆 Championship <span class="in-violet">Arena Mode</span></h1>
+            <p class="sub" style="margin:2px 0 0">Dedicated inter-school competition arena with real-time big-screen whiteboard display, synchronized countdown, and independent question banks.</p>
+          </div>
+          <div class="acts">
+            <a href="/projector" target="_blank" class="primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+              <span>📺</span> Open Projector Display
+            </a>
+          </div>
+        </div>
+
+        <!-- Arena Control Bar / Deck -->
+        <div class="panel" style="background: linear-gradient(135deg, rgba(25, 12, 50, 0.95), rgba(40, 15, 80, 0.95)); border: 1.5px solid rgba(255, 201, 60, 0.4); box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+          <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <span id="comp_status_badge" class="a-comp-status draft">WAITING / DRAFT</span>
+              <span id="comp_timer_text" style="font-family:ui-monospace, monospace; font-size:16px; font-weight:700; color:var(--yellow);">⏱ Round duration: 30 mins</span>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button type="button" class="primary" id="comp_start_btn">🚀 Start Competition</button>
+              <button type="button" class="btn-navy" id="comp_end_btn" style="border-color:#ff4757; color:#ff4757;" disabled>🛑 End Competition</button>
+              <button type="button" class="ghost sm" id="comp_reset_btn" style="color:var(--muted)">🔄 Reset Arena</button>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:14px; align-items:end;">
+            <div class="field" style="margin:0;">
+              <label for="comp_title_input">Championship Title</label>
+              <input type="text" id="comp_title_input" placeholder="e.g. FutureIN Inter-School Grand Championship">
+            </div>
+            <div class="field" style="margin:0;">
+              <label for="comp_duration_select">Round Duration</label>
+              <select id="comp_duration_select">
+                <option value="15">15 Minutes</option>
+                <option value="30" selected>30 Minutes</option>
+                <option value="45">45 Minutes</option>
+                <option value="60">60 Minutes (1 Hour)</option>
+              </select>
+            </div>
+            <div>
+              <button type="button" class="ghost" id="comp_save_config_btn" style="width:100%; height:42px;">Save Round Settings</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Links Card -->
+        <div class="panel" style="display:grid; gap:12px;">
+          <h3 style="margin:0">🔗 Competition Arena Links</h3>
+          <p class="a-help" style="margin:0">Send the <b>Children's Competition Link</b> to students. The Live Arena and Projector are private to teachers and staff only.</p>
+          
+          <div class="a-link" style="background:var(--surface);">
+            <span class="muted small" style="min-width:140px;">Children's Quiz Link</span>
+            <code id="comp_link_url" style="color:var(--cyan)"></code>
+            <button class="primary sm" type="button" id="comp_copy_link">Copy Children's Link</button>
+            <a id="comp_open_link" target="_blank" class="ghost sm" style="text-decoration:none">Test / Open</a>
+          </div>
+
+          <div class="a-link" style="background:var(--surface);">
+            <span class="muted small" style="min-width:140px;">Teacher Projector (Admin Only)</span>
+            <code id="comp_proj_url" style="color:var(--yellow)"></code>
+            <button class="ghost sm" type="button" id="comp_copy_proj">Copy Projector Link</button>
+            <a href="/projector" target="_blank" class="ghost sm" style="text-decoration:none">Open Screen</a>
+          </div>
+        </div>
+
+        <!-- Competition Mode Sub-navigation -->
+        <div class="seg" id="comp_subnav" style="margin-top:6px; max-width:100%; overflow-x:auto;">
+          <button type="button" class="on" id="comp_subtab_arena">🏟️ Live Arena & Standings</button>
+          <button type="button" id="comp_subtab_questions">📝 Manage Questions</button>
+          <button type="button" id="comp_subtab_attempts">📊 Submissions Table</button>
+        </div>
+
+        <!-- SUB-SECTION 1: LIVE ARENA & STANDINGS (ADMIN-ONLY DISPLAY) -->
+        <div id="csub_arena" style="display:grid; gap:16px;">
+          <!-- Top Podium Spotlight -->
+          <div class="panel" style="background: linear-gradient(135deg, rgba(22, 11, 46, 0.95), rgba(35, 14, 80, 0.95)); border: 1.5px solid rgba(255, 201, 60, 0.35);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+              <div>
+                <h3 style="margin:0; font-family:var(--display); color:#fff; font-size:18px;">🏆 Championship Podium</h3>
+                <p class="muted small" style="margin:2px 0 0">Top performing innovators currently leading the live arena.</p>
+              </div>
+              <a href="/projector" target="_blank" class="primary sm" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                <span>📺</span> Open Fullscreen Projector Screen
+              </a>
+            </div>
+            <div class="a-podium-grid" id="admin_podium_stage">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Inter-School Trophy Cup Standings -->
+          <div class="panel" style="display:grid; gap:12px;">
+            <div>
+              <h3 style="margin:0; font-family:var(--display);">🏫 Inter-School Trophy Cup Standings</h3>
+              <p class="muted small" style="margin:2px 0 0">Combined school rankings based on average mastery and total stars awarded.</p>
+            </div>
+            <div class="tablewrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>School Name</th>
+                    <th>Students</th>
+                    <th>Quizzes</th>
+                    <th>Average Mastery</th>
+                    <th>Stars Won</th>
+                    <th>Top Student</th>
+                  </tr>
+                </thead>
+                <tbody id="admin_schools_tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Classroom Learning Velocity Heat Map -->
+          <div class="panel" style="display:grid; gap:12px;">
+            <div>
+              <h3 style="margin:0; font-family:var(--display);">🔥 Classroom Learning Velocity & Heat Map</h3>
+              <p class="muted small" style="margin:2px 0 0">Real-time scaling and accuracy across all classes.</p>
+            </div>
+            <div class="a-heatmap-grid" id="admin_heatmap_grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-SECTION 2: DEDICATED COMPETITION QUESTIONS -->
+        <div id="csub_questions" style="display:none; display:grid; gap:14px;">
+          <div class="a-head">
+            <div>
+              <h2>📝 Competition Questions by Class</h2>
+              <p class="muted small" style="margin:0">Select a class below to review and upload official competition questions. These questions are strictly isolated from normal practice quizzes.</p>
+            </div>
+          </div>
+
+          <!-- Class Selector Sub-tabs -->
+          <div class="seg" id="comp_class_tabs" style="max-width:100%; overflow-x:auto;">
+            <!-- Generated dynamically -->
+          </div>
+
+          <!-- Question Import / Paste for Competition -->
+          <div class="panel a-import">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+              <div>
+                <h3 id="comp_q_class_title">Nursery 2 Competition Questions</h3>
+                <p class="a-help" style="margin:4px 0 0">Upload or paste competition questions for this class. Supports .html, .txt, .csv, or manual editing.</p>
+              </div>
+              <div class="row">
+                <span class="ghost a-file" role="button">Upload file<input type="file" id="comp_q_file" accept=".html,.htm,.txt,.csv,.json,text/html,text/plain,text/csv,application/json"></span>
+                <button class="ghost" type="button" id="comp_q_pasteToggle">Paste questions</button>
+                <button class="ghost" type="button" id="comp_q_add">+ Add question</button>
+              </div>
+            </div>
+
+            <div id="comp_q_pasteBox" hidden style="display:grid;gap:10px;margin-top:10px;">
+              <textarea id="comp_q_paste" rows="8" placeholder="1. What does CPU stand for?&#10;A. Central Processing Unit *&#10;B. Computer Power Unit&#10;C. Central Print Unit&#10;Answer: A"></textarea>
+              <div><button class="primary sm" type="button" id="comp_q_pasteRead">Read & Replace Questions</button></div>
+            </div>
+            <div class="a-msg" id="comp_q_importMsg" hidden></div>
+          </div>
+
+          <!-- Questions List -->
+          <div class="a-qs" id="comp_q_list"></div>
+
+          <!-- Save Bar -->
+          <div class="a-savebar" id="comp_savebar" hidden>
+            <span id="comp_saveMsg" style="font-weight:600">You have unsaved changes to competition questions.</span>
+            <span style="display:flex;gap:8px">
+              <button class="ghost sm" type="button" id="comp_discard">Discard</button>
+              <button class="btn-navy" type="button" id="comp_save">Save Competition Questions</button>
+            </span>
+          </div>
+        </div>
+
+        <!-- SUB-SECTION 3: LIVE COMPETITION ATTEMPTS TABLE -->
+        <div id="csub_submissions" style="display:none; margin-top:0;" class="panel">
+          <div class="a-head">
+            <div>
+              <h3>📊 Live Competition Submissions</h3>
+              <p class="muted small" style="margin:0">Real-time student submissions in the competition arena.</p>
+            </div>
+            <div class="acts">
+              <select id="comp_attempts_class" style="width:auto"></select>
+              <button class="ghost sm" type="button" id="comp_csv_btn">Download CSV</button>
+            </div>
+          </div>
+
+          <div class="a-stats" style="margin-top:12px;">
+            <div class="a-stat"><div class="n" id="comp_stat_students">0</div><div class="k">Competing Students</div></div>
+            <div class="a-stat"><div class="n" id="comp_stat_schools">0</div><div class="k">Schools Represented</div></div>
+            <div class="a-stat"><div class="n" id="comp_stat_completed">0</div><div class="k">Completed Quizzes</div></div>
+            <div class="a-stat"><div class="n" id="comp_stat_avg">–</div><div class="k">Average Score</div></div>
+          </div>
+
+          <div class="tablewrap" style="margin-top:14px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Student Name</th>
+                  <th>School</th>
+                  <th>Class</th>
+                  <th>Score</th>
+                  <th>Duration</th>
+                  <th>Submitted At</th>
+                </tr>
+              </thead>
+              <tbody id="comp_attempts_tbody"></tbody>
+            </table>
+          </div>
+          <div class="empty-note" id="comp_attempts_empty" hidden>No competition attempts recorded yet. Click "Start Competition" and have students join at /compete!</div>
+        </div>
+      </section>
     </div>
   </div>
 </main>
@@ -310,12 +553,16 @@ C. Apple Interface</pre>
   function setTab(t) {
     tab = t;
     document.querySelectorAll('.a-tabs .seg button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
-    $('t_questions').hidden = t !== 'questions'; $('t_results').hidden = t !== 'results'; $('t_links').hidden = t !== 'links';
+    $('t_questions').hidden = t !== 'questions'; $('t_results').hidden = t !== 'results'; $('t_links').hidden = t !== 'links'; $('t_competition').hidden = t !== 'competition';
     clearInterval(rTimer);
+    clearInterval(compTimer);
     if (t === 'results') {
       if (sel) $('r_class').value = sel;
       loadResults();
       rTimer = setInterval(loadResults, 20000);
+    } else if (t === 'competition') {
+      loadCompetition();
+      compTimer = setInterval(loadCompetitionQuiet, 10000);
     }
   }
   document.querySelectorAll('.a-tabs .seg button').forEach((b) => { b.onclick = () => setTab(b.dataset.tab); });
@@ -672,7 +919,528 @@ C. Apple Interface</pre>
     });
   }
 
-  window.addEventListener('beforeunload', (e) => { if (dirty()) { e.preventDefault(); e.returnValue = ''; } });
+  /* ---------- Phase 3: Dedicated Competition Mode Controller ---------- */
+  let compState = null;
+  let compClasses = [];
+  let compSel = 'nursery-2';
+  let compQs = [];
+  let compSavedJson = '[]';
+  let compAttemptsList = [];
+  let compTimer = null;
+  let compClockInterval = null;
+  let compPendingImport = null;
+
+  async function loadCompetition() {
+    try {
+      const [compData, attData, liveData] = await Promise.all([
+        api('GET', '/api/admin/competition'),
+        api('GET', '/api/admin/competition/attempts'),
+        api('GET', '/api/competition/live')
+      ]);
+      compState = compData.state;
+      compClasses = compData.classes || [];
+      compAttemptsList = attData.rows || [];
+      renderCompControls();
+      renderCompArena(liveData);
+      renderCompClasses();
+      renderCompAttempts();
+      await loadCompQuestions(compSel);
+    } catch (e) {
+      if (e.status === 401) return signedOut();
+      console.error('Error loading competition:', e);
+    }
+  }
+
+  async function loadCompetitionQuiet() {
+    try {
+      const [compData, attData, liveData] = await Promise.all([
+        api('GET', '/api/admin/competition'),
+        api('GET', '/api/admin/competition/attempts' + ($('comp_attempts_class').value ? '?class=' + $('comp_attempts_class').value : '')),
+        api('GET', '/api/competition/live')
+      ]);
+      compState = compData.state;
+      compClasses = compData.classes || [];
+      compAttemptsList = attData.rows || [];
+      renderCompControls();
+      renderCompArena(liveData);
+      renderCompAttempts();
+    } catch (_) {}
+  }
+
+  function setCompSubtab(sub) {
+    $('comp_subtab_arena').classList.toggle('on', sub === 'arena');
+    $('comp_subtab_questions').classList.toggle('on', sub === 'questions');
+    $('comp_subtab_attempts').classList.toggle('on', sub === 'submissions');
+
+    $('csub_arena').style.display = sub === 'arena' ? 'grid' : 'none';
+    $('csub_questions').style.display = sub === 'questions' ? 'grid' : 'none';
+    $('csub_submissions').style.display = sub === 'submissions' ? 'block' : 'none';
+  }
+  $('comp_subtab_arena').onclick = () => setCompSubtab('arena');
+  $('comp_subtab_questions').onclick = () => setCompSubtab('questions');
+  $('comp_subtab_attempts').onclick = () => setCompSubtab('submissions');
+
+  function renderCompArena(liveData) {
+    if (!liveData) return;
+
+    // 1. Olympic Podium
+    const stage = $('admin_podium_stage');
+    const podium = liveData.podium || [];
+    if (!podium.length) {
+      stage.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align:center; padding:32px 16px; color:var(--muted); border:1px dashed var(--line); border-radius:16px;">
+          <div style="font-size:36px; margin-bottom:8px;">🏆</div>
+          <div>No competition attempts recorded yet. Click <b>🚀 Start Competition</b> and share the children's link to begin!</div>
+        </div>
+      `;
+    } else {
+      const first = podium[0] || null;
+      const second = podium[1] || null;
+      const third = podium[2] || null;
+      let html = '';
+      if (second) {
+        html += `
+          <div class="a-podium-card second">
+            <div class="a-podium-badge">🥈</div>
+            <div class="a-podium-name">${esc(second.name)}</div>
+            <div class="a-podium-school">${esc(second.school || 'FutureIN')} · ${esc(clsLabel(second.class_id))}</div>
+            <div class="a-podium-score">⭐ ${second.score} / ${second.total}</div>
+            <div style="font-size:12px; color:var(--muted);">${fmtTime(second.duration_ms)}</div>
+          </div>
+        `;
+      }
+      if (first) {
+        html += `
+          <div class="a-podium-card first">
+            <div class="a-podium-badge">👑</div>
+            <div class="a-podium-name" style="font-size:18px;">${esc(first.name)}</div>
+            <div class="a-podium-school">${esc(first.school || 'FutureIN')} · ${esc(clsLabel(first.class_id))}</div>
+            <div class="a-podium-score" style="font-size:16px;">🏆 ${first.score} / ${first.total}</div>
+            <div style="font-size:12px; color:var(--muted);">${fmtTime(first.duration_ms)}</div>
+          </div>
+        `;
+      }
+      if (third) {
+        html += `
+          <div class="a-podium-card third">
+            <div class="a-podium-badge">🥉</div>
+            <div class="a-podium-name">${esc(third.name)}</div>
+            <div class="a-podium-school">${esc(third.school || 'FutureIN')} · ${esc(clsLabel(third.class_id))}</div>
+            <div class="a-podium-score">⭐ ${third.score} / ${third.total}</div>
+            <div style="font-size:12px; color:var(--muted);">${fmtTime(third.duration_ms)}</div>
+          </div>
+        `;
+      }
+      stage.innerHTML = html;
+    }
+
+    // 2. Schools Table
+    const schoolsTbody = $('admin_schools_tbody');
+    const schools = liveData.schools || [];
+    if (!schools.length) {
+      schoolsTbody.innerHTML = `<tr><td colspan="7" class="empty-note">No schools participating yet.</td></tr>`;
+    } else {
+      schoolsTbody.innerHTML = schools.map((s, idx) => {
+        const trophy = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '🎖️';
+        return `
+          <tr>
+            <td>${trophy} #${idx + 1}</td>
+            <td><b>${esc(s.school)}</b></td>
+            <td class="num">${s.totalStudents}</td>
+            <td class="num">${s.totalAttempts}</td>
+            <td class="num"><b>${s.avgScorePct}%</b></td>
+            <td class="num" style="color:var(--yellow); font-weight:700;">⭐ ${s.totalStars}</td>
+            <td><span style="color:var(--cyan); font-weight:600;">${esc(s.topStudent || '—')}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 3. Heatmap Grid
+    const heatGrid = $('admin_heatmap_grid');
+    const students = liveData.topStudents || [];
+    const classDefs = [
+      { id: 'nursery-2', label: 'Nursery 2' },
+      { id: 'year-1', label: 'Year 1' },
+      { id: 'year-2', label: 'Year 2' },
+      { id: 'year-3', label: 'Year 3' },
+      { id: 'year-4', label: 'Year 4' },
+      { id: 'year-5', label: 'Year 5' },
+      { id: 'year-6', label: 'Year 6' }
+    ];
+    heatGrid.innerHTML = classDefs.map(c => {
+      const clsStudents = students.filter(s => s.class_id === c.id);
+      const count = clsStudents.length;
+      const stars = clsStudents.reduce((n, s) => n + (s.score || 0), 0);
+      const avgPct = count ? Math.round(clsStudents.reduce((n, s) => n + (s.score / s.total), 0) / count * 100) : 0;
+      const isBlazing = count > 0 && avgPct >= 80;
+
+      return `
+        <div class="a-heat-card ${isBlazing ? 'blazing' : ''}">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="chip" style="font-weight:700;">${c.label}</span>
+            <span class="tag" style="color:${isBlazing ? 'var(--yellow)' : 'var(--muted)'};">${isBlazing ? '🔥 Blazing' : count ? '⚡ Active' : 'Standby'}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:4px;">
+            <span style="font-size:22px; font-weight:800; font-family:var(--display);">${count} <span style="font-size:12px; color:var(--muted); font-weight:normal;">pupils</span></span>
+            <span style="color:var(--yellow); font-weight:700;">⭐ ${stars}</span>
+          </div>
+          <div style="font-size:12px; color:var(--muted);">
+            Avg Mastery: <b>${avgPct}%</b>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderCompControls() {
+    if (!compState) return;
+    $('comp_title_input').value = compState.title || '';
+    $('comp_duration_select').value = String(compState.durationMins || 30);
+    
+    const badge = $('comp_status_badge');
+    badge.className = 'a-comp-status ' + (compState.status === 'active' ? 'active' : compState.status === 'ended' ? 'ended' : 'draft');
+    badge.textContent = compState.status === 'active' ? '● ROUND IN PROGRESS' : compState.status === 'ended' ? '✓ ROUND CONCLUDED' : 'WAITING / DRAFT';
+
+    const startBtn = $('comp_start_btn');
+    const endBtn = $('comp_end_btn');
+    startBtn.disabled = compState.status === 'active';
+    endBtn.disabled = compState.status !== 'active';
+
+    const baseCompUrl = base() + '/compete';
+    $('comp_link_url').textContent = baseCompUrl;
+    $('comp_open_link').href = baseCompUrl;
+    $('comp_proj_url').textContent = base() + '/projector';
+
+    $('comp_copy_link').onclick = (e) => copy(baseCompUrl, e.currentTarget);
+    $('comp_copy_proj').onclick = (e) => copy(base() + '/projector', e.currentTarget);
+
+    updateCompClock();
+    clearInterval(compClockInterval);
+    if (compState.status === 'active') {
+      compClockInterval = setInterval(updateCompClock, 1000);
+    }
+  }
+
+  function updateCompClock() {
+    if (!compState) return;
+    const txt = $('comp_timer_text');
+    if (compState.status === 'active') {
+      const now = Date.now();
+      const rem = Math.max(0, (compState.endedAt || (compState.startedAt + compState.durationMins * 60000)) - now);
+      const m = Math.floor(rem / 60000);
+      const s = Math.floor((rem % 60000) / 1000);
+      txt.textContent = `⏱ ${m}m ${String(s).padStart(2, '0')}s remaining`;
+    } else if (compState.status === 'ended') {
+      txt.textContent = '⏱ Round ended';
+    } else {
+      txt.textContent = `⏱ Round duration: ${compState.durationMins} mins`;
+    }
+  }
+
+  $('comp_save_config_btn').onclick = async () => {
+    const title = $('comp_title_input').value.trim();
+    const durationMins = Number($('comp_duration_select').value) || 30;
+    try {
+      const res = await api('POST', '/api/admin/competition/config', { title, durationMins });
+      compState = res.state;
+      renderCompControls();
+      alert('Championship round settings saved!');
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  $('comp_start_btn').onclick = async () => {
+    if (!confirm('Start the official competition round now? The countdown will begin immediately for all students!')) return;
+    try {
+      const res = await api('POST', '/api/admin/competition/action', { action: 'start' });
+      compState = res.state;
+      renderCompControls();
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  $('comp_end_btn').onclick = async () => {
+    if (!confirm('End the competition round and declare final winners? Students will no longer be able to submit.')) return;
+    try {
+      const res = await api('POST', '/api/admin/competition/action', { action: 'end' });
+      compState = res.state;
+      renderCompControls();
+      await loadCompetition();
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  $('comp_reset_btn').onclick = async () => {
+    const clear = confirm('Reset the competition arena back to Draft status?\n\nClick OK to reset. If you also want to clear competition attempts for a fresh tournament, click OK.');
+    if (!clear) return;
+    const clearAttempts = confirm('Do you also want to WIPE all recorded competition attempts for a brand-new round? (Click OK to wipe, Cancel to keep attempts in database)');
+    try {
+      const res = await api('POST', '/api/admin/competition/action', { action: 'reset', clearAttempts });
+      compState = res.state;
+      renderCompControls();
+      await loadCompetition();
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  function renderCompClasses() {
+    const tabs = $('comp_class_tabs');
+    tabs.innerHTML = '';
+    const attSelect = $('comp_attempts_class');
+    const curAttVal = attSelect.value;
+    attSelect.innerHTML = '<option value="">All Classes (combined)</option>';
+
+    compClasses.forEach((c) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = (c.id === compSel ? 'on' : '');
+      btn.innerHTML = `${esc(c.label)} <span class="tag" style="margin-left:6px; background:rgba(255,255,255,0.1); font-weight:700;">${c.questions} Qs</span>`;
+      btn.onclick = () => selectCompClass(c.id);
+      tabs.appendChild(btn);
+
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.label;
+      attSelect.appendChild(opt);
+    });
+    attSelect.value = curAttVal || '';
+  }
+
+  async function selectCompClass(classId) {
+    if (compDirty()) {
+      if (!confirm('You have unsaved changes to competition questions. Discard changes and switch class?')) return;
+    }
+    compSel = classId;
+    renderCompClasses();
+    await loadCompQuestions(classId);
+  }
+
+  async function loadCompQuestions(classId) {
+    try {
+      const d = await api('GET', '/api/admin/competition/questions?class=' + classId);
+      compQs = (d.questions || []).map(x => ({ text: x.text, options: x.options.slice(), answer: x.answer }));
+      compSavedJson = JSON.stringify(compQs);
+      $('comp_q_class_title').textContent = `${d.classLabel || classId} Competition Questions (${compQs.length})`;
+      drawCompQuestions();
+    } catch (e) {
+      console.error('Error fetching comp questions:', e);
+    }
+  }
+
+  function compDirty() {
+    return JSON.stringify(compQs) !== compSavedJson;
+  }
+
+  function drawCompQuestions() {
+    const list = $('comp_q_list'); list.innerHTML = '';
+    if (!compQs.length) {
+      const e = document.createElement('div'); e.className = 'a-empty';
+      e.textContent = 'No competition questions for ' + clsLabel(compSel) + ' yet. Upload a file, paste questions, or add them one by one.';
+      list.appendChild(e);
+    }
+    compQs.forEach((q, i) => {
+      const card = document.createElement('div'); card.className = 'a-q' + (problem(q) ? ' needs' : '');
+      const head = document.createElement('div'); head.className = 'qh';
+      const n = document.createElement('span'); n.className = 'qn'; n.textContent = 'Competition Question ' + (i + 1);
+      const tools = document.createElement('span'); tools.className = 'tools';
+      tools.append(
+        iconBtn('↑', 'Move up', i === 0, () => { [compQs[i - 1], compQs[i]] = [compQs[i], compQs[i - 1]]; compChanged(true); }),
+        iconBtn('↓', 'Move down', i === compQs.length - 1, () => { [compQs[i + 1], compQs[i]] = [compQs[i], compQs[i + 1]]; compChanged(true); }),
+        iconBtn('✕', 'Delete question', false, () => { compQs.splice(i, 1); compChanged(true); })
+      );
+      head.append(n, tools);
+      const ta = document.createElement('textarea'); ta.rows = 2; ta.value = q.text; ta.placeholder = 'Type the competition question';
+      ta.setAttribute('aria-label', 'Question ' + (i + 1));
+      ta.oninput = () => { q.text = ta.value; compChanged(false); card.classList.toggle('needs', !!problem(q)); };
+      card.append(head, ta);
+
+      q.options.forEach((o, k) => {
+        const row = document.createElement('div'); row.className = 'a-opt';
+        const lt = document.createElement('span'); lt.className = 'lt'; lt.textContent = LETTERS[k];
+        const inp = document.createElement('input'); inp.type = 'text'; inp.value = o; inp.placeholder = 'Option ' + LETTERS[k];
+        inp.oninput = () => { q.options[k] = inp.value; compChanged(false); card.classList.toggle('needs', !!problem(q)); };
+        const lab = document.createElement('label'); lab.className = 'correct';
+        const r = document.createElement('input'); r.type = 'radio'; r.name = 'comp_ans_' + i; r.checked = q.answer === k;
+        r.onchange = () => { q.answer = k; compChanged(true); };
+        lab.append(r, document.createTextNode('Correct'));
+        row.append(lt, inp, lab);
+        if (q.options.length > 2) row.append(iconBtn('✕', 'Remove option', false, () => {
+          q.options.splice(k, 1);
+          if (q.answer === k) q.answer = null; else if (q.answer > k) q.answer--;
+          compChanged(true);
+        }));
+        card.appendChild(row);
+      });
+
+      const msg = problem(q);
+      const foot = document.createElement('div'); foot.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap';
+      const warn = document.createElement('span'); warn.className = 'small'; warn.style.color = 'var(--bad)'; warn.textContent = msg || '';
+      const addOpt = document.createElement('button'); addOpt.type = 'button'; addOpt.className = 'ghost sm'; addOpt.textContent = '+ Add option';
+      addOpt.disabled = q.options.length >= 6; addOpt.onclick = () => { q.options.push(''); compChanged(true); };
+      foot.append(warn, addOpt); card.appendChild(foot);
+      list.appendChild(card);
+    });
+
+    $('comp_savebar').hidden = !compDirty();
+    if (compDirty()) $('comp_saveMsg').textContent = 'You have unsaved changes to competition questions.';
+  }
+
+  function compChanged(redraw) {
+    if (redraw) drawCompQuestions();
+    else { $('comp_savebar').hidden = !compDirty(); $('comp_saveMsg').textContent = 'You have unsaved changes to competition questions.'; }
+  }
+
+  $('comp_q_add').onclick = () => {
+    compQs.push({ text: '', options: ['', '', '', ''], answer: null });
+    compChanged(true);
+  };
+  $('comp_discard').onclick = () => {
+    compQs = JSON.parse(compSavedJson);
+    drawCompQuestions();
+  };
+
+  $('comp_save').onclick = async () => {
+    const bad = compQs.findIndex((q) => problem(q));
+    if (bad >= 0) {
+      $('comp_saveMsg').textContent = 'Question ' + (bad + 1) + ': ' + problem(compQs[bad]);
+      return;
+    }
+    $('comp_save').disabled = true;
+    try {
+      const cleanList = compQs.map((q) => {
+        const keep = []; let ans = null;
+        q.options.forEach((o, k) => { if (o.trim()) { if (k === q.answer) ans = keep.length; keep.push(o.trim()); } });
+        return { text: q.text.trim(), options: keep, answer: ans };
+      });
+      await api('PUT', '/api/admin/competition/questions', { classId: compSel, questions: cleanList });
+      compQs = cleanList;
+      compSavedJson = JSON.stringify(compQs);
+      const compData = await api('GET', '/api/admin/competition');
+      compClasses = compData.classes || [];
+      renderCompClasses();
+      $('comp_q_class_title').textContent = `${clsLabel(compSel)} Competition Questions (${compQs.length})`;
+      drawCompQuestions();
+      alert('Competition questions for ' + clsLabel(compSel) + ' saved successfully!');
+    } catch (e) {
+      $('comp_saveMsg').textContent = e.message;
+    } finally {
+      $('comp_save').disabled = false;
+    }
+  };
+
+  // Competition Import (Upload / Paste)
+  $('comp_q_pasteToggle').onclick = () => {
+    $('comp_q_pasteBox').hidden = !$('comp_q_pasteBox').hidden;
+    if (!$('comp_q_pasteBox').hidden) $('comp_q_paste').focus();
+  };
+  $('comp_q_pasteRead').onclick = () => handleCompImport(parseText($('comp_q_paste').value), 'pasted text');
+  $('comp_q_file').onchange = async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const text = await f.text();
+    let res = [];
+    if (/\.html?$/i.test(f.name)) res = parseHtml(text);
+    else if (/\.csv$/i.test(f.name)) res = parseCsv(text);
+    else if (/\.json$/i.test(f.name)) res = parseJson(text);
+    else res = parseText(text);
+    handleCompImport(res, f.name);
+  };
+
+  function handleCompImport(found, source) {
+    found = found.filter((q) => q.text || q.options.length);
+    const box = $('comp_q_importMsg');
+    if (!found.length) {
+      box.hidden = false; box.className = 'a-msg bad';
+      box.innerHTML = 'No questions found in ' + esc(source) + '.';
+      return;
+    }
+    compPendingImport = found;
+    box.hidden = false; box.className = 'a-msg';
+    box.innerHTML = `
+      <b>Found ${found.length} competition question(s)</b> in ${esc(source)}.
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <button class="primary sm" type="button" id="comp_imp_replace">Replace ${compQs.length} existing</button>
+        <button class="ghost sm" type="button" id="comp_imp_add">Add to existing</button>
+        <button class="ghost sm" type="button" id="comp_imp_cancel">Cancel</button>
+      </div>
+    `;
+    $('comp_imp_replace').onclick = () => {
+      compQs = compPendingImport;
+      compPendingImport = null;
+      box.hidden = true;
+      compChanged(true);
+    };
+    $('comp_imp_add').onclick = () => {
+      compQs = compQs.concat(compPendingImport);
+      compPendingImport = null;
+      box.hidden = true;
+      compChanged(true);
+    };
+    $('comp_imp_cancel').onclick = () => {
+      compPendingImport = null;
+      box.hidden = true;
+    };
+  }
+
+  // Render Live Competition Attempts Table
+  function renderCompAttempts() {
+    const tbody = $('comp_attempts_tbody');
+    tbody.innerHTML = '';
+    const curClass = $('comp_attempts_class').value;
+    const filtered = compAttemptsList.filter(r => !curClass || r.class_id === curClass);
+
+    $('comp_stat_students').textContent = new Set(filtered.map(r => (r.name + '_' + r.school).toLowerCase())).size;
+    $('comp_stat_schools').textContent = new Set(filtered.map(r => r.school.toLowerCase())).size;
+    $('comp_stat_completed').textContent = filtered.length;
+    $('comp_stat_avg').textContent = filtered.length ? Math.round(filtered.reduce((n, r) => n + (r.score / r.total), 0) / filtered.length * 100) + '%' : '–';
+
+    $('comp_attempts_empty').hidden = filtered.length > 0;
+
+    filtered.forEach((r, idx) => {
+      const tr = document.createElement('tr');
+      const rankTd = document.createElement('td');
+      if (idx === 0) rankTd.innerHTML = '<span class="medal" style="background:var(--yellow)">1</span>';
+      else if (idx === 1) rankTd.innerHTML = '<span class="medal" style="background:var(--silver)">2</span>';
+      else if (idx === 2) rankTd.innerHTML = '<span class="medal" style="background:var(--bronze)">3</span>';
+      else rankTd.textContent = String(idx + 1);
+      tr.appendChild(rankTd);
+
+      td(tr, r.name);
+      td(tr, r.school);
+      td(tr, clsLabel(r.class_id));
+      td(tr, `${r.score} / ${r.total}`, 'num');
+      td(tr, fmtTime(r.duration_ms), 'num');
+      td(tr, fmtDate(r.finished_at)).style.color = 'var(--muted)';
+      tbody.appendChild(tr);
+    });
+  }
+
+  $('comp_attempts_class').onchange = async () => {
+    try {
+      const qsx = $('comp_attempts_class').value ? '?class=' + $('comp_attempts_class').value : '';
+      const attData = await api('GET', '/api/admin/competition/attempts' + qsx);
+      compAttemptsList = attData.rows || [];
+      renderCompAttempts();
+    } catch (_) {}
+  };
+
+  $('comp_csv_btn').onclick = () => {
+    const e = (v) => '"' + String(v).replace(/"/g, '""') + '"';
+    const lines = [['Rank', 'Name', 'School', 'Class', 'Score', 'Total', 'Percent', 'Time (seconds)', 'Finished'].map(e).join(',')];
+    const curClass = $('comp_attempts_class').value;
+    const filtered = compAttemptsList.filter(r => !curClass || r.class_id === curClass);
+    filtered.forEach((r, i) => lines.push([i + 1, r.name, r.school, clsLabel(r.class_id), r.score, r.total, Math.round(r.score / r.total * 100), (r.duration_ms / 1000).toFixed(1), new Date(r.finished_at).toISOString()].map(e).join(',')));
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv' }));
+    a.download = 'futurein-competition-' + (curClass || 'all-classes') + '.csv'; a.click();
+  };
+
+  window.addEventListener('beforeunload', (e) => { if (dirty() || compDirty()) { e.preventDefault(); e.returnValue = ''; } });
   boot();
 })();
 </script>

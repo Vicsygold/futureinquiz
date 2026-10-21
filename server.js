@@ -71,6 +71,45 @@ db.exec(`
     pw_fp      TEXT NOT NULL,
     expires_at INTEGER NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS competition_state (
+    id            INTEGER PRIMARY KEY CHECK (id = 1),
+    title         TEXT NOT NULL DEFAULT 'FutureIN Inter-School Grand Championship',
+    status        TEXT NOT NULL DEFAULT 'draft',
+    duration_mins INTEGER NOT NULL DEFAULT 30,
+    started_at    INTEGER,
+    ended_at      INTEGER,
+    updated_at    INTEGER
+  );
+  INSERT OR IGNORE INTO competition_state (id, title, status, duration_mins, updated_at)
+  VALUES (1, 'FutureIN Inter-School Grand Championship', 'draft', 30, 0);
+
+  CREATE TABLE IF NOT EXISTS comp_questions (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    class_id   TEXT NOT NULL,
+    position   INTEGER NOT NULL,
+    text       TEXT NOT NULL,
+    options    TEXT NOT NULL,
+    answer     INTEGER NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_comp_q_class ON comp_questions(class_id, position);
+
+  CREATE TABLE IF NOT EXISTS comp_attempts (
+    id          TEXT PRIMARY KEY,
+    name        TEXT NOT NULL,
+    school      TEXT NOT NULL,
+    class_id    TEXT NOT NULL,
+    name_key    TEXT NOT NULL,
+    school_key  TEXT NOT NULL,
+    started_at  INTEGER NOT NULL,
+    finished_at INTEGER,
+    score       INTEGER,
+    total       INTEGER,
+    duration_ms INTEGER,
+    answer_key  TEXT NOT NULL,
+    answers     TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_comp_att ON comp_attempts(class_id, finished_at);
 `);
 
 const q = {
@@ -97,6 +136,24 @@ const q = {
   deleteSession: db.prepare(`DELETE FROM sessions WHERE token_hash = ?`),
   purgeSessions: db.prepare(`DELETE FROM sessions WHERE expires_at < ?`),
   purgeOpenAttempts: db.prepare(`DELETE FROM attempts WHERE finished_at IS NULL AND started_at < ?`),
+
+  // Competition queries
+  getCompState: db.prepare(`SELECT * FROM competition_state WHERE id = 1`),
+  updateCompConfig: db.prepare(`UPDATE competition_state SET title = ?, duration_mins = ?, updated_at = ? WHERE id = 1`),
+  startComp: db.prepare(`UPDATE competition_state SET status = 'active', started_at = ?, ended_at = ?, updated_at = ? WHERE id = 1`),
+  endComp: db.prepare(`UPDATE competition_state SET status = 'ended', ended_at = ?, updated_at = ? WHERE id = 1`),
+  resetComp: db.prepare(`UPDATE competition_state SET status = 'draft', started_at = NULL, ended_at = NULL, updated_at = ? WHERE id = 1`),
+  clearCompAttempts: db.prepare(`DELETE FROM comp_attempts`),
+
+  compQuestionsFor: db.prepare(`SELECT id, text, options, answer FROM comp_questions WHERE class_id = ? ORDER BY position, id`),
+  deleteCompQuestions: db.prepare(`DELETE FROM comp_questions WHERE class_id = ?`),
+  insertCompQuestion: db.prepare(`INSERT INTO comp_questions (class_id, position, text, options, answer) VALUES (?, ?, ?, ?, ?)`),
+  compCounts: db.prepare(`SELECT class_id, COUNT(*) AS n FROM comp_questions GROUP BY class_id`),
+  compAttemptCounts: db.prepare(`SELECT class_id, COUNT(*) AS n FROM comp_attempts WHERE finished_at IS NOT NULL GROUP BY class_id`),
+
+  insertCompAttempt: db.prepare(`INSERT INTO comp_attempts (id, name, school, class_id, name_key, school_key, started_at, answer_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`),
+  getCompAttempt: db.prepare(`SELECT * FROM comp_attempts WHERE id = ?`),
+  finishCompAttempt: db.prepare(`UPDATE comp_attempts SET finished_at = ?, score = ?, total = ?, duration_ms = ?, answers = ? WHERE id = ? AND finished_at IS NULL`),
 };
 
 const BACKUP_FILE = path.join(DATA_DIR, 'attempts_backup.json');
@@ -506,6 +563,114 @@ function seedYear6() {
 }
 seedYear6();
 
+// ---------- Phase 3: Dedicated Competition Questions Seeding ----------
+function seedCompetitionQuestions() {
+  try {
+    const totalComp = db.prepare(`SELECT COUNT(*) as c FROM comp_questions`).get();
+    if (totalComp && totalComp.c > 0) return;
+
+    const competitionBank = {
+      'nursery-2': [
+        { text: 'Which computer part looks like a small animal and clicks?', options: ['Mouse', 'Keyboard', 'Monitor', 'Printer'], answer: 0 },
+        { text: 'We look at pictures and videos on the computer ___', options: ['Monitor / Screen', 'Keyboard', 'Cable', 'Mouse'], answer: 0 },
+        { text: 'Which computer part has lots of letter and number buttons?', options: ['Keyboard', 'Speaker', 'Webcam', 'Mouse'], answer: 0 },
+        { text: 'Which machine prints our drawings onto real paper?', options: ['Printer', 'Monitor', 'Mouse', 'CPU'], answer: 0 },
+        { text: 'Which computer can you fold like a book and carry anywhere?', options: ['Laptop', 'Desktop Tower', 'Television', 'Refrigerator'], answer: 0 },
+        { text: 'We hear music and voices from the computer using ___', options: ['Speakers or Headphones', 'Keyboard', 'Mouse', 'Printer'], answer: 0 },
+        { text: 'Which button do you press to turn the computer on?', options: ['Power button', 'Spacebar', 'Volume key', 'Delete key'], answer: 0 },
+        { text: 'A small computer you can hold in your hand is a ___', options: ['Smartphone or Tablet', 'Tower unit', 'Big monitor', 'Printer'], answer: 0 },
+        { text: 'What is our friendly robot mascot\'s name?', options: ['Sparky', 'Spiky', 'Rocky', 'Shadow'], answer: 0 },
+        { text: 'Always keep drinks and water ___ from the computer.', options: ['Far away', 'Inside the screen', 'On the keyboard', 'Under the mouse'], answer: 0 }
+      ],
+      'year-1': [
+        { text: 'Which of these is an INPUT device used to point and click?', options: ['Mouse', 'Monitor', 'Speaker', 'Printer'], answer: 0 },
+        { text: 'The longest key on the whole computer keyboard is the ___', options: ['Spacebar', 'Enter key', 'Shift key', 'Backspace'], answer: 0 },
+        { text: 'Which device displays the visual result of your work?', options: ['Monitor', 'Keyboard', 'Microphone', 'Mouse'], answer: 0 },
+        { text: 'Computers are ___ machines that help us work and learn.', options: ['Electronic', 'Wooden', 'Mechanical', 'Solar-only'], answer: 0 },
+        { text: 'Tapping twice quickly on a mouse button is called a ___', options: ['Double click', 'Right click', 'Scroll click', 'Triple tap'], answer: 0 },
+        { text: 'Which part of a computer system is called the "Brain"?', options: ['CPU / System Unit', 'Monitor', 'Keyboard', 'Printer'], answer: 0 },
+        { text: 'Which key do you press to start typing on a brand new line?', options: ['Enter / Return', 'Spacebar', 'Caps Lock', 'Escape'], answer: 0 },
+        { text: 'A tiny portable drive used to save pictures and files is a ___', options: ['USB Flash drive', 'Floppy disk', 'Mouse pad', 'Keyboard cover'], answer: 0 },
+        { text: 'Computers connected together across the whole world form the ___', options: ['Internet', 'Intranet', 'Bluetooth', 'Cable wire'], answer: 0 },
+        { text: 'Which tool allows you to speak your voice into the computer?', options: ['Microphone', 'Speaker', 'Monitor', 'Mouse'], answer: 0 }
+      ],
+      'year-2': [
+        { text: 'What does CPU stand for?', options: ['Central Processing Unit', 'Computer Power Unit', 'Central Print Utility', 'Core Processor User'], answer: 0 },
+        { text: 'Which keyboard key turns all your letters into CAPITAL letters?', options: ['Caps Lock', 'Shift', 'Backspace', 'Tab'], answer: 0 },
+        { text: 'Which of these is used to hear private audio without disturbing others?', options: ['Headphones', 'Projector', 'Speakers', 'Microphone'], answer: 0 },
+        { text: 'Ancient counting frames with sliding wooden beads are called ___', options: ['Abacus', 'Pascaline', 'Difference Engine', 'Napier Bones'], answer: 0 },
+        { text: 'The proper and safe way to turn off a computer is by clicking ___', options: ['Start → Shut Down', 'Pulling the wall plug', 'Switching off the socket directly', 'Pressing Delete'], answer: 0 },
+        { text: 'Which of these is an OUTPUT device?', options: ['Printer', 'Keyboard', 'Microphone', 'Mouse'], answer: 0 },
+        { text: 'Which key is pressed to erase the letter just behind your cursor?', options: ['Backspace', 'Spacebar', 'Enter', 'Shift'], answer: 0 },
+        { text: 'A computer virus is a harmful type of ___', options: ['Software program', 'Hardware part', 'Keyboard key', 'Power cable'], answer: 0 },
+        { text: 'Which component holds all the main chips and circuits together?', options: ['Motherboard', 'Mousepad', 'Monitor frame', 'Webcam stand'], answer: 0 },
+        { text: 'To save your document quickly, which shortcut can you press?', options: ['Ctrl + S', 'Ctrl + P', 'Ctrl + Z', 'Ctrl + C'], answer: 0 }
+      ],
+      'year-3': [
+        { text: 'Computer memory that loses its contents when power is turned off is ___', options: ['RAM (Random Access Memory)', 'ROM (Read Only Memory)', 'Hard Disk', 'USB Flash'], answer: 0 },
+        { text: 'Which memory chip holds permanent startup instructions that never erase?', options: ['ROM', 'RAM', 'Cache', 'Virtual memory'], answer: 0 },
+        { text: 'A worldwide web address starting with "https://" is called a ___', options: ['URL (Uniform Resource Locator)', 'CPU', 'LAN', 'RAM'], answer: 0 },
+        { text: 'Which software application is used to browse websites on the internet?', options: ['Web Browser', 'Operating System', 'Word Processor', 'Calculator'], answer: 0 },
+        { text: 'Which of these creates a strong, safe password for your accounts?', options: ['Letters, numbers, and symbols mixed', 'Your simple first name', '123456', 'The word password'], answer: 0 },
+        { text: 'Which cable is most commonly used to connect monitors and TVs today?', options: ['HDMI Cable', 'Audio Jack', 'Power Cord', 'VGA Only'], answer: 0 },
+        { text: 'Physical parts of the computer you can see and touch are called ___', options: ['Hardware', 'Software', 'Peopleware', 'Firmware'], answer: 0 },
+        { text: 'Programs and applications that give instructions to the hardware are ___', options: ['Software', 'Hardware', 'Cables', 'Peripherals'], answer: 0 },
+        { text: 'Which tool allows you to search for information across the whole web?', options: ['Search Engine (e.g. Google)', 'Paint', 'Notepad', 'File Explorer'], answer: 0 },
+        { text: 'What is the speed of modern computer processors measured in?', options: ['Gigahertz (GHz)', 'Kilograms (kg)', 'Meters (m)', 'Liters (L)'], answer: 0 }
+      ],
+      'year-4': [
+        { text: 'Computers process all information using a code made of only 0s and 1s called ___', options: ['Binary system', 'Decimal system', 'Hexadecimal', 'Roman numerals'], answer: 0 },
+        { text: 'A step-by-step set of precise instructions to solve a problem is an ___', options: ['Algorithm', 'Antivirus', 'Attachment', 'Array'], answer: 0 },
+        { text: 'A single binary digit (0 or 1) is called a ___', options: ['Bit', 'Byte', 'Kilobyte', 'Pixel'], answer: 0 },
+        { text: 'How many bits make up one full byte of data?', options: ['8 bits', '4 bits', '16 bits', '2 bits'], answer: 0 },
+        { text: 'Connecting computers in one classroom or building creates a ___', options: ['LAN (Local Area Network)', 'WAN (Wide Area Network)', 'MAN', 'PAN'], answer: 0 },
+        { text: 'Repeating a set of computer instructions until a goal is reached is a ___', options: ['Loop', 'Variable', 'Bug', 'Branch'], answer: 0 },
+        { text: 'Finding and fixing mistakes in your computer program is called ___', options: ['Debugging', 'Compiling', 'Hacking', 'Browsing'], answer: 0 },
+        { text: 'Which wireless technology connects laptops and phones to the internet?', options: ['Wi-Fi', 'Bluetooth', 'Infrared', 'NFC'], answer: 0 },
+        { text: 'Which safety tool scans and removes malicious files from your system?', options: ['Antivirus software', 'Webcam', 'Spreadsheet', 'Screen saver'], answer: 0 },
+        { text: 'Who is recognized as the world\'s very first computer programmer?', options: ['Ada Lovelace', 'Charles Babbage', 'Alan Turing', 'Steve Jobs'], answer: 0 }
+      ],
+      'year-5': [
+        { text: 'In block-based coding (like Scratch), blocks snapped together create a ___', options: ['Script / Program', 'Sprite', 'Stage', 'Costume'], answer: 0 },
+        { text: 'A placeholder container in code that stores changing values (like score) is a ___', options: ['Variable', 'Function', 'Constant', 'Loop'], answer: 0 },
+        { text: 'Making decisions in code using IF and THEN logic is called ___', options: ['Conditional execution', 'Infinite repetition', 'Variable typing', 'Hardcoding'], answer: 0 },
+        { text: 'Machines that sense their environment, compute decisions and take action are ___', options: ['Robots', 'Typewriters', 'Monitors', 'Calculators'], answer: 0 },
+        { text: 'Storing your files securely on remote servers across the internet is ___', options: ['Cloud storage', 'Floppy backup', 'RAM memory', 'Desktop shortcut'], answer: 0 },
+        { text: 'Sending fake emails to trick users into revealing secret passwords is ___', options: ['Phishing', 'Coding', 'Browsing', 'Streaming'], answer: 0 },
+        { text: 'The characters or objects that move and act in Scratch are called ___', options: ['Sprites', 'Pixels', 'Blocks', 'Nodes'], answer: 0 },
+        { text: 'Which sensor allows a mobile robot to detect distance to an obstacle?', options: ['Ultrasonic / Distance sensor', 'Speaker', 'LED light', 'Battery'], answer: 0 },
+        { text: 'Which of these is considered private personal information you should NEVER share online?', options: ['Home address and passwords', 'Favorite color', 'Favorite cartoon', 'School subject'], answer: 0 },
+        { text: 'An uninterrupted infinite loop in programming runs ___', options: ['Forever until stopped', 'Exactly once', 'Only 10 times', 'Only on Mondays'], answer: 0 }
+      ],
+      'year-6': [
+        { text: 'AI systems that generate new creative text, stories, or images are called ___', options: ['Generative AI', 'Analog AI', 'Static Computing', 'Rule-based firmware'], answer: 0 },
+        { text: 'The specific instructions or questions given to an AI model are called ___', options: ['Prompts', 'Scripts', 'Tokens', 'Registers'], answer: 0 },
+        { text: 'A computer system programmed to emulate the decision-making of a human expert is an ___', options: ['Expert system', 'Operating system', 'Search engine', 'Utility disk'], answer: 0 },
+        { text: 'What is the primary language computers directly understand at the hardware level?', options: ['Machine Code (Binary)', 'Python', 'English', 'HTML'], answer: 0 },
+        { text: 'Which AI technology converts written stories and text into natural human speech?', options: ['Text-To-Speech (TTS)', 'Speech-To-Text', 'Optical Character Recognition', 'Computer Vision'], answer: 0 },
+        { text: 'When using AI to help brainstorm story ideas, what makes the final work original?', options: ['Your personal creativity & human editing', 'Copying word-for-word', 'Using a faster computer', 'Printing on glossy paper'], answer: 0 },
+        { text: 'Which career focuses on protecting school and corporate networks from cyber attacks?', options: ['Cybersecurity Specialist', 'Hardware Manufacturer', 'Data Entry Clerk', 'Animator'], answer: 0 },
+        { text: 'Autonomous robotic rovers exploring the surface of Mars use AI for ___', options: ['Self-navigation and terrain hazard avoidance', 'Playing video games', 'Browsing social media', 'Printing documents'], answer: 0 },
+        { text: 'Ethical use of AI in school means ___', options: ['Using AI to learn, brainstorm and cite tools responsibly', 'Submitting AI essays as your own', 'Using AI without permission', 'Ignoring accuracy checks'], answer: 0 },
+        { text: 'Which field of computer science teaches machines to learn patterns from data?', options: ['Machine Learning', 'Mechanical Engineering', 'Desktop Publishing', 'Graphic Design'], answer: 0 }
+      ]
+    };
+
+    db.exec('BEGIN');
+    for (const [classId, questions] of Object.entries(competitionBank)) {
+      q.deleteCompQuestions.run(classId);
+      questions.forEach((x, i) => {
+        q.insertCompQuestion.run(classId, i, x.text, JSON.stringify(x.options), x.answer);
+      });
+    }
+    db.exec('COMMIT');
+    console.log('[COMPETITION] Seeded competition question banks successfully.');
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+    console.warn('[COMPETITION] Seed error:', e.message);
+  }
+}
+seedCompetitionQuestions();
 
 // Best attempt per child (same name + school) within each class; ranked by score, then speed.
 function leaderboard(classId) {
@@ -521,10 +686,224 @@ function leaderboard(classId) {
     ORDER BY CAST(score AS REAL) / total DESC, duration_ms ASC, finished_at ASC`;
   return classId ? db.prepare(sql).all(classId) : db.prepare(sql).all();
 }
+
 function allAttempts(classId) {
   const sql = `SELECT name, school, class_id, score, total, duration_ms, finished_at FROM attempts
     WHERE finished_at IS NOT NULL ${classId ? 'AND class_id = ?' : ''} ORDER BY finished_at DESC LIMIT 5000`;
   return classId ? db.prepare(sql).all(classId) : db.prepare(sql).all();
+}
+
+// ---------- Phase 3: Competition State & Leaderboard Functions ----------
+function getCompetitionState() {
+  const row = q.getCompState.get();
+  if (!row) {
+    return {
+      title: 'FutureIN Inter-School Grand Championship',
+      status: 'draft',
+      durationMins: 30,
+      startedAt: null,
+      endedAt: null,
+      remainingMs: 30 * 60 * 1000,
+      updatedAt: Date.now()
+    };
+  }
+  const now = Date.now();
+  let status = row.status;
+  let remainingMs = 0;
+  if (status === 'active') {
+    if (row.ended_at && now >= row.ended_at) {
+      status = 'ended';
+      try { q.endComp.run(row.ended_at, now); } catch (_) {}
+    } else if (row.ended_at) {
+      remainingMs = Math.max(0, row.ended_at - now);
+    }
+  } else if (status === 'draft') {
+    remainingMs = (row.duration_mins || 30) * 60 * 1000;
+  }
+  return {
+    title: row.title || 'FutureIN Inter-School Grand Championship',
+    status,
+    durationMins: row.duration_mins || 30,
+    startedAt: row.started_at,
+    endedAt: row.ended_at,
+    remainingMs,
+    updatedAt: row.updated_at
+  };
+}
+
+function compClassSummary() {
+  const counts = Object.fromEntries(q.compCounts.all().map((r) => [r.class_id, r.n]));
+  const attempts = Object.fromEntries(q.compAttemptCounts.all().map((r) => [r.class_id, r.n]));
+  return CLASSES.map((c) => ({
+    ...c,
+    questions: counts[c.id] || 0,
+    attempts: attempts[c.id] || 0,
+  }));
+}
+
+function compSchoolLeaderboard() {
+  const sql = `
+    SELECT 
+      COALESCE(NULLIF(TRIM(school), ''), 'Independent Innovators') AS school,
+      COUNT(DISTINCT name_key) AS total_students,
+      COUNT(*) AS total_attempts,
+      ROUND(AVG(CAST(score AS REAL) / total * 100), 1) AS avg_score_pct,
+      SUM(score) AS total_stars,
+      MAX(score) AS highest_score
+    FROM comp_attempts
+    WHERE finished_at IS NOT NULL
+    GROUP BY LOWER(TRIM(COALESCE(NULLIF(TRIM(school), ''), 'Independent Innovators')))
+    ORDER BY avg_score_pct DESC, total_students DESC, total_stars DESC
+  `;
+  const rows = db.prepare(sql).all();
+  
+  const topStudentStmt = db.prepare(`
+    SELECT name, class_id, score, total
+    FROM comp_attempts
+    WHERE finished_at IS NOT NULL AND LOWER(TRIM(COALESCE(NULLIF(TRIM(school), ''), 'Independent Innovators'))) = ?
+    ORDER BY CAST(score AS REAL) / total DESC, duration_ms ASC, finished_at ASC
+    LIMIT 1
+  `);
+
+  return rows.map((r, idx) => {
+    let topStudent = null;
+    try {
+      topStudent = topStudentStmt.get(r.school.toLowerCase());
+    } catch (_) {}
+
+    let trophy = '🎖️';
+    if (idx === 0) trophy = '🥇';
+    else if (idx === 1) trophy = '🥈';
+    else if (idx === 2) trophy = '🥉';
+
+    return {
+      rank: idx + 1,
+      trophy,
+      school: r.school,
+      totalStudents: Number(r.total_students) || 0,
+      totalAttempts: Number(r.total_attempts) || 0,
+      avgScorePct: Number(r.avg_score_pct) || 0,
+      totalStars: Number(r.total_stars) || 0,
+      highestScore: Number(r.highest_score) || 0,
+      topStudent: topStudent ? `${topStudent.name} (${topStudent.score}/${topStudent.total})` : null
+    };
+  });
+}
+
+function schoolLeaderboard() {
+  const sql = `
+    SELECT 
+      COALESCE(NULLIF(TRIM(school), ''), 'Independent Innovators') AS school,
+      COUNT(DISTINCT name_key) AS total_students,
+      COUNT(*) AS total_attempts,
+      ROUND(AVG(CAST(score AS REAL) / total * 100), 1) AS avg_score_pct,
+      SUM(score) AS total_stars,
+      MAX(score) AS highest_score
+    FROM attempts
+    WHERE finished_at IS NOT NULL
+    GROUP BY LOWER(TRIM(COALESCE(NULLIF(TRIM(school), ''), 'Independent Innovators')))
+    ORDER BY avg_score_pct DESC, total_students DESC, total_stars DESC
+  `;
+  const rows = db.prepare(sql).all();
+  
+  const topStudentStmt = db.prepare(`
+    SELECT name, class_id, score, total
+    FROM attempts
+    WHERE finished_at IS NOT NULL AND LOWER(TRIM(COALESCE(NULLIF(TRIM(school), ''), 'Independent Innovators'))) = ?
+    ORDER BY CAST(score AS REAL) / total DESC, duration_ms ASC, finished_at ASC
+    LIMIT 1
+  `);
+
+  return rows.map((r, idx) => {
+    let topStudent = null;
+    try {
+      topStudent = topStudentStmt.get(r.school.toLowerCase());
+    } catch (_) {}
+
+    let trophy = '🎖️';
+    if (idx === 0) trophy = '🥇';
+    else if (idx === 1) trophy = '🥈';
+    else if (idx === 2) trophy = '🥉';
+
+    return {
+      rank: idx + 1,
+      trophy,
+      school: r.school,
+      totalStudents: Number(r.total_students) || 0,
+      totalAttempts: Number(r.total_attempts) || 0,
+      avgScorePct: Number(r.avg_score_pct) || 0,
+      totalStars: Number(r.total_stars) || 0,
+      highestScore: Number(r.highest_score) || 0,
+      topStudent: topStudent ? `${topStudent.name} (${topStudent.score}/${topStudent.total})` : null
+    };
+  });
+}
+
+function recentAttempts(limit = 15) {
+  const sql = `
+    SELECT name, school, class_id, score, total, duration_ms, finished_at
+    FROM comp_attempts
+    WHERE finished_at IS NOT NULL
+    ORDER BY finished_at DESC
+    LIMIT ?
+  `;
+  return db.prepare(sql).all(limit);
+}
+
+function competitionLive(classId) {
+  const compState = getCompetitionState();
+  const where = classId && classId !== 'all' ? `AND class_id = ?` : ``;
+
+  // Query competition attempts
+  const sql = `
+    SELECT name, school, class_id, score, total, duration_ms, finished_at, attempts_count FROM (
+      SELECT a.*,
+        ROW_NUMBER() OVER (PARTITION BY class_id, name_key, school_key
+                           ORDER BY score DESC, duration_ms ASC, finished_at ASC) AS rn,
+        COUNT(*)     OVER (PARTITION BY class_id, name_key, school_key) AS attempts_count
+      FROM comp_attempts a WHERE finished_at IS NOT NULL ${where}
+    ) WHERE rn = 1
+    ORDER BY CAST(score AS REAL) / total DESC, duration_ms ASC, finished_at ASC
+    LIMIT 50`;
+
+  let topRows = (classId && classId !== 'all') ? db.prepare(sql).all(classId) : db.prepare(sql).all();
+
+  const podium = topRows.slice(0, 3).map((r, i) => ({
+    rank: i + 1,
+    medal: i === 0 ? '🥇' : (i === 1 ? '🥈' : '🥉'),
+    ...r
+  }));
+
+  const schools = compSchoolLeaderboard();
+  const ticker = recentAttempts(15);
+
+  const stats = db.prepare(`
+    SELECT 
+      COUNT(*) AS total_attempts,
+      COUNT(DISTINCT name_key) AS total_students,
+      COUNT(DISTINCT LOWER(TRIM(school))) AS total_schools,
+      COALESCE(SUM(score), 0) AS total_stars,
+      ROUND(AVG(CAST(score AS REAL) / total * 100), 1) AS overall_avg_pct
+    FROM comp_attempts
+    WHERE finished_at IS NOT NULL
+  `).get() || { total_attempts: 0, total_students: 0, total_schools: 0, total_stars: 0, overall_avg_pct: 0 };
+
+  return {
+    classId: classId || 'all',
+    compState,
+    podium,
+    topStudents: topRows,
+    schools,
+    ticker,
+    stats: {
+      totalAttempts: Number(stats.total_attempts) || 0,
+      totalStudents: Number(stats.total_students) || 0,
+      totalSchools: Number(stats.total_schools) || 0,
+      totalStars: Number(stats.total_stars) || 0,
+      overallAvgPct: Number(stats.overall_avg_pct) || 0
+    },
+    timestamp: Date.now()
+  };
 }
 
 // ---------- Admin credentials (hashed) ----------
@@ -845,6 +1224,89 @@ async function submitQuiz(req, res) {
   return sendJson(res, 404, { error: 'This quiz session has ended. Please start again.' });
 }
 
+async function startCompAttempt(req, res) {
+  const compState = getCompetitionState();
+  if (compState.status !== 'active') {
+    return sendJson(res, 400, {
+      error: compState.status === 'draft'
+        ? 'The competition arena has not started yet. Please wait in the waiting room!'
+        : 'The competition has ended. Check the big-screen projector for final winners!',
+      status: compState.status,
+      title: compState.title
+    });
+  }
+  const body = await readBody(req, 20_000);
+  const name = clean(body.name);
+  const school = clean(body.school);
+  const cls = CLASS_BY_ID.get(String(body.classId || ''));
+  if (name.length < 2 || school.length < 2) {
+    return sendJson(res, 400, { error: 'Please enter your name and school.' });
+  }
+  if (!cls) return sendJson(res, 400, { error: 'Please select your class.' });
+
+  const questions = q.compQuestionsFor.all(cls.id);
+  if (questions.length === 0) {
+    return sendJson(res, 400, { error: `No competition questions set for ${cls.label} yet.` });
+  }
+
+  const id = crypto.randomUUID();
+  const key = questions.map(x => x.answer);
+  q.insertCompAttempt.run(id, name, school, cls.id, name.toLowerCase(), school.toLowerCase(), Date.now(), JSON.stringify(key));
+
+  sendJson(res, 200, {
+    attemptId: id,
+    title: compState.title,
+    classLabel: cls.label,
+    remainingMs: compState.remainingMs,
+    durationMins: compState.durationMins,
+    questions: questions.map(x => ({ question: x.text, options: JSON.parse(x.options) }))
+  });
+}
+
+async function submitCompAttempt(req, res) {
+  const body = await readBody(req, 50_000);
+  const now = Date.now();
+  const attemptId = String(body.attemptId || '').trim();
+  let attempt = attemptId ? q.getCompAttempt.get(attemptId) : null;
+
+  if (attempt && attempt.finished_at) {
+    return sendJson(res, 200, { score: attempt.score, total: attempt.total, durationMs: attempt.duration_ms });
+  }
+
+  if (attempt) {
+    const key = JSON.parse(attempt.answer_key || '[]');
+    const answers = Array.isArray(body.answers) ? body.answers : [];
+    let score;
+    if (typeof body.score === 'number' && body.score >= 0) {
+      score = body.score;
+    } else {
+      score = key.reduce((n, correct, i) => n + (answers[i] !== null && answers[i] !== undefined && Number(answers[i]) === correct ? 1 : 0), 0);
+    }
+    const total = key.length || Number(body.total) || answers.length || 10;
+    const durationMs = Number(body.durationMs) || Math.max(1000, now - attempt.started_at);
+    q.finishCompAttempt.run(now, score, total, durationMs, JSON.stringify(answers), attempt.id);
+    return sendJson(res, 200, { score, total, durationMs });
+  }
+
+  const name = clean(body.name);
+  const school = clean(body.school);
+  const cls = CLASS_BY_ID.get(String(body.classId || ''));
+  if (name.length >= 2 && school.length >= 2 && cls) {
+    const id = attemptId || crypto.randomUUID();
+    const questions = q.compQuestionsFor.all(cls.id);
+    const key = questions.map(x => x.answer);
+    const answers = Array.isArray(body.answers) ? body.answers : [];
+    const score = Number(body.score) || 0;
+    const total = key.length || Number(body.total) || 10;
+    const durationMs = Number(body.durationMs) || 60000;
+    q.insertCompAttempt.run(id, name, school, cls.id, name.toLowerCase(), school.toLowerCase(), now - durationMs, JSON.stringify(key));
+    q.finishCompAttempt.run(now, score, total, durationMs, JSON.stringify(answers), id);
+    return sendJson(res, 200, { score, total, durationMs });
+  }
+
+  return sendJson(res, 404, { error: 'Competition session not found.' });
+}
+
 async function adminLogin(req, res) {
   const ip = clientIp(req);
   if (lockedOut(ip)) return sendJson(res, 429, { error: 'Too many wrong attempts. Please wait 15 minutes and try again.' });
@@ -927,6 +1389,73 @@ async function adminRoutes(req, res, p, url) {
     const classId = CLASS_BY_ID.has(url.searchParams.get('class')) ? url.searchParams.get('class') : null;
     return sendJson(res, 200, { rows: allAttempts(classId) });
   }
+
+  // Competition Admin Endpoints
+  if (p === '/api/admin/competition' && req.method === 'GET') {
+    return sendJson(res, 200, {
+      state: getCompetitionState(),
+      classes: compClassSummary()
+    });
+  }
+  if (p === '/api/admin/competition/config' && req.method === 'POST') {
+    const body = await readBody(req, 10_000);
+    const title = clean(body.title, 120) || 'FutureIN Inter-School Grand Championship';
+    const durationMins = Math.max(1, Math.min(240, Number(body.durationMins) || 30));
+    q.updateCompConfig.run(title, durationMins, Date.now());
+    return sendJson(res, 200, { ok: true, state: getCompetitionState() });
+  }
+  if (p === '/api/admin/competition/action' && req.method === 'POST') {
+    const body = await readBody(req, 10_000);
+    const action = String(body.action || '').trim();
+    const now = Date.now();
+    const state = getCompetitionState();
+
+    if (action === 'start') {
+      const endedAt = now + state.durationMins * 60 * 1000;
+      q.startComp.run(now, endedAt, now);
+    } else if (action === 'end') {
+      q.endComp.run(now, now);
+    } else if (action === 'reset') {
+      q.resetComp.run(now);
+      if (body.clearAttempts) {
+        q.clearCompAttempts.run();
+      }
+    }
+    return sendJson(res, 200, { ok: true, state: getCompetitionState() });
+  }
+  if (p === '/api/admin/competition/questions' && req.method === 'GET') {
+    const classId = String(url.searchParams.get('class') || '').trim();
+    const cls = CLASS_BY_ID.get(classId);
+    if (!cls) return sendJson(res, 400, { error: 'Unknown class' });
+    const rows = q.compQuestionsFor.all(cls.id).map(r => ({ text: r.text, options: JSON.parse(r.options), answer: r.answer }));
+    return sendJson(res, 200, { classId: cls.id, classLabel: cls.label, questions: rows });
+  }
+  if (p === '/api/admin/competition/questions' && req.method === 'PUT') {
+    const body = await readBody(req);
+    const cls = CLASS_BY_ID.get(String(body.classId || ''));
+    if (!cls) return sendJson(res, 400, { error: 'Unknown class' });
+    const v = validateQuestions(body.questions);
+    if (v.error) return sendJson(res, 400, { error: v.error });
+    db.exec('BEGIN');
+    try {
+      q.deleteCompQuestions.run(cls.id);
+      v.questions.forEach((x, i) => q.insertCompQuestion.run(cls.id, i, x.text, JSON.stringify(x.options), x.answer));
+      db.exec('COMMIT');
+    } catch (e) {
+      db.exec('ROLLBACK');
+      throw e;
+    }
+    return sendJson(res, 200, { ok: true, count: v.questions.length });
+  }
+  if (p === '/api/admin/competition/attempts' && req.method === 'GET') {
+    const classId = url.searchParams.get('class');
+    const where = classId && classId !== 'all' ? `AND class_id = ?` : ``;
+    const sql = `SELECT name, school, class_id, score, total, duration_ms, finished_at FROM comp_attempts
+      WHERE finished_at IS NOT NULL ${where} ORDER BY finished_at DESC LIMIT 2000`;
+    const rows = (classId && classId !== 'all') ? db.prepare(sql).all(classId) : db.prepare(sql).all();
+    return sendJson(res, 200, { rows });
+  }
+
   return sendJson(res, 404, { error: 'Not found' });
 }
 
@@ -956,10 +1485,44 @@ async function requestHandler(req, res) {
     if (lower === '/api/classes') return sendJson(res, 200, { classes: CLASSES });
     if (lower === '/api/start' && req.method === 'POST') return await startQuiz(req, res);
     if (lower === '/api/submit' && req.method === 'POST') return await submitQuiz(req, res);
+
+    // Competition public endpoints
+    if (lower === '/api/competition/status') {
+      return sendJson(res, 200, getCompetitionState());
+    }
+    if (lower === '/api/competition/start-attempt' && req.method === 'POST') {
+      return await startCompAttempt(req, res);
+    }
+    if (lower === '/api/competition/submit' && req.method === 'POST') {
+      return await submitCompAttempt(req, res);
+    }
+    if (lower === '/api/competition/live' || lower === '/api/competition/schools') {
+      const user = sessionUser(req);
+      if (!user) return sendJson(res, 401, { error: 'Admin access required to view the live arena.' });
+      if (lower === '/api/competition/live') {
+        const classId = url.searchParams.get('classId');
+        syncAttemptsFromSupabase().catch(() => {});
+        return sendJson(res, 200, competitionLive(classId));
+      }
+      syncAttemptsFromSupabase().catch(() => {});
+      return sendJson(res, 200, { schools: compSchoolLeaderboard() });
+    }
+
     if (lower.startsWith('/api/admin/')) return await adminRoutes(req, res, lower, url);
     if (lower.startsWith('/api/')) return sendJson(res, 404, { error: 'Not found' });
     if (req.method !== 'GET' && req.method !== 'HEAD') return sendJson(res, 405, { error: 'Method not allowed' });
 
+    if (lower === '/compete' || lower.startsWith('/compete/') || lower === '/compete.html') {
+      return sendFile(res, path.join(PUBLIC_DIR, 'compete.html'));
+    }
+    if (lower === '/projector' || lower === '/competition' || lower === '/projector.html' || lower === '/leaderboard') {
+      const user = sessionUser(req);
+      if (!user) {
+        res.writeHead(302, { Location: ADMIN_PATH });
+        return res.end();
+      }
+      return sendFile(res, path.join(PUBLIC_DIR, 'projector.html'), { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' });
+    }
     if (lower === ADMIN_PATH || lower === '/admin.html') {
       const adminFile = fs.existsSync(path.join(PUBLIC_DIR, 'admin.html'))
         ? path.join(PUBLIC_DIR, 'admin.html')

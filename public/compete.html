@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FutureIN Competition Arena · Official Quiz</title>
+<link rel="icon" href="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lexend:wght@600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/brand.css">
+<link rel="stylesheet" href="/gamify.css">
+<script src="/api.js"></script>
+<script src="/gamify.js"></script>
+<style>
+  :root {
+    --gold: #ffc93c;
+    --gold-glow: rgba(255, 201, 60, 0.4);
+    --purple: #8338ec;
+    --cyan: #00f0ff;
+    --pink: #ff2a70;
+    --green: #00f59b;
+  }
+
+  body {
+    background: radial-gradient(circle at 50% 15%, #1d0e42 0%, #0a041c 80%);
+    background-color: #0a041c;
+    color: #fff;
+    font-family: 'Fredoka', 'Poppins', sans-serif;
+    min-height: 100vh;
+    margin: 0; padding: 0;
+    overflow-x: hidden;
+  }
+
+  .arena-bar {
+    background: rgba(18, 8, 42, 0.9);
+    border-bottom: 2px solid rgba(131, 56, 236, 0.35);
+    padding: 10px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+
+  .arena-brand {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .arena-brand img { height: 38px; width: auto; }
+  .arena-brand span {
+    font-family: 'Lexend', sans-serif;
+    font-weight: 800; font-size: clamp(15px, 2.2vw, 19px);
+    background: linear-gradient(135deg, #fff, var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  .arena-timer-pill {
+    background: linear-gradient(135deg, #ff2a70, #c2185b);
+    color: #fff; font-family: 'Lexend', monospace;
+    font-size: clamp(13px, 2vw, 16px); font-weight: 800;
+    padding: 6px 16px; border-radius: 999px;
+    box-shadow: 0 0 16px rgba(255, 42, 112, 0.5);
+    display: inline-flex; align-items: center; gap: 6px;
+    letter-spacing: 0.05em;
+  }
+  .arena-timer-pill.standby {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+  }
+
+  .comp-wrap {
+    max-width: 720px; margin: 24px auto 60px;
+    padding: 0 16px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+
+  .comp-card {
+    background: linear-gradient(180deg, rgba(30, 14, 70, 0.95), rgba(18, 7, 44, 0.98));
+    border: 2px solid rgba(131, 56, 236, 0.4);
+    border-radius: 28px; padding: clamp(20px, 4vw, 36px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(131, 56, 236, 0.2);
+    position: relative; overflow: hidden;
+  }
+  .comp-card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--cyan), var(--gold), var(--pink));
+  }
+
+  .wait-hero {
+    display: flex; align-items: center; gap: 18px; margin-bottom: 24px;
+  }
+  .wait-avatar {
+    width: clamp(76px, 16vw, 96px); flex: none;
+    animation: compFloat 2.6s ease-in-out infinite;
+  }
+  @keyframes compFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .wait-speech {
+    background: #fff; color: #1e1338;
+    padding: 16px 20px; border-radius: 22px;
+    border: 3.5px solid var(--gold);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    flex: 1;
+  }
+  .wait-speech h2 {
+    margin: 0 0 4px; font-family: 'Lexend', sans-serif;
+    font-size: clamp(17px, 3vw, 22px); font-weight: 800;
+  }
+  .wait-speech p { margin: 0; font-size: 14px; color: #493b66; font-weight: 500; }
+
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 999px;
+    font-size: 12px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 18px;
+  }
+  .status-badge.draft { background: rgba(255, 201, 60, 0.15); border: 1.5px solid var(--gold); color: var(--gold); }
+  .status-badge.active { background: rgba(0, 245, 155, 0.15); border: 1.5px solid var(--green); color: var(--green); }
+  .status-badge.ended { background: rgba(255, 42, 112, 0.15); border: 1.5px solid var(--pink); color: var(--pink); }
+
+  .comp-field {
+    margin-bottom: 16px;
+  }
+  .comp-field label {
+    display: flex; align-items: center; gap: 6px;
+    font-weight: 700; font-size: 14.5px; margin-bottom: 6px; color: #f1edff;
+  }
+  .comp-field input, .comp-field select {
+    width: 100%; box-sizing: border-box;
+    font-family: inherit; font-size: 16px; font-weight: 600;
+    padding: 13px 18px; border-radius: 16px;
+    border: 2px solid rgba(131, 56, 236, 0.5);
+    background: #0d0426; color: #fff;
+    outline: none; transition: border-color 0.2s;
+  }
+  .comp-field input:focus, .comp-field select:focus {
+    border-color: var(--gold); box-shadow: 0 0 16px rgba(255, 201, 60, 0.3);
+  }
+
+  .comp-btn {
+    width: 100%; font-family: 'Lexend', sans-serif;
+    font-size: 18px; font-weight: 800;
+    padding: 16px 24px; border-radius: 999px; border: none;
+    background: linear-gradient(135deg, var(--gold), #ff8a00);
+    color: #0c0420; cursor: pointer;
+    box-shadow: 0 6px 0 #cc8600, 0 12px 24px rgba(255, 201, 60, 0.35);
+    transition: transform 0.12s, filter 0.12s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-top: 10px;
+  }
+  .comp-btn:hover { filter: brightness(1.08); transform: translateY(-2px); }
+  .comp-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #cc8600; }
+  .comp-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* Quiz Screen */
+  .quiz-top {
+    display: flex; justify-content: space-between; align-items: center;
+    color: var(--text-muted); font-weight: 600; font-size: 14.5px;
+    margin-bottom: 10px;
+  }
+  .comp-progress-bar {
+    height: 8px; background: rgba(255, 255, 255, 0.1);
+    border-radius: 999px; overflow: hidden; margin-bottom: 20px;
+  }
+  .comp-progress-fill {
+    height: 100%; width: 0%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--gold), var(--pink));
+    transition: width 0.3s ease;
+  }
+  .q-prompt-box {
+    margin-bottom: 22px;
+  }
+  .q-prompt-box h2 {
+    font-family: 'Fredoka', sans-serif;
+    font-size: clamp(20px, 3.8vw, 26px);
+    font-weight: 700; line-height: 1.3;
+    margin: 0; color: #fff;
+  }
+  .comp-options {
+    display: grid; gap: 12px; margin-bottom: 24px;
+  }
+  .comp-opt-btn {
+    display: flex; align-items: center; gap: 14px;
+    background: rgba(23, 10, 52, 0.85);
+    border: 2px solid rgba(131, 56, 236, 0.45);
+    border-radius: 18px; padding: 14px 18px;
+    font-family: inherit; font-size: clamp(15px, 2.5vw, 17px);
+    font-weight: 600; color: #fff;
+    cursor: pointer; text-align: left;
+    transition: all 0.15s ease;
+  }
+  .comp-opt-btn:hover {
+    border-color: var(--cyan); background: rgba(38, 16, 85, 0.95);
+    transform: translateY(-2px);
+  }
+  .comp-opt-btn.sel {
+    border-color: var(--gold);
+    background: rgba(255, 201, 60, 0.15);
+    box-shadow: 0 0 16px rgba(255, 201, 60, 0.3);
+  }
+  .opt-letter {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: grid; place-items: center;
+    font-family: 'Lexend', sans-serif;
+    font-weight: 800; color: var(--gold);
+    flex: none;
+  }
+  .comp-opt-btn.sel .opt-letter {
+    background: var(--gold); color: #0c0420;
+  }
+
+  .q-nav-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  }
+  .btn-ghost {
+    background: transparent; border: 1.5px solid rgba(255, 255, 255, 0.2);
+    color: #fff; font-family: inherit; font-size: 15px; font-weight: 600;
+    padding: 10px 20px; border-radius: 999px; cursor: pointer;
+  }
+  .btn-ghost:hover { border-color: #fff; }
+
+  /* Completion screen */
+  .done-score {
+    font-family: 'Lexend', sans-serif;
+    font-size: clamp(48px, 10vw, 76px);
+    font-weight: 900; line-height: 1;
+    color: var(--gold); margin: 16px 0 8px;
+    text-shadow: 0 0 30px var(--gold-glow);
+  }
+  .whiteboard-callout {
+    background: rgba(0, 240, 255, 0.1);
+    border: 1.5px dashed var(--cyan);
+    border-radius: 18px; padding: 16px;
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+
+<header class="arena-bar">
+  <div class="arena-brand">
+    <img src="/logo.png" alt="FutureIN">
+    <span>🏆 Competition Arena</span>
+  </div>
+  <div class="arena-timer-pill standby" id="topTimer">
+    <span>⏱</span> <span id="topTimerText">Standby</span>
+  </div>
+</header>
+
+<main class="comp-wrap">
+
+  <!-- SCREEN 1: WAITING ROOM / REGISTRATION -->
+  <section class="comp-card" id="screenWait">
+    <div class="status-badge draft" id="waitBadge">
+      <span id="waitDot">🟡</span> <span id="waitBadgeText">Arena Standby</span>
+    </div>
+
+    <div class="wait-hero">
+      <div class="wait-avatar">
+        <svg viewBox="0 0 200 200" width="100%" height="100%">
+          <line x1="100" y1="28" x2="100" y2="4" stroke="#ffc629" stroke-width="6" stroke-linecap="round"/>
+          <polygon points="100,2 104,11 114,12 106,19 108,29 100,23 92,29 94,19 86,12 96,11" fill="#ffc629"/>
+          <rect x="22" y="28" width="156" height="114" rx="26" fill="#9b4dff" stroke="#7a34d6" stroke-width="5"/>
+          <rect x="36" y="40" width="128" height="90" rx="18" fill="#140833"/>
+          <circle cx="72" cy="74" r="14" fill="#3ddc84"/><circle cx="128" cy="74" r="14" fill="#3ddc84"/>
+          <circle cx="76" cy="70" r="5" fill="#fff"/><circle cx="132" cy="70" r="5" fill="#fff"/>
+          <circle cx="56" cy="94" r="9" fill="#ff6b9a" opacity=".7"/><circle cx="144" cy="94" r="9" fill="#ff6b9a" opacity=".7"/>
+          <path d="M80 94 Q100 114 120 94" stroke="#ffc629" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <rect x="88" y="142" width="24" height="18" fill="#7a34d6"/>
+          <rect x="52" y="158" width="96" height="16" rx="8" fill="#ffc629" stroke="#cc8600" stroke-width="3"/>
+        </svg>
+      </div>
+      <div class="wait-speech">
+        <h2 id="compTitleDisplay">FutureIN Championship</h2>
+        <p id="waitSubtitle">Enter your name and school below. As soon as the teacher starts the live round, you will jump straight into the arena!</p>
+      </div>
+    </div>
+
+    <form id="waitForm" autocomplete="off">
+      <div class="comp-field">
+        <label for="compName">👤 Your Full Name</label>
+        <input id="compName" placeholder="e.g. Victor Adebayo" maxlength="80" required>
+      </div>
+      <div class="comp-field">
+        <label for="compSchool">🏫 Your School</label>
+        <input id="compSchool" placeholder="e.g. Precious Innovators Academy" maxlength="80" required>
+      </div>
+      <div class="comp-field">
+        <label for="compClass">🎓 Your Competition Class</label>
+        <select id="compClass" required>
+          <option value="">Select your class...</option>
+          <option value="nursery-2">Nursery 2</option>
+          <option value="year-1">Year 1</option>
+          <option value="year-2">Year 2</option>
+          <option value="year-3">Year 3</option>
+          <option value="year-4">Year 4</option>
+          <option value="year-5">Year 5</option>
+          <option value="year-6">Year 6</option>
+        </select>
+      </div>
+      <div class="err" id="waitErr" style="margin-bottom:12px; color:#ff6b6b; font-weight:700;"></div>
+      <button class="comp-btn" type="submit" id="btnEnter">
+        <span>🚀</span> Enter Competition Arena
+      </button>
+    </form>
+  </section>
+
+  <!-- SCREEN 2: ACTIVE COMPETITION QUIZ -->
+  <section class="comp-card" id="screenQuiz" style="display:none;">
+    <div class="quiz-top">
+      <span id="qCounter">Question 1 of 10</span>
+      <span id="qClassBadge" style="color:var(--cyan); font-weight:800; text-transform:uppercase;">YEAR 1</span>
+    </div>
+    <div class="comp-progress-bar">
+      <div class="comp-progress-fill" id="qProgress"></div>
+    </div>
+
+    <div class="q-prompt-box">
+      <h2 id="qText">Loading question...</h2>
+    </div>
+
+    <div class="comp-options" id="qOptions">
+      <!-- Generated via JS -->
+    </div>
+
+    <div class="q-nav-row">
+      <button type="button" class="btn-ghost" id="btnBack">Back</button>
+      <button type="button" class="comp-btn" id="btnNext" style="width:auto; min-width:180px; margin:0;" disabled>
+        Next ▶
+      </button>
+    </div>
+  </section>
+
+  <!-- SCREEN 3: SCORE SUBMITTED & WHITEBOARD DIRECTIVE -->
+  <section class="comp-card" id="screenDone" style="display:none; text-align:center;">
+    <div style="font-size:70px; animation:compFloat 2s infinite;">🏆</div>
+    <h1 style="font-family:'Lexend',sans-serif; margin:10px 0 0;">Score Submitted!</h1>
+    <p style="color:var(--text-muted); font-size:16px;">Awesome effort, <span id="doneName" style="color:#fff; font-weight:700;"></span>!</p>
+
+    <div class="done-score" id="doneScore">0 / 0</div>
+    <p style="color:var(--text-muted); font-size:14px;" id="doneTime">Finished in 0s</p>
+
+    <div class="whiteboard-callout" style="border-color:rgba(0, 245, 155, 0.4); background:rgba(0, 245, 155, 0.08);">
+      <h3 style="margin:0 0 4px; font-family:'Lexend',sans-serif; color:var(--green);">✅ Quiz Completed!</h3>
+      <p style="margin:0; font-size:14px; color:#e0d7f5;">Your official competition answers have been recorded. Please keep your device ready and await your teacher's instructions.</p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  const $ = (id) => document.getElementById(id);
+  let compState = null;
+  let questions = [];
+  let currentIdx = 0;
+  let answers = [];
+  let attemptId = null;
+  let timerInterval = null;
+  let statusPollInterval = null;
+  let quizStartTime = 0;
+  let isReadyWaiting = false;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('name')) $('compName').value = urlParams.get('name');
+  if (urlParams.get('school')) $('compSchool').value = urlParams.get('school');
+  if (urlParams.get('class')) $('compClass').value = urlParams.get('class');
+
+  function fmtClock(ms) {
+    if (ms <= 0) return '00:00';
+    const totalSec = Math.floor(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+
+  async function checkStatus() {
+    try {
+      const res = await fetch('/api/competition/status');
+      if (!res.ok) return;
+      compState = await res.json();
+      updateStatusUI();
+    } catch (e) {
+      console.warn('Status poll error:', e);
+    }
+  }
+
+  function updateStatusUI() {
+    if (!compState) return;
+
+    $('compTitleDisplay').textContent = compState.title;
+
+    if (compState.status === 'draft') {
+      $('waitBadge').className = 'status-badge draft';
+      $('waitDot').textContent = '🟡';
+      $('waitBadgeText').textContent = 'Arena Standby (Waiting to Start)';
+      $('topTimer').className = 'arena-timer-pill standby';
+      $('topTimerText').textContent = 'Standby';
+      $('waitSubtitle').textContent = isReadyWaiting
+        ? "You are checked in! As soon as the teacher clicks 'Start Competition', your quiz will launch automatically!"
+        : "Enter your name and school below. As soon as the teacher starts the live round, you will jump straight into the arena!";
+    } else if (compState.status === 'active') {
+      $('waitBadge').className = 'status-badge active';
+      $('waitDot').textContent = '🟢';
+      $('waitBadgeText').textContent = 'Live Round Active!';
+      $('topTimer').className = 'arena-timer-pill';
+      $('topTimerText').textContent = fmtClock(compState.remainingMs);
+
+      // If user was waiting and round just went active, start automatically!
+      if (isReadyWaiting && $('screenWait').style.display !== 'none') {
+        startCompetitionAttempt();
+      }
+    } else if (compState.status === 'ended') {
+      $('waitBadge').className = 'status-badge ended';
+      $('waitDot').textContent = '🔴';
+      $('waitBadgeText').textContent = 'Competition Concluded';
+      $('topTimer').className = 'arena-timer-pill standby';
+      $('topTimerText').textContent = 'Concluded';
+      $('waitSubtitle').textContent = "This competition round has ended! Await your teacher's announcement of the results.";
+      $('btnEnter').disabled = true;
+    }
+  }
+
+  async function startCompetitionAttempt() {
+    const name = $('compName').value.trim();
+    const school = $('compSchool').value.trim();
+    const classId = $('compClass').value.trim();
+
+    if (name.length < 2 || school.length < 2 || !classId) {
+      $('waitErr').textContent = 'Please fill in your name, school, and class.';
+      return;
+    }
+
+    $('btnEnter').disabled = true;
+    $('waitErr').textContent = '';
+
+    try {
+      const res = await fetch('/api/competition/start-attempt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, school, classId })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.status === 'draft') {
+          isReadyWaiting = true;
+          $('waitSubtitle').textContent = "Checked in! Waiting for the teacher to launch the live round...";
+          $('btnEnter').textContent = "⏳ Waiting for Organizer...";
+          return;
+        }
+        $('waitErr').textContent = data.error || 'Could not start competition.';
+        $('btnEnter').disabled = false;
+        return;
+      }
+
+      attemptId = data.attemptId;
+      questions = data.questions;
+      answers = new Array(questions.length).fill(null);
+      currentIdx = 0;
+      quizStartTime = Date.now();
+
+      // Switch screen
+      $('screenWait').style.display = 'none';
+      $('screenQuiz').style.display = 'block';
+      $('qClassBadge').textContent = data.classLabel || classId;
+
+      // Start synchronized timer countdown
+      let remaining = data.remainingMs || (data.durationMins * 60 * 1000);
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        remaining -= 1000;
+        $('topTimerText').textContent = fmtClock(remaining);
+        if (remaining <= 0) {
+          clearInterval(timerInterval);
+          finishCompetition();
+        }
+      }, 1000);
+
+      renderQuestion();
+    } catch (e) {
+      $('waitErr').textContent = 'Network error: ' + e.message;
+      $('btnEnter').disabled = false;
+    }
+  }
+
+  function renderQuestion() {
+    const q = questions[currentIdx];
+    $('qCounter').textContent = `Question ${currentIdx + 1} of ${questions.length}`;
+    $('qProgress').style.width = `${((currentIdx) / questions.length) * 100}%`;
+    $('qText').textContent = q.question;
+
+    const box = $('qOptions');
+    box.innerHTML = '';
+
+    q.options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'comp-opt-btn' + (answers[currentIdx] === idx ? ' sel' : '');
+      btn.innerHTML = `<span class="opt-letter">${'ABCD'[idx]}</span><span>${opt}</span>`;
+      btn.onclick = () => {
+        answers[currentIdx] = idx;
+        renderQuestion();
+      };
+      box.appendChild(btn);
+    });
+
+    $('btnBack').style.visibility = currentIdx === 0 ? 'hidden' : 'visible';
+    $('btnNext').disabled = answers[currentIdx] === null;
+    $('btnNext').textContent = currentIdx === questions.length - 1 ? 'Submit to Arena 🏁' : 'Next ▶';
+  }
+
+  $('btnBack').onclick = () => {
+    if (currentIdx > 0) {
+      currentIdx--;
+      renderQuestion();
+    }
+  };
+
+  $('btnNext').onclick = () => {
+    if (currentIdx < questions.length - 1) {
+      currentIdx++;
+      renderQuestion();
+    } else {
+      finishCompetition();
+    }
+  };
+
+  async function finishCompetition() {
+    clearInterval(timerInterval);
+    $('btnNext').disabled = true;
+
+    const payload = {
+      attemptId,
+      name: $('compName').value.trim(),
+      school: $('compSchool').value.trim(),
+      classId: $('compClass').value.trim(),
+      answers,
+      durationMs: Math.max(1000, Date.now() - quizStartTime)
+    };
+
+    try {
+      const res = await fetch('/api/competition/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      $('screenQuiz').style.display = 'none';
+      $('screenDone').style.display = 'block';
+      $('doneName').textContent = payload.name;
+      $('doneScore').textContent = `${data.score} / ${data.total}`;
+      $('doneTime').textContent = `Completed in ${Math.round(payload.durationMs / 1000)}s`;
+
+      if (window.Gamify && Gamify.fireConfetti) {
+        Gamify.fireConfetti({ count: 70 });
+      }
+    } catch (e) {
+      alert('Could not submit attempt: ' + e.message);
+      $('btnNext').disabled = false;
+    }
+  }
+
+  $('waitForm').onsubmit = (e) => {
+    e.preventDefault();
+    if (compState && compState.status === 'active') {
+      startCompetitionAttempt();
+    } else {
+      isReadyWaiting = true;
+      $('waitSubtitle').textContent = "Checked in! Waiting for the teacher to launch the live round...";
+      $('btnEnter').textContent = "⏳ Waiting for Organizer to Start...";
+      $('btnEnter').disabled = true;
+    }
+  };
+
+  // Poll status every 2.5s
+  checkStatus();
+  statusPollInterval = setInterval(checkStatus, 2500);
+})();
+</script>
+</body>
+</html>

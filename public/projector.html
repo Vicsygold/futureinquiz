@@ -1,0 +1,1481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FutureIN Arena · Classroom Big-Screen & School Cup</title>
+<link rel="icon" href="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lexend:wght@600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-base: #070314;
+    --bg-card: rgba(22, 11, 46, 0.82);
+    --bg-card-hover: rgba(33, 17, 68, 0.95);
+    --border-card: rgba(131, 56, 236, 0.35);
+    --gold: #ffc93c;
+    --gold-glow: rgba(255, 201, 60, 0.45);
+    --silver: #e0e6ed;
+    --silver-glow: rgba(224, 230, 237, 0.4);
+    --bronze: #e69153;
+    --bronze-glow: rgba(230, 145, 83, 0.4);
+    --cyan: #00f0ff;
+    --pink: #ff2a70;
+    --green: #00f59b;
+    --purple: #8338ec;
+    --text-white: #ffffff;
+    --text-muted: #a69bb8;
+    --text-faint: #6e6284;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100vh;
+    background-color: var(--bg-base);
+    color: var(--text-white);
+    font-family: 'Fredoka', 'Poppins', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* Cosmic Radial Background with Subtle Grid */
+  body {
+    background-image: 
+      radial-gradient(circle at 50% 10%, rgba(131, 56, 236, 0.28) 0%, transparent 60%),
+      radial-gradient(circle at 10% 80%, rgba(0, 240, 255, 0.14) 0%, transparent 50%),
+      radial-gradient(circle at 90% 70%, rgba(255, 42, 112, 0.16) 0%, transparent 50%),
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+  }
+
+  /* Confetti Canvas */
+  #confettiCanvas {
+    position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  }
+
+  .wrap {
+    max-width: 1440px; margin: 0 auto;
+    padding: 16px 20px 100px;
+    display: flex; flex-direction: column; gap: 20px;
+    position: relative; z-index: 1;
+  }
+
+  /* ---------- Top Broadcast Navigation Bar ---------- */
+  .arena-header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    background: rgba(16, 7, 36, 0.85);
+    border: 1.5px solid rgba(131, 56, 236, 0.4);
+    border-radius: 24px; padding: 12px 24px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(131, 56, 236, 0.2);
+    backdrop-filter: blur(12px);
+  }
+
+  .arena-brand {
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .arena-logo {
+    height: 44px; width: auto; object-fit: contain;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,.5));
+  }
+
+  .arena-title-wrap {
+    display: flex; flex-direction: column;
+  }
+
+  .arena-title {
+    font-family: 'Lexend', sans-serif;
+    font-size: clamp(18px, 2.4vw, 26px);
+    font-weight: 900;
+    margin: 0;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #ffffff 40%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+  }
+
+  .arena-live-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 800;
+    color: #ff4757; text-transform: uppercase; letter-spacing: 0.1em;
+  }
+
+  .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #ff4757;
+    box-shadow: 0 0 10px #ff4757;
+    animation: livePulse 1.2s infinite ease-in-out;
+  }
+
+  @keyframes livePulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.6); opacity: 0.4; }
+  }
+
+  .arena-controls {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+
+  .arena-select {
+    background: #14092b;
+    color: #fff;
+    border: 1.5px solid var(--purple);
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14px; font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 999px;
+    outline: none; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .arena-select:hover { border-color: var(--cyan); box-shadow: 0 0 12px rgba(0, 240, 255, 0.3); }
+
+  .arena-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #190c37;
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13.5px; font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .arena-btn:hover {
+    background: #281458; border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(255, 201, 60, 0.3);
+  }
+  .arena-btn.gold {
+    background: linear-gradient(135deg, var(--gold), #ff8a00);
+    color: #0c0420; border: none;
+    box-shadow: 0 4px 16px rgba(255, 201, 60, 0.4);
+  }
+  .arena-btn.gold:hover {
+    filter: brightness(1.1); transform: translateY(-2px) scale(1.03);
+  }
+
+  /* ---------- Rolling Breaking News Ticker ---------- */
+  .ticker-wrap {
+    width: 100%;
+    background: linear-gradient(90deg, rgba(131, 56, 236, 0.25), rgba(255, 42, 112, 0.25), rgba(0, 240, 255, 0.25));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 14px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .ticker-badge {
+    flex: none;
+    background: linear-gradient(135deg, #ff2a70, #ff6b9a);
+    color: #fff;
+    font-family: 'Lexend', sans-serif;
+    font-size: 12px; font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex; align-items: center; gap: 6px;
+    box-shadow: 0 2px 8px rgba(255, 42, 112, 0.5);
+  }
+
+  .ticker-track {
+    flex: 1; overflow: hidden; white-space: nowrap;
+    position: relative;
+  }
+
+  .ticker-content {
+    display: inline-block;
+    white-space: nowrap;
+    animation: tickerScroll 38s linear infinite;
+    font-weight: 600;
+    font-size: clamp(14px, 1.8vw, 16px);
+    color: #f1edff;
+  }
+  .ticker-content:hover { animation-play-state: paused; }
+
+  @keyframes tickerScroll {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+
+  /* ---------- Event Metric Ribbon ---------- */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 860px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-card);
+    border-radius: 20px; padding: 14px 18px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-3px); border-color: var(--cyan); }
+
+  .stat-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    display: grid; place-items: center;
+    font-size: 24px;
+    background: rgba(255, 255, 255, 0.06);
+    flex: none;
+  }
+  .stat-info { display: flex; flex-direction: column; }
+  .stat-val {
+    font-family: 'Lexend', sans-serif;
+    font-size: clamp(20px, 3vw, 28px);
+    font-weight: 800; line-height: 1.1;
+    color: #fff;
+  }
+  .stat-lbl {
+    font-size: 12.5px; font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  /* ---------- Olympic Champions Podium ---------- */
+  .podium-section {
+    background: radial-gradient(circle at 50% 100%, rgba(131, 56, 236, 0.35) 0%, rgba(16, 7, 36, 0.95) 70%);
+    border: 2px solid rgba(255, 201, 60, 0.35);
+    border-radius: 28px;
+    padding: 30px 20px 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 201, 60, 0.15);
+    display: flex; flex-direction: column; align-items: center;
+    position: relative; overflow: hidden;
+  }
+
+  .podium-section::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--cyan), var(--gold), var(--pink));
+  }
+
+  .podium-header {
+    text-align: center; margin-bottom: 24px;
+  }
+  .podium-header h2 {
+    font-family: 'Lexend', sans-serif;
+    font-size: clamp(22px, 3.4vw, 34px);
+    font-weight: 900; margin: 0 0 6px;
+    color: #fff; letter-spacing: -0.02em;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .podium-header p {
+    color: var(--text-muted); font-size: 15px; margin: 0; font-weight: 500;
+  }
+
+  .podium-stage {
+    display: flex; align-items: flex-end; justify-content: center;
+    gap: clamp(12px, 3vw, 36px);
+    width: 100%; max-width: 860px;
+    margin-top: 20px; padding-bottom: 8px;
+  }
+
+  .podium-col {
+    flex: 1; max-width: 250px;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    animation: podiumPopIn 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  }
+
+  @keyframes podiumPopIn {
+    from { opacity: 0; transform: translateY(40px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .podium-col.first { order: 2; z-index: 2; animation-delay: 0.1s; }
+  .podium-col.second { order: 1; animation-delay: 0.25s; }
+  .podium-col.third { order: 3; animation-delay: 0.4s; }
+
+  .podium-avatar {
+    width: clamp(60px, 9vw, 84px);
+    height: clamp(60px, 9vw, 84px);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: clamp(28px, 4.5vw, 42px);
+    margin-bottom: 10px;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  }
+  .first .podium-avatar {
+    border: 4px solid var(--gold);
+    background: radial-gradient(circle, #523800, #1f1400);
+    box-shadow: 0 0 30px var(--gold-glow);
+    animation: crownFloat 2s ease-in-out infinite alternate;
+  }
+  .second .podium-avatar {
+    border: 3.5px solid var(--silver);
+    background: radial-gradient(circle, #2f3542, #14171d);
+  }
+  .third .podium-avatar {
+    border: 3.5px solid var(--bronze);
+    background: radial-gradient(circle, #482312, #1f0e07);
+  }
+
+  @keyframes crownFloat {
+    from { transform: translateY(0); }
+    to { transform: translateY(-8px); }
+  }
+
+  .podium-student-name {
+    font-family: 'Lexend', sans-serif;
+    font-size: clamp(15px, 2.2vw, 19px);
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 2px;
+    max-width: 100%;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .podium-school-name {
+    font-size: clamp(12px, 1.8vw, 14px);
+    color: var(--cyan);
+    font-weight: 600;
+    margin: 0 0 6px;
+    max-width: 100%;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .podium-score-pill {
+    font-size: 12.5px; font-weight: 800;
+    padding: 3px 12px; border-radius: 999px;
+    margin-bottom: 12px;
+  }
+  .first .podium-score-pill { background: var(--gold); color: #1e1338; }
+  .second .podium-score-pill { background: var(--silver); color: #1e1338; }
+  .third .podium-score-pill { background: var(--bronze); color: #fff; }
+
+  .podium-pillar {
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: 'Lexend', sans-serif;
+    font-size: clamp(26px, 4vw, 40px);
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.9);
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  }
+  .first .podium-pillar {
+    height: clamp(150px, 22vh, 210px);
+    background: linear-gradient(180deg, rgba(255, 201, 60, 0.45) 0%, rgba(138, 92, 0, 0.3) 100%);
+    border: 2.5px solid var(--gold);
+    border-bottom: none;
+    box-shadow: 0 0 35px var(--gold-glow);
+  }
+  .second .podium-pillar {
+    height: clamp(110px, 16vh, 150px);
+    background: linear-gradient(180deg, rgba(224, 230, 237, 0.35) 0%, rgba(87, 101, 116, 0.25) 100%);
+    border: 2px solid var(--silver);
+    border-bottom: none;
+  }
+  .third .podium-pillar {
+    height: clamp(80px, 12vh, 120px);
+    background: linear-gradient(180deg, rgba(230, 145, 83, 0.35) 0%, rgba(110, 52, 14, 0.25) 100%);
+    border: 2px solid var(--bronze);
+    border-bottom: none;
+  }
+
+  .podium-rank-num {
+    display: flex; align-items: center; gap: 4px;
+    font-size: clamp(22px, 3.5vw, 36px);
+  }
+
+  /* ---------- Dual Navigation Tabs ---------- */
+  .arena-tabs {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; margin-top: 10px;
+  }
+  .tab-btn {
+    background: var(--bg-card);
+    border: 2px solid var(--border-card);
+    color: var(--text-muted);
+    font-family: 'Lexend', sans-serif;
+    font-size: clamp(14px, 2vw, 17px);
+    font-weight: 700;
+    padding: 12px 28px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 10px;
+    transition: all 0.25s ease;
+  }
+  .tab-btn:hover {
+    color: #fff; border-color: var(--cyan);
+    transform: translateY(-2px);
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, var(--purple), #5b1fa8);
+    color: #fff;
+    border-color: var(--gold);
+    box-shadow: 0 6px 20px rgba(131, 56, 236, 0.45);
+  }
+
+  /* ---------- Leaderboard Table Card ---------- */
+  .leaderboard-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-card);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    overflow-x: auto;
+  }
+
+  .custom-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    text-align: left;
+  }
+
+  .custom-table th {
+    font-family: 'Lexend', sans-serif;
+    font-size: 13px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 10px 16px;
+    border: none;
+  }
+
+  .custom-table tr.data-row {
+    background: rgba(30, 14, 62, 0.6);
+    border-radius: 16px;
+    transition: transform 0.15s, background 0.15s;
+  }
+  .custom-table tr.data-row:hover {
+    background: rgba(49, 23, 102, 0.85);
+    transform: scale(1.008);
+  }
+
+  .custom-table td {
+    padding: 14px 16px;
+    font-size: clamp(14px, 1.8vw, 16px);
+    font-weight: 600;
+    color: #fff;
+    border: none;
+  }
+  .custom-table td:first-child {
+    border-radius: 16px 0 0 16px;
+    font-family: 'Lexend', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    width: 60px;
+    text-align: center;
+  }
+  .custom-table td:last-child {
+    border-radius: 0 16px 16px 0;
+  }
+
+  .school-cell {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .school-icon-badge {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: rgba(255, 201, 60, 0.15);
+    border: 1px solid var(--gold);
+    display: grid; place-items: center;
+    font-size: 18px; flex: none;
+  }
+  .school-name-text {
+    font-family: 'Lexend', sans-serif;
+    font-size: 16px; font-weight: 800;
+    color: #fff;
+  }
+  .school-top-student {
+    font-size: 12.5px; color: var(--cyan); font-weight: 500;
+  }
+
+  .progress-cell-bar {
+    width: 100%; max-width: 160px; height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 999px; overflow: hidden;
+    margin-top: 4px;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--green), var(--cyan));
+  }
+
+  .class-badge {
+    display: inline-block;
+    padding: 3px 10px; border-radius: 999px;
+    background: rgba(131, 56, 236, 0.3);
+    border: 1px solid var(--purple);
+    font-size: 12px; font-weight: 700;
+    color: #e5d8ff;
+    text-transform: uppercase;
+  }
+
+  /* ---------- Floating Student Join Banner ---------- */
+  .join-banner {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    width: min(860px, 94vw);
+    background: linear-gradient(135deg, rgba(20, 9, 44, 0.95), rgba(35, 14, 80, 0.95));
+    border: 2px solid var(--cyan);
+    border-radius: 999px; padding: 12px 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 240, 255, 0.35);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; z-index: 100;
+    backdrop-filter: blur(12px);
+    animation: floatBanner 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes floatBanner {
+    0% { transform: translateX(-50%) translateY(0); }
+    100% { transform: translateX(-50%) translateY(-6px); }
+  }
+
+  .join-info {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .join-icon { font-size: 26px; }
+  .join-text h4 {
+    margin: 0; font-family: 'Lexend', sans-serif;
+    font-size: clamp(14px, 2vw, 17px); font-weight: 800; color: #fff;
+  }
+  .join-text p {
+    margin: 2px 0 0; font-size: 13px; color: var(--text-muted); font-weight: 500;
+  }
+  .join-url-box {
+    background: #090317; border: 1.5px dashed var(--gold);
+    color: var(--gold); font-family: monospace; font-size: 15px; font-weight: 700;
+    padding: 6px 16px; border-radius: 999px;
+    letter-spacing: 0.04em;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center; padding: 50px 20px;
+    color: var(--text-muted);
+  }
+  .empty-icon { font-size: 50px; margin-bottom: 12px; opacity: 0.8; }
+
+  /* Live Arena Broadcast Banner */
+  .arena-broadcast-banner {
+    background: linear-gradient(135deg, rgba(22, 11, 46, 0.95), rgba(38, 16, 84, 0.95));
+    border: 2px solid rgba(255, 201, 60, 0.4);
+    border-radius: 24px;
+    padding: 20px 28px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 30px rgba(131, 56, 236, 0.25);
+    display: flex; flex-direction: column; gap: 14px;
+    backdrop-filter: blur(14px);
+    transition: all 0.3s ease;
+  }
+  .arena-broadcast-banner.active-round {
+    border-color: var(--green);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 30px rgba(0, 245, 155, 0.3);
+  }
+  .arena-broadcast-banner.ended-round {
+    border-color: var(--gold);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 40px rgba(255, 201, 60, 0.4);
+  }
+  .clock-digital {
+    font-family: 'Lexend', monospace;
+    font-size: clamp(32px, 4.5vw, 54px);
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    color: var(--gold);
+    text-shadow: 0 0 20px var(--gold-glow);
+    font-variant-numeric: tabular-nums;
+  }
+  .clock-digital.urgent {
+    color: #ff4757;
+    text-shadow: 0 0 25px rgba(255, 71, 87, 0.7);
+    animation: urgentPulse 1s infinite alternate;
+  }
+  @keyframes urgentPulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.03); }
+  }
+  .rank-shift {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 3px 8px; border-radius: 999px;
+    font-size: 12px; font-weight: 800;
+    min-width: 44px;
+  }
+  .rank-shift.up {
+    background: rgba(0, 245, 155, 0.2);
+    border: 1px solid var(--green);
+    color: var(--green);
+    animation: scaleUpFlash 0.5s ease-out;
+  }
+  .rank-shift.down {
+    background: rgba(255, 71, 87, 0.2);
+    border: 1px solid #ff4757;
+    color: #ff4757;
+  }
+  .rank-shift.same {
+    color: var(--text-faint);
+  }
+  .rank-shift.new {
+    background: rgba(255, 201, 60, 0.2);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    animation: scaleUpFlash 0.5s ease-out;
+  }
+  @keyframes scaleUpFlash {
+    0% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+  .row-scaled-up {
+    animation: rowGlowGreen 1.5s ease-out;
+  }
+  @keyframes rowGlowGreen {
+    0% { background: rgba(0, 245, 155, 0.2); }
+    100% { background: transparent; }
+  }
+  .heat-card {
+    background: rgba(16, 7, 36, 0.85);
+    border: 1.5px solid rgba(131, 56, 236, 0.35);
+    border-radius: 20px; padding: 18px 20px;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .heat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+  .heat-card.blazing { border-color: var(--gold); box-shadow: 0 0 20px rgba(255, 201, 60, 0.25); }
+</style>
+</head>
+<body>
+
+<canvas id="confettiCanvas"></canvas>
+
+<div class="wrap">
+
+  <!-- Top Header & Controls -->
+  <header class="arena-header">
+    <div class="arena-brand">
+      <img src="/logo.png" alt="FutureIN Logo" class="arena-logo">
+      <div class="arena-title-wrap">
+        <h1 class="arena-title">FutureIN Arena · Championship</h1>
+        <div class="arena-live-tag">
+          <span class="live-dot"></span>
+          <span>Live Classroom Broadcast</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arena-controls">
+      <!-- Grade Filter -->
+      <select class="arena-select" id="classFilter" title="Filter by grade">
+        <option value="all">🏆 All Grades & Classes</option>
+        <option value="nursery-2">Nursery 2</option>
+        <option value="year-1">Year 1</option>
+        <option value="year-2">Year 2</option>
+        <option value="year-3">Year 3</option>
+        <option value="year-4">Year 4</option>
+        <option value="year-5">Year 5</option>
+        <option value="year-6">Year 6</option>
+      </select>
+
+      <!-- Refresh Speed -->
+      <select class="arena-select" id="refreshSpeed" title="Auto-refresh speed">
+        <option value="8000">⚡ Live: 8s</option>
+        <option value="15000">⏱ 15s</option>
+        <option value="30000">⏱ 30s</option>
+        <option value="0">⏸ Paused</option>
+      </select>
+
+      <!-- Sound Toggle -->
+      <button type="button" class="arena-btn" id="soundBtn" title="Toggle sound FX">
+        <span id="soundIcon">🔊</span>
+      </button>
+
+      <!-- Celebrate Button -->
+      <button type="button" class="arena-btn gold" id="celebrateBtn" title="Fire golden fanfare & confetti">
+        <span>🎉</span> Celebrate
+      </button>
+
+      <!-- Fullscreen Toggle -->
+      <button type="button" class="arena-btn" id="fullscreenBtn" title="Enter Big-Screen Fullscreen">
+        <span>⛶</span> Fullscreen
+      </button>
+
+      <!-- Home link -->
+      <a href="/" class="arena-btn" style="text-decoration:none;" title="Go back to Quiz Home">
+        <span>🏠</span> Home
+      </a>
+    </div>
+  </header>
+
+  <!-- Live Arena State & Broadcast Countdown -->
+  <section class="arena-broadcast-banner" id="arenaBroadcastBanner"></section>
+
+  <!-- Rolling News Ticker Tape -->
+  <div class="ticker-wrap">
+    <div class="ticker-badge">
+      <span>🔥</span> Live Feed
+    </div>
+    <div class="ticker-track">
+      <div class="ticker-content" id="tickerText">
+        Connecting to live FutureIN classroom stream...
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric Overview Ribbon -->
+  <section class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon" style="color:var(--cyan)">👥</div>
+      <div class="stat-info">
+        <span class="stat-val" id="statStudents">0</span>
+        <span class="stat-lbl">Active Innovators</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="color:var(--gold)">🏫</div>
+      <div class="stat-info">
+        <span class="stat-val" id="statSchools">0</span>
+        <span class="stat-lbl">Competing Schools</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="color:#ffc93c">⭐</div>
+      <div class="stat-info">
+        <span class="stat-val" id="statStars">0</span>
+        <span class="stat-lbl">Stars Awarded</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="color:var(--green)">🎯</div>
+      <div class="stat-info">
+        <span class="stat-val" id="statAccuracy">100%</span>
+        <span class="stat-lbl">Average Mastery</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Olympic Podium Component -->
+  <section class="podium-section">
+    <div class="podium-header">
+      <h2>🏆 Champions of the Arena</h2>
+      <p id="podiumSub">Top-ranked innovators leading the competition</p>
+    </div>
+
+    <div class="podium-stage" id="podiumStage">
+      <!-- Generated via JS -->
+    </div>
+  </section>
+
+  <!-- Dual View Switcher Tabs -->
+  <div class="arena-tabs">
+    <button type="button" class="tab-btn active" id="tabSchools">
+      <span>🏫</span> Inter-School Trophy Cup
+    </button>
+    <button type="button" class="tab-btn" id="tabStudents">
+      <span>🌟</span> Top Student Champions
+    </button>
+    <button type="button" class="tab-btn" id="tabHeatmap">
+      <span>🔥</span> Live Arena Heat Map
+    </button>
+  </div>
+
+  <!-- View 1: Inter-School Trophy Leaderboard -->
+  <section class="leaderboard-card" id="schoolsView">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>School Name</th>
+          <th>Innovators</th>
+          <th>Total Quizzes</th>
+          <th>Average Mastery</th>
+          <th>Stars Won</th>
+          <th>Top Innovator</th>
+        </tr>
+      </thead>
+      <tbody id="schoolsTbody">
+        <!-- Rendered via JS -->
+      </tbody>
+    </table>
+  </section>
+
+  <!-- View 2: Top Student Innovators Leaderboard -->
+  <section class="leaderboard-card" id="studentsView" style="display:none;">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Movement</th>
+          <th>Student Innovator</th>
+          <th>School</th>
+          <th>Class</th>
+          <th>Score</th>
+          <th>Time Taken</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="studentsTbody">
+        <!-- Rendered via JS -->
+      </tbody>
+    </table>
+  </section>
+
+  <!-- View 3: Live Classroom Heat Map & Velocity -->
+  <section class="leaderboard-card" id="heatmapView" style="display:none;">
+    <div style="padding:16px 20px 4px;">
+      <h3 style="margin:0; font-family:'Lexend', sans-serif; color:#fff; font-size:20px;">Classroom Heat Map & Live Learning Velocity</h3>
+      <p style="margin:4px 0 0; color:var(--text-muted); font-size:14px;">Real-time scaling and engagement across all classes answering competition questions.</p>
+    </div>
+    <div class="heatmap-grid" id="heatmapGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; padding:20px;">
+      <!-- Generated dynamically -->
+    </div>
+  </section>
+
+</div>
+
+<!-- Floating Student Call to Action Banner -->
+<div class="join-banner">
+  <div class="join-info">
+    <span class="join-icon">🚀</span>
+    <div class="join-text">
+      <h4>Compete in the Live Arena!</h4>
+      <p>Open this link on any computer, tablet or phone to play and earn stars for your school:</p>
+    </div>
+  </div>
+  <div class="join-url-box" id="joinUrl">
+    futurein-quiz.com
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  let currentClass = 'all';
+  let refreshTimer = null;
+  let refreshMs = 8000;
+  let soundOn = true;
+  let actx = null;
+  let previousFirstPlace = null;
+
+  const $ = (id) => document.getElementById(id);
+
+  // Set join URL based on window.location
+  if (typeof window !== 'undefined') {
+    $('joinUrl').textContent = window.location.host + '/compete';
+  }
+
+  /* Audio Sound Effects */
+  function getAudioCtx() {
+    if (!actx) {
+      try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch(_) {}
+    }
+    if (actx && actx.state === 'suspended') actx.resume().catch(()=>{});
+    return actx;
+  }
+
+  function playTone(freq, start, dur, type = 'triangle', vol = 0.2) {
+    if (!soundOn) return;
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(vol, ctx.currentTime + start);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+      o.connect(g).connect(ctx.destination);
+      o.start(ctx.currentTime + start);
+      o.stop(ctx.currentTime + start + dur);
+    } catch (_) {}
+  }
+
+  function playFanfare() {
+    // Regal brass celebration chord
+    const notes = [392, 523.25, 659.25, 783.99, 1046.5];
+    notes.forEach((f, i) => playTone(f, i * 0.1, 0.45, 'triangle', 0.22));
+    setTimeout(() => {
+      [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => playTone(f, i * 0.08, 0.6, 'triangle', 0.25));
+    }, 450);
+  }
+
+  /* Confetti Particle Engine */
+  const canvas = $('confettiCanvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let animFrame = null;
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  const CONF_COLORS = ['#ffc93c', '#00f0ff', '#ff2a70', '#00f59b', '#ffffff', '#8338ec'];
+  function fireConfetti(count = 70) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 5 + Math.random() * 10;
+      particles.push({
+        x: window.innerWidth / 2,
+        y: window.innerHeight * 0.35,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 4,
+        size: 7 + Math.random() * 8,
+        color: CONF_COLORS[Math.floor(Math.random() * CONF_COLORS.length)],
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 14,
+        gravity: 0.22,
+        life: 1,
+        decay: 0.012 + Math.random() * 0.01
+      });
+    }
+    if (!animFrame) animFrame = requestAnimationFrame(updateConfetti);
+  }
+
+  function updateConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      p.vy += p.gravity;
+      p.rotation += p.rotationSpeed;
+      p.life -= p.decay;
+
+      if (p.life <= 0 || p.y > window.innerHeight) {
+        particles.splice(i, 1);
+        continue;
+      }
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rotation * Math.PI) / 180);
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.7);
+      ctx.restore();
+    }
+    if (particles.length > 0) {
+      animFrame = requestAnimationFrame(updateConfetti);
+    } else {
+      animFrame = null;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+
+  /* Format Duration helper */
+  function fmtDuration(ms) {
+    if (!ms || ms < 1000) return '< 1s';
+    const totalSec = Math.floor(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return m > 0 ? `${m}m ${s}s` : `${s}s`;
+  }
+
+  function esc(str) {
+    return String(str || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  }
+
+  /* Fetch & Render Live Arena Data */
+  async function loadArena() {
+    try {
+      const url = `/api/competition/live${currentClass !== 'all' ? '?classId=' + currentClass : ''}`;
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const data = await res.json();
+      renderAll(data);
+    } catch (e) {
+      console.warn('Arena fetch error:', e);
+    }
+  }
+
+  function renderAll(data) {
+    // 0. Live Arena Broadcast Banner
+    renderCompBanner(data.compState);
+
+    // 1. Stats ribbon
+    if (data.stats) {
+      $('statStudents').textContent = data.stats.totalStudents || 0;
+      $('statSchools').textContent = data.stats.totalSchools || 0;
+      $('statStars').textContent = data.stats.totalStars || 0;
+      $('statAccuracy').textContent = `${data.stats.overallAvgPct || 100}%`;
+    }
+
+    // 2. Rolling Ticker
+    if (data.ticker && data.ticker.length > 0) {
+      const tickerItems = data.ticker.map(t => {
+        const clsName = t.class_id ? t.class_id.replace('-', ' ').toUpperCase() : 'QUIZ';
+        return `🌟 <b>${esc(t.name)}</b> from <i>${esc(t.school || 'FutureIN')}</i> scored <b>${t.score}/${t.total}</b> in ${clsName}! (${fmtDuration(t.duration_ms)})`;
+      });
+      $('tickerText').innerHTML = tickerItems.join(' &nbsp; &nbsp; • &nbsp; &nbsp; ');
+    } else {
+      $('tickerText').textContent = "Waiting for new quiz submissions to enter the arena...";
+    }
+
+    // 3. Olympic Podium
+    renderPodium(data.podium || []);
+
+    // 4. Schools Table
+    renderSchools(data.schools || []);
+
+    // 5. Students Table
+    renderStudents(data.topStudents || []);
+
+    // 6. Live Velocity Heat Map
+    renderHeatmap(data.topStudents || [], data.schools || []);
+  }
+
+  function renderPodium(podium) {
+    const stage = $('podiumStage');
+    if (!podium || podium.length === 0) {
+      stage.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🏆</div>
+          <p>No champions in this category yet. Be the first to complete a quiz!</p>
+        </div>
+      `;
+      return;
+    }
+
+    // Check if new 1st place champion
+    const currentFirst = podium[0] ? `${podium[0].name}-${podium[0].score}` : null;
+    if (previousFirstPlace && currentFirst && previousFirstPlace !== currentFirst) {
+      playFanfare();
+      fireConfetti(80);
+    }
+    previousFirstPlace = currentFirst;
+
+    // Arrange order: 2nd (left), 1st (center), 3rd (right)
+    const first = podium[0] || null;
+    const second = podium[1] || null;
+    const third = podium[2] || null;
+
+    let html = '';
+
+    // 2nd Place Column
+    if (second) {
+      html += `
+        <div class="podium-col second">
+          <div class="podium-avatar">🥈</div>
+          <h3 class="podium-student-name" title="${esc(second.name)}">${esc(second.name)}</h3>
+          <p class="podium-school-name" title="${esc(second.school)}">${esc(second.school || 'FutureIN')}</p>
+          <span class="podium-score-pill">⭐ ${second.score}/${second.total} · ${fmtDuration(second.duration_ms)}</span>
+          <div class="podium-pillar">
+            <span class="podium-rank-num">2</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // 1st Place Column
+    if (first) {
+      html += `
+        <div class="podium-col first">
+          <div class="podium-avatar">👑</div>
+          <h3 class="podium-student-name" title="${esc(first.name)}">${esc(first.name)}</h3>
+          <p class="podium-school-name" title="${esc(first.school)}">${esc(first.school || 'FutureIN')}</p>
+          <span class="podium-score-pill">🏆 ${first.score}/${first.total} · ${fmtDuration(first.duration_ms)}</span>
+          <div class="podium-pillar">
+            <span class="podium-rank-num">🥇 1</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // 3rd Place Column
+    if (third) {
+      html += `
+        <div class="podium-col third">
+          <div class="podium-avatar">🥉</div>
+          <h3 class="podium-student-name" title="${esc(third.name)}">${esc(third.name)}</h3>
+          <p class="podium-school-name" title="${esc(third.school)}">${esc(third.school || 'FutureIN')}</p>
+          <span class="podium-score-pill">⭐ ${third.score}/${third.total} · ${fmtDuration(third.duration_ms)}</span>
+          <div class="podium-pillar">
+            <span class="podium-rank-num">3</span>
+          </div>
+        </div>
+      `;
+    }
+
+    stage.innerHTML = html;
+  }
+
+  function renderSchools(schools) {
+    const tbody = $('schoolsTbody');
+    if (!schools || schools.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No participating schools recorded yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = schools.map((s, idx) => {
+      const trophy = s.trophy || (idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : '🎖️')));
+      return `
+        <tr class="data-row">
+          <td>${trophy}</td>
+          <td>
+            <div class="school-cell">
+              <div class="school-icon-badge">🏫</div>
+              <div>
+                <div class="school-name-text">${esc(s.school)}</div>
+                ${s.topStudent ? `<div class="school-top-student">Top Star: ${esc(s.topStudent)}</div>` : ''}
+              </div>
+            </div>
+          </td>
+          <td>${s.totalStudents}</td>
+          <td>${s.totalAttempts}</td>
+          <td>
+            <b>${s.avgScorePct}%</b>
+            <div class="progress-cell-bar">
+              <div class="progress-fill" style="width: ${Math.min(100, s.avgScorePct)}%"></div>
+            </div>
+          </td>
+          <td style="color:var(--gold); font-weight:800;">⭐ ${s.totalStars}</td>
+          <td><span style="color:var(--cyan); font-weight:700;">${esc(s.topStudent || '—')}</span></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  let previousStudentRanks = new Map();
+
+  function renderStudents(students) {
+    const tbody = $('studentsTbody');
+    if (!students || students.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="empty-state">No student scores recorded for this class yet.</td></tr>`;
+      return;
+    }
+
+    const currentRanksMap = new Map();
+
+    tbody.innerHTML = students.map((st, idx) => {
+      const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
+      const clsLabel = st.class_id ? st.class_id.replace('-', ' ').toUpperCase() : 'ALL';
+      const key = `${st.name}_${st.school}_${st.class_id}`.toLowerCase();
+      const currentRank = idx + 1;
+      currentRanksMap.set(key, currentRank);
+
+      const prevRank = previousStudentRanks.get(key);
+      let shiftHtml = '';
+      let rowClass = 'data-row';
+
+      if (prevRank === undefined) {
+        shiftHtml = `<span class="rank-shift new">★ NEW</span>`;
+      } else if (currentRank < prevRank) {
+        const diff = prevRank - currentRank;
+        shiftHtml = `<span class="rank-shift up">▲ +${diff}</span>`;
+        rowClass += ' row-scaled-up';
+      } else if (currentRank > prevRank) {
+        const diff = currentRank - prevRank;
+        shiftHtml = `<span class="rank-shift down">▼ -${diff}</span>`;
+      } else {
+        shiftHtml = `<span class="rank-shift same">—</span>`;
+      }
+
+      return `
+        <tr class="${rowClass}">
+          <td>${medal}</td>
+          <td>${shiftHtml}</td>
+          <td>
+            <div style="font-weight:700; color:#fff;">${esc(st.name)}</div>
+          </td>
+          <td><span style="color:var(--cyan);">${esc(st.school || 'FutureIN')}</span></td>
+          <td><span class="class-badge">${clsLabel}</span></td>
+          <td><b style="color:var(--gold); font-size:16px;">${st.score}</b> / ${st.total}</td>
+          <td>${fmtDuration(st.duration_ms)}</td>
+          <td><span style="color:var(--green); font-weight:700;">Completed ✓</span></td>
+        </tr>
+      `;
+    }).join('');
+
+    previousStudentRanks = currentRanksMap;
+  }
+
+  /* Controls & Event Listeners */
+  $('classFilter').onchange = (e) => {
+    currentClass = e.target.value;
+    loadArena();
+  };
+
+  $('refreshSpeed').onchange = (e) => {
+    refreshMs = Number(e.target.value);
+    clearInterval(refreshTimer);
+    if (refreshMs > 0) {
+      refreshTimer = setInterval(loadArena, refreshMs);
+    }
+  };
+
+  $('soundBtn').onclick = () => {
+    soundOn = !soundOn;
+    $('soundIcon').textContent = soundOn ? '🔊' : '🔇';
+    if (soundOn) playTone(523, 0, 0.15);
+  };
+
+  $('celebrateBtn').onclick = () => {
+    playFanfare();
+    fireConfetti(100);
+  };
+
+  $('fullscreenBtn').onclick = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
+
+  // Tabs switching
+  $('tabSchools').onclick = () => {
+    $('tabSchools').classList.add('active');
+    $('tabStudents').classList.remove('active');
+    $('tabHeatmap').classList.remove('active');
+    $('schoolsView').style.display = 'block';
+    $('studentsView').style.display = 'none';
+    $('heatmapView').style.display = 'none';
+  };
+
+  $('tabStudents').onclick = () => {
+    $('tabStudents').classList.add('active');
+    $('tabSchools').classList.remove('active');
+    $('tabHeatmap').classList.remove('active');
+    $('studentsView').style.display = 'block';
+    $('schoolsView').style.display = 'none';
+    $('heatmapView').style.display = 'none';
+  };
+
+  $('tabHeatmap').onclick = () => {
+    $('tabHeatmap').classList.add('active');
+    $('tabSchools').classList.remove('active');
+    $('tabStudents').classList.remove('active');
+    $('heatmapView').style.display = 'block';
+    $('schoolsView').style.display = 'none';
+    $('studentsView').style.display = 'none';
+  };
+
+  /* Render Live Broadcast State Banner */
+  let activeClockInterval = null;
+
+  function renderCompBanner(state) {
+    const banner = $('arenaBroadcastBanner');
+    if (!banner || !state) return;
+
+    if (state.status === 'draft') {
+      banner.className = 'arena-broadcast-banner';
+      banner.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+          <div>
+            <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,201,60,0.15); border:1px solid var(--gold); border-radius:999px; padding:4px 14px; font-size:12px; font-weight:800; color:var(--gold); text-transform:uppercase;">
+              <span>⏳</span> Arena Waiting Room · Ready to Launch
+            </div>
+            <h2 style="margin:8px 0 4px; font-family:'Lexend', sans-serif; font-size:clamp(20px, 2.8vw, 30px); font-weight:900; color:#fff;">
+              ${esc(state.title)}
+            </h2>
+            <p style="margin:0; color:var(--text-muted); font-size:15px;">
+              Students: Open your devices and join now at <b style="color:var(--cyan); font-family:monospace; font-size:16px;">${window.location.origin}/compete</b>
+            </p>
+          </div>
+          <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+            <div style="text-align:right;">
+              <div style="color:var(--text-muted); font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Round Length</div>
+              <div style="font-family:'Lexend', sans-serif; font-size:22px; font-weight:800; color:var(--gold);">${state.durationMins} Minutes</div>
+            </div>
+            <button type="button" class="arena-btn gold" id="hostStartBtn" style="font-size:15px; padding:10px 20px; font-weight:800;" title="Start round immediately">
+              <span>🚀</span> Start Round
+            </button>
+          </div>
+        </div>
+      `;
+      const btn = $('hostStartBtn');
+      if (btn) btn.onclick = () => triggerHostAction('start');
+    } else if (state.status === 'active') {
+      banner.className = 'arena-broadcast-banner active-round';
+      const rem = state.remainingMs || 0;
+      const m = Math.floor(rem / 60000);
+      const s = Math.floor((rem % 60000) / 1000);
+      const urgent = rem < 2 * 60 * 1000;
+
+      banner.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+          <div>
+            <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(0,245,155,0.15); border:1px solid var(--green); border-radius:999px; padding:4px 14px; font-size:12px; font-weight:800; color:var(--green); text-transform:uppercase;">
+              <span class="live-dot" style="background:var(--green); box-shadow:0 0 10px var(--green);"></span> Official Championship Round In Progress
+            </div>
+            <h2 style="margin:8px 0 2px; font-family:'Lexend', sans-serif; font-size:clamp(18px, 2.4vw, 26px); font-weight:900; color:#fff;">
+              ${esc(state.title)}
+            </h2>
+            <p style="margin:0; color:var(--cyan); font-size:14px; font-weight:600;">
+              Live arena questions active! Submit answers at <span style="font-family:monospace;">${window.location.host}/compete</span>
+            </p>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+            <div style="text-align:center;">
+              <div style="color:var(--text-muted); font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">Arena Time Remaining</div>
+              <div class="clock-digital ${urgent ? 'urgent' : ''}" id="projectorCountdown">
+                ${m}:${String(s).padStart(2, '0')}
+              </div>
+            </div>
+            <button type="button" class="arena-btn" id="hostEndBtn" style="border-color:#ff4757; color:#ff4757; padding:10px 18px; font-weight:700;" title="End round and announce winners">
+              <span>🛑</span> End Round & Crown Winners
+            </button>
+          </div>
+        </div>
+      `;
+      const endBtn = $('hostEndBtn');
+      if (endBtn) endBtn.onclick = () => triggerHostAction('end');
+    } else if (state.status === 'ended') {
+      banner.className = 'arena-broadcast-banner ended-round';
+      banner.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+          <div>
+            <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,201,60,0.2); border:1px solid var(--gold); border-radius:999px; padding:4px 14px; font-size:12px; font-weight:800; color:var(--gold); text-transform:uppercase;">
+              <span>🏆</span> Championship Concluded · Final Standings
+            </div>
+            <h2 style="margin:8px 0 2px; font-family:'Lexend', sans-serif; font-size:clamp(20px, 2.8vw, 30px); font-weight:900; color:var(--gold);">
+              Official Winners & Grand Trophy Ceremony
+            </h2>
+            <p style="margin:0; color:#fff; font-size:15px;">
+              Congratulations to all participating innovators and schools!
+            </p>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <button type="button" class="arena-btn gold" id="concludedFanfareBtn" style="padding:10px 18px; font-weight:800;">
+              <span>🎉</span> Victory Fanfare
+            </button>
+            <button type="button" class="arena-btn" id="hostResetBtn" style="color:var(--text-muted); padding:10px 18px;">
+              <span>🔄</span> Reset Arena
+            </button>
+          </div>
+        </div>
+      `;
+      const fanfareBtn = $('concludedFanfareBtn');
+      if (fanfareBtn) fanfareBtn.onclick = () => { playFanfare(); fireConfetti(120); };
+      const resetBtn = $('hostResetBtn');
+      if (resetBtn) resetBtn.onclick = () => triggerHostAction('reset');
+    }
+  }
+
+  /* Render Live Velocity Heat Map */
+  function renderHeatmap(students, schools) {
+    const grid = $('heatmapGrid');
+    if (!grid) return;
+
+    const classDefs = [
+      { id: 'nursery-2', label: 'Nursery 2' },
+      { id: 'year-1', label: 'Year 1' },
+      { id: 'year-2', label: 'Year 2' },
+      { id: 'year-3', label: 'Year 3' },
+      { id: 'year-4', label: 'Year 4' },
+      { id: 'year-5', label: 'Year 5' },
+      { id: 'year-6', label: 'Year 6' }
+    ];
+
+    grid.innerHTML = classDefs.map(c => {
+      const clsStudents = students.filter(s => s.class_id === c.id);
+      const count = clsStudents.length;
+      const stars = clsStudents.reduce((n, s) => n + (s.score || 0), 0);
+      const avgPct = count ? Math.round(clsStudents.reduce((n, s) => n + (s.score / s.total), 0) / count * 100) : 0;
+      const top = clsStudents[0];
+
+      let levelText = 'Awaiting Innovators ⏳';
+      let isBlazing = false;
+      if (count > 0 && avgPct >= 80) {
+        levelText = 'Blazing Excellence 🔥';
+        isBlazing = true;
+      } else if (count > 0) {
+        levelText = 'Rapid Progress ⚡';
+      }
+
+      return `
+        <div class="heat-card ${isBlazing ? 'blazing' : ''}">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="class-badge" style="font-size:13px; font-weight:800;">${c.label}</span>
+            <span style="font-size:12px; font-weight:700; color:${isBlazing ? 'var(--gold)' : 'var(--cyan)'};">${levelText}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:4px;">
+            <div>
+              <span style="font-family:'Lexend'; font-size:26px; font-weight:800; color:#fff;">${count}</span>
+              <span style="color:var(--text-muted); font-size:13px; margin-left:4px;">Active Pupils</span>
+            </div>
+            <div style="color:var(--gold); font-weight:800; font-size:16px;">
+              ⭐ ${stars} Stars
+            </div>
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-bottom:4px;">
+              <span>Accuracy Scale</span>
+              <span style="font-weight:700; color:#fff;">${avgPct}%</span>
+            </div>
+            <div class="progress-cell-bar" style="height:8px;">
+              <div class="progress-fill" style="width:${Math.min(100, avgPct)}%; background:${isBlazing ? 'linear-gradient(90deg, var(--gold), #ff6b6b)' : 'linear-gradient(90deg, var(--green), var(--cyan))'};"></div>
+            </div>
+          </div>
+          <div style="font-size:12px; color:var(--text-muted); border-top:1px dashed rgba(255,255,255,0.1); padding-top:8px;">
+            Top: <b style="color:#fff;">${top ? esc(top.name) + ' (' + top.score + '/' + top.total + ')' : 'No submissions yet'}</b>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  /* Host Actions Trigger */
+  async function triggerHostAction(action) {
+    if (action === 'start') {
+      if (!confirm('Start the official championship round now? Students will begin immediately!')) return;
+    } else if (action === 'end') {
+      if (!confirm('End the competition round now and declare official winners?')) return;
+    } else if (action === 'reset') {
+      if (!confirm('Reset the competition arena back to draft?')) return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/competition/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      });
+      if (res.ok) {
+        if (action === 'end') {
+          playFanfare();
+          fireConfetti(150);
+        }
+        await loadArena();
+        return;
+      }
+      if (res.status === 401) {
+        const password = prompt('Please enter the Admin Password to execute this host action:');
+        if (!password) return;
+        const loginRes = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: 'admin', password })
+        });
+        if (!loginRes.ok) {
+          alert('Incorrect admin password.');
+          return;
+        }
+        const retryRes = await fetch('/api/admin/competition/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action })
+        });
+        if (retryRes.ok) {
+          if (action === 'end') {
+            playFanfare();
+            fireConfetti(150);
+          }
+          await loadArena();
+        } else {
+          alert('Could not execute host action.');
+        }
+      }
+    } catch (e) {
+      console.warn('Host action error:', e);
+    }
+  }
+
+  // Initial load
+  loadArena();
+  if (refreshMs > 0) {
+    refreshTimer = setInterval(loadArena, refreshMs);
+  }
+})();
+</script>
+</body>
+</html>
