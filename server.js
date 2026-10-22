@@ -354,6 +354,7 @@ async function syncAttemptsFromSupabase(force = false) {
     if (count > 0) {
       console.log(`[SUPABASE] Synced ${count} attempt(s) from Supabase cloud into local database.`);
     }
+    if (typeof regradeZeroAttempts === 'function') regradeZeroAttempts();
   } catch (err) {
     console.warn('[SUPABASE] Sync error:', err.message);
   }
@@ -940,8 +941,52 @@ function seedCompetitionQuestions() {
 }
 seedCompetitionQuestions();
 
+function regradeZeroAttempts() {
+  try {
+    const zeroAttempts = db.prepare(`SELECT id, name, school, class_id, answers, total, score, started_at, finished_at, duration_ms, answer_key FROM attempts WHERE score = 0 AND answers IS NOT NULL AND answers != '[]'`).all();
+    for (const att of zeroAttempts) {
+      const cls = CLASS_BY_ID.get(att.class_id);
+      if (!cls) continue;
+      const questions = q.questionsFor.all(cls.id);
+      if (questions.length > 0) {
+        const key = questions.map(x => x.answer);
+        let answers = [];
+        try { answers = JSON.parse(att.answers || '[]'); } catch {}
+        if (Array.isArray(answers) && answers.length > 0) {
+          const newScore = key.reduce((n, correct, i) => n + (answers[i] !== null && answers[i] !== undefined && Number(answers[i]) === correct ? 1 : 0), 0);
+          const newTotal = questions.length;
+          db.prepare(`UPDATE attempts SET score = ?, total = ?, answer_key = ? WHERE id = ?`).run(newScore, newTotal, JSON.stringify(key), att.id);
+          try {
+            db.prepare(`UPDATE comp_attempts SET score = ?, total = ?, answer_key = ? WHERE id = ?`).run(newScore, newTotal, JSON.stringify(key), att.id);
+          } catch {}
+          console.log(`[REGRADE] Regraded attempt for "${att.name}" (${att.class_id}): score updated from 0 to ${newScore}/${newTotal}`);
+          saveAttemptToSupabase({
+            id: att.id,
+            name: att.name,
+            school: att.school,
+            class_id: att.class_id,
+            name_key: (att.name || '').toLowerCase(),
+            school_key: (att.school || '').toLowerCase(),
+            started_at: att.started_at,
+            finished_at: att.finished_at || Date.now(),
+            score: newScore,
+            total: newTotal,
+            duration_ms: att.duration_ms,
+            answer_key: JSON.stringify(key),
+            answers: att.answers
+          }).catch(() => {});
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[REGRADE] Notice:', e.message);
+  }
+}
+regradeZeroAttempts();
+
 // Best attempt per child (same name + school) within each class; ranked by score, then speed.
 function leaderboard(classId) {
+  regradeZeroAttempts();
   const where = classId ? `AND class_id = ?` : ``;
   const sql = `
     SELECT name, school, class_id, score, total, duration_ms, finished_at, attempts_count FROM (
@@ -956,6 +1001,7 @@ function leaderboard(classId) {
 }
 
 function allAttempts(classId) {
+  regradeZeroAttempts();
   const sql = `SELECT name, school, class_id, score, total, duration_ms, finished_at FROM attempts
     WHERE finished_at IS NOT NULL ${classId ? 'AND class_id = ?' : ''} ORDER BY finished_at DESC LIMIT 5000`;
   return classId ? db.prepare(sql).all(classId) : db.prepare(sql).all();
@@ -1397,6 +1443,28 @@ async function submitQuiz(req, res) {
   let attempt = attemptId ? q.getAttempt.get(attemptId) : null;
 
   if (attempt && attempt.finished_at) {
+    if (attempt.score === 0) {
+      const cls = CLASS_BY_ID.get(String(attempt.class_id || body.classId || ''));
+      if (cls) {
+        const questions = q.questionsFor.all(cls.id);
+        const key = questions.map((x) => x.answer);
+        let answers = [];
+        try { answers = JSON.parse(attempt.answers || '[]'); } catch {}
+        if (!answers.length && Array.isArray(body.answers)) answers = body.answers;
+        let score = 0;
+        if (typeof body.score === 'number' && body.score > 0) {
+          score = body.score;
+        } else if (key.length > 0 && answers.length > 0) {
+          score = key.reduce((n, correct, i) => n + (answers[i] !== null && answers[i] !== undefined && Number(answers[i]) === correct ? 1 : 0), 0);
+        }
+        if (score > 0) {
+          const total = key.length || attempt.total || 20;
+          db.prepare(`UPDATE attempts SET score = ?, total = ?, answer_key = ? WHERE id = ?`).run(score, total, JSON.stringify(key), attempt.id);
+          try { db.prepare(`UPDATE comp_attempts SET score = ?, total = ?, answer_key = ? WHERE id = ?`).run(score, total, JSON.stringify(key), attempt.id); } catch {}
+          return sendJson(res, 200, { score, total, durationMs: attempt.duration_ms });
+        }
+      }
+    }
     return sendJson(res, 200, { score: attempt.score, total: attempt.total, durationMs: attempt.duration_ms });
   }
 

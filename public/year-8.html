@@ -488,17 +488,12 @@ $('submitSheetBtn').onclick = finishExam;
 
 async function startQuiz() {
   const name = $('studentNameInput').value.trim();
-  const school = $('studentSchoolInput').value.trim();
+  const school = $('studentSchoolInput').value.trim() || 'FutureIN Academy';
   $('startErr').textContent = '';
 
   if (name.length < 2) {
     $('startErr').textContent = 'Please enter your full name!';
     $('studentNameInput').focus();
-    return;
-  }
-  if (school.length < 2) {
-    $('startErr').textContent = 'Please enter your school name!';
-    $('studentSchoolInput').focus();
     return;
   }
 
@@ -532,6 +527,8 @@ async function startQuiz() {
 }
 
 $('startBtn').onclick = startQuiz;
+$('studentNameInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') startQuiz(); });
+$('studentSchoolInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') startQuiz(); });
 
 function confetti() {
   const c = ['#7e22ce', '#10b981', '#f59e0b', '#0891b2', '#9333ea'];
@@ -643,7 +640,7 @@ $('playAgainBtn').onclick = () => {
   if (window.Gamify) Gamify.reset();
 };
 
-if (urlParams.get('name') && urlParams.get('school')) {
+if (urlParams.get('name')) {
   startQuiz();
 }
 
