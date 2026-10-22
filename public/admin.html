@@ -1162,8 +1162,8 @@ C. Apple Interface</pre>
     if (!nav) return;
     nav.innerHTML = '';
 
-    // Preferred sequence: Year 1 to Year 6 first, then Nursery 2, other classes, then All Classes
-    const priorityOrder = ['year-1', 'year-2', 'year-3', 'year-4', 'year-5', 'year-6', 'nursery-2'];
+    // Preferred sequence: Year 1 to Year 12, then Nursery 2, other classes, then All Classes
+    const priorityOrder = ['year-1', 'year-2', 'year-3', 'year-4', 'year-5', 'year-6', 'year-7', 'year-8', 'year-9', 'year-10', 'year-11', 'year-12', 'nursery-2'];
     const otherClasses = compClasses.filter(c => !priorityOrder.includes(c.id)).map(c => c.id);
     const classList = [...priorityOrder, ...otherClasses, 'all'];
 

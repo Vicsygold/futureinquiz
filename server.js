@@ -1725,6 +1725,11 @@ async function requestHandler(req, res) {
     if (lower === '/year-4' || lower === '/quiz/year-4' || lower === '/year4' || lower === '/quiz/year4') return sendFile(res, path.join(PUBLIC_DIR, 'year-4.html'));
     if (lower === '/year-5' || lower === '/quiz/year-5' || lower === '/year5' || lower === '/quiz/year5') return sendFile(res, path.join(PUBLIC_DIR, 'year-5.html'));
     if (lower === '/year-6' || lower === '/quiz/year-6' || lower === '/year6' || lower === '/quiz/year6') return sendFile(res, path.join(PUBLIC_DIR, 'year-6.html'));
+    if (lower === '/year-11' || lower === '/quiz/year-11' || lower === '/year11' || lower === '/quiz/year11') return sendFile(res, path.join(PUBLIC_DIR, 'year-11.html'));
+    const ym = lower.match(/^\/(?:quiz\/)?year-?([0-9]+)$/);
+    if (ym && fs.existsSync(path.join(PUBLIC_DIR, `year-${ym[1]}.html`))) {
+      return sendFile(res, path.join(PUBLIC_DIR, `year-${ym[1]}.html`));
+    }
     if (lower === '/' || /^\/quiz\/[a-z0-9-]+$/.test(lower)) return sendFile(res, path.join(PUBLIC_DIR, 'index.html'));
     if (lower.startsWith('/private')) { res.writeHead(404); return res.end('Not found'); }
 

@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Year 11 Computer Studies (WAEC Standard) · FutureIN</title>
+<link rel="icon" href="/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="/api.js"></script>
+<link rel="stylesheet" href="/gamify.css">
+<script src="/gamify.js"></script>
+<style>
+  :root{
+    --bg1:#eef4ff; --bg2:#f8f9ff;
+    --navy:#1e3a8a; --navy-dark:#0f172a; --blue:#2563eb; --blue-light:#3b82f6;
+    --gold:#f59e0b; --good:#10b981; --bad:#ef4444; --card:#ffffff;
+    --ink:#1e293b; --soft:#64748b; --border:#cbd5e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --bg1:#0f172a; --bg2:#1e1b4b; --ink:#f8fafc; --soft:#94a3b8; --card:#1e293b; --border:#334155; }
+  }
+  :root[data-theme="dark"]{ --bg1:#0f172a; --bg2:#1e1b4b; --ink:#f8fafc; --soft:#94a3b8; --card:#1e293b; --border:#334155; }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; height:100%}
+  body{
+    font-family:'Fredoka','Inter',system-ui,sans-serif; color:var(--ink);
+    background:linear-gradient(160deg,var(--bg1),var(--bg2)); background-color:var(--bg1);
+    min-height:100%; overflow-x:hidden;
+  }
+  .bubbles span{position:fixed; border-radius:50%; opacity:.16; z-index:0; animation:float 10s ease-in-out infinite}
+  @keyframes float{50%{transform:translateY(-28px)}}
+
+  .wrap{position:relative; z-index:1; max-width:1040px; margin:0 auto; padding:16px 16px 40px; min-height:100vh; display:flex; flex-direction:column}
+
+  /* Top Navigation Bar */
+  .top{display:flex; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap; margin-bottom:12px}
+  .lesson-tag{background:var(--navy); color:#fff; font-weight:600; padding:8px 18px; border-radius:999px; font-size:clamp(13px,2.1vw,17px); box-shadow:0 4px 0 #0d1b42; display:flex; align-items:center; gap:8px;}
+  .view-toggle-btn{background:#fff; color:var(--navy); border:2px solid var(--border); font-family:inherit; font-weight:700; font-size:14px; padding:6px 14px; border-radius:999px; cursor:pointer; transition:all .15s}
+  .view-toggle-btn:hover{background:var(--bg1); border-color:var(--blue)}
+  .timer-pill{background:#fff; color:var(--navy); border:2px solid var(--border); font-weight:700; padding:6px 14px; border-radius:999px; font-size:14px; display:flex; align-items:center; gap:6px}
+
+  .progress{display:flex; gap:3px; flex-wrap:wrap; justify-content:center; max-width:620px}
+  .progress i{width:clamp(11px,1.9vw,17px); height:clamp(11px,1.9vw,17px); border-radius:50%; background:#fff; border:2px solid var(--border); display:grid; place-items:center; font-style:normal; font-size:8px; transition:transform .2s}
+  .progress i.now{border-color:var(--gold); transform:scale(1.35); background:#fffbeb}
+  .progress i.done{background:var(--good); border-color:#059669; color:#fff}
+  .progress i.miss{background:#fee2e2; border-color:#dc2626}
+
+  .icon-btn{border:none; background:#fff; border-radius:50%; width:46px; height:46px; font-size:22px; cursor:pointer; box-shadow:0 4px 0 var(--border)}
+  .icon-btn:active{transform:translateY(2px); box-shadow:0 1px 0 var(--border)}
+
+  /* Quiz Area */
+  .q-area{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:clamp(12px,2.4vh,22px); padding-top:10px}
+  .qnum{font-size:clamp(15px,2.3vw,19px); color:var(--soft); font-weight:600; display:flex; align-items:center; gap:8px}
+  .section-badge{background:rgba(37,99,235,0.12); color:var(--blue); font-size:12px; font-weight:700; padding:4px 10px; border-radius:8px; text-transform:uppercase; letter-spacing:.05em}
+
+  .question{display:flex; align-items:center; gap:14px; background:var(--card); color:var(--ink); padding:18px 26px; border-radius:24px; box-shadow:0 8px 24px rgba(15,23,42,.08); max-width:100%; width:100%; border:2px solid var(--border)}
+  .question h1{margin:0; font-size:clamp(20px,3.6vw,32px); line-height:1.3; text-align:left; flex:1; font-weight:600}
+  .question h1 .blank{display:inline-block; min-width:2.4em; border-bottom:4px dashed var(--gold); margin:0 .15em}
+  .say{flex:none; border:none; background:var(--blue); color:#fff; width:clamp(44px,6vw,54px); height:clamp(44px,6vw,54px); border-radius:50%; font-size:clamp(18px,2.8vw,24px); cursor:pointer; box-shadow:0 4px 0 #1d4ed8; transition:transform .1s}
+  .say:active{transform:translateY(3px); box-shadow:0 1px 0 #1d4ed8}
+
+  /* 4 Option Cards (A, B, C, D) */
+  .cards{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; width:100%; max-width:920px}
+  @media(max-width:640px){ .cards{grid-template-columns:1fr; gap:10px} }
+
+  .card{
+    position:relative; border:3px solid var(--border); cursor:pointer; padding:14px 20px; font-family:inherit; color:var(--ink);
+    background:var(--card); border-radius:20px; display:flex; align-items:center; justify-content:flex-start; gap:14px;
+    box-shadow:0 6px 0 var(--border); transition:transform .15s, border-color .15s, box-shadow .15s; font-size:clamp(16px,2.6vw,22px); font-weight:600; text-align:left; min-height:72px;
+  }
+  .card:hover{transform:translateY(-3px); border-color:var(--blue); box-shadow:0 9px 0 var(--blue)}
+  .card:active{transform:translateY(3px); box-shadow:0 2px 0 var(--border)}
+  .letter{flex:none; width:clamp(36px,5vw,46px); height:clamp(36px,5vw,46px); border-radius:12px; background:var(--bg1); color:var(--navy); display:grid; place-items:center; font-size:clamp(16px,2.6vw,22px); font-weight:800; border:2px solid var(--border)}
+  
+  .card.right{border-color:var(--good) !important; background:#ecfdf5 !important; box-shadow:0 6px 0 #059669 !important; color:#065f46 !important}
+  .card.right .letter{background:var(--good); color:#fff; border-color:#059669}
+  .card.right::after{content:"✔"; position:absolute; top:-12px; right:-8px; background:var(--good); color:#fff; width:38px; height:38px; border-radius:50%; display:grid; place-items:center; font-size:22px; box-shadow:0 3px 0 #059669}
+
+  .card.wrong{border-color:var(--bad) !important; background:#fef2f2 !important; box-shadow:0 6px 0 #dc2626 !important; color:#991b1b !important}
+  .card.wrong .letter{background:var(--bad); color:#fff; border-color:#dc2626}
+  .card.fade{opacity:.6; filter:grayscale(0.5); pointer-events:none}
+
+  .feedback{min-height:50px; text-align:center; max-width:820px; padding:4px 10px}
+  .feedback b{display:block; font-size:clamp(20px,3.6vw,30px)}
+  .feedback small{display:block; font-size:clamp(15px,2.4vw,20px); color:var(--soft); margin-top:4px}
+  .feedback.good b{color:var(--good)}
+  .feedback.try b{color:var(--gold)}
+
+  .next{border:none; background:var(--good); color:#fff; font-family:inherit; font-weight:700; font-size:clamp(18px,3.2vw,26px); padding:12px 40px; border-radius:999px; cursor:pointer; box-shadow:0 6px 0 #059669; transition:transform .15s}
+  .next:active{transform:translateY(4px); box-shadow:0 2px 0 #059669}
+  .hidden{display:none !important}
+
+  /* Start & End Screens */
+  .screen{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:16px; max-width:680px; margin:0 auto; width:100%}
+  .screen h1{font-size:clamp(30px,6.2vw,56px); margin:0; color:var(--navy); line-height:1.2}
+  .screen p{font-size:clamp(16px,2.8vw,23px); margin:0; color:var(--soft)}
+  
+  .badge-waec{display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,#1e3a8a,#2563eb); color:#fff; padding:6px 16px; border-radius:999px; font-weight:700; font-size:14px; box-shadow:0 4px 12px rgba(37,99,235,.25)}
+  
+  .input-card{background:var(--card); border:2px solid var(--border); border-radius:24px; padding:clamp(20px,4vw,32px); width:100%; box-shadow:0 12px 36px rgba(15,23,42,.08)}
+  .field{text-align:left; margin-bottom:14px}
+  .field label{display:block; font-weight:700; font-size:14px; margin-bottom:6px; color:var(--ink)}
+  .field input{width:100%; font-family:inherit; font-size:16px; font-weight:500; padding:12px 16px; border-radius:14px; border:2px solid var(--border); background:var(--bg2); color:var(--ink); outline:none}
+  .field input:focus{border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.2)}
+  
+  .big-btn{border:none; background:linear-gradient(135deg,#2563eb,#1d4ed8); color:#fff; font-family:inherit; font-weight:700; font-size:clamp(20px,3.8vw,30px); padding:14px 48px; border-radius:999px; cursor:pointer; box-shadow:0 6px 0 #172554; width:100%; transition:all .15s}
+  .big-btn:hover{filter:brightness(1.08); transform:translateY(-2px); box-shadow:0 8px 0 #172554}
+  .big-btn:active{transform:translateY(4px); box-shadow:0 2px 0 #172554}
+  
+  /* WAEC Exam Paper Mode */
+  .exam-view{width:100%; max-width:920px; background:var(--card); border:2px solid var(--border); border-radius:24px; padding:clamp(18px,4vw,36px); box-shadow:0 12px 36px rgba(15,23,42,.08); margin:0 auto}
+  .exam-header{text-align:center; border-bottom:2px solid var(--border); padding-bottom:18px; margin-bottom:24px}
+  .exam-section-title{font-size:22px; font-weight:800; color:var(--navy); margin:28px 0 14px; padding-bottom:8px; border-bottom:2px dashed var(--border); display:flex; align-items:center; gap:10px}
+  .exam-q-item{margin-bottom:24px; padding:16px; border-radius:16px; background:var(--bg2); border:1.5px solid var(--border)}
+  .exam-q-text{font-size:17px; font-weight:700; margin-bottom:12px}
+  .exam-opts-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+  @media(max-width:600px){.exam-opts-grid{grid-template-columns:1fr}}
+  .exam-opt-label{display:flex; align-items:center; gap:10px; padding:10px 14px; background:#fff; border:1.5px solid var(--border); border-radius:12px; cursor:pointer; font-size:15px; font-weight:500; transition:all .12s}
+  .exam-opt-label:hover{border-color:var(--blue); background:rgba(37,99,235,.04)}
+  .exam-opt-label.checked{border-color:var(--blue); background:rgba(37,99,235,.12); font-weight:700}
+  .exam-opt-label.correct{background:#d1fae5 !important; border-color:#10b981 !important; color:#065f46}
+  .exam-opt-label.incorrect{background:#fee2e2 !important; border-color:#ef4444 !important; color:#991b1b}
+
+  .confetti{position:fixed; top:-20px; z-index:999; pointer-events:none; animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(105vh) rotate(540deg)}}
+</style>
+</head>
+<body>
+<div class="bubbles"></div>
+
+<div class="wrap">
+  <!-- Top Navigation & Progress Bar -->
+  <header class="top" id="topNav">
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+      <span class="badge-waec">🇳🇬 WAEC STANDARD</span>
+      <span class="lesson-tag" id="lessonTag">Year 11 · Computer Studies</span>
+    </div>
+    
+    <div class="progress" id="progress"></div>
+
+    <div style="display:flex; align-items:center; gap:8px">
+      <div class="timer-pill" id="timerPill">⏱ 45:00</div>
+      <button class="view-toggle-btn" id="toggleViewBtn" title="Switch view mode">📄 Exam Sheet</button>
+      <button class="icon-btn" id="soundBtn" aria-label="Toggle sound">🔊</button>
+    </div>
+  </header>
+
+  <!-- START SCREEN -->
+  <section class="screen" id="startScreen">
+    <div class="badge-waec" style="font-size:16px; padding:8px 20px;">🎓 SENIOR SECONDARY ASSESSMENT</div>
+    <h1 style="color:var(--navy); font-size:clamp(32px,6vw,54px);">Year 11 Computer Studies</h1>
+    <p style="font-size:19px; max-width:620px;"><b>WAEC Standard Objective Quiz</b><br>Word Processing & Spreadsheets · 30 Questions · 45 Minutes</p>
+
+    <div class="input-card">
+      <div class="field">
+        <label for="childName">Student Full Name *</label>
+        <input type="text" id="childName" placeholder="e.g. Zainab Bello" autocomplete="name" required>
+      </div>
+      <div class="field">
+        <label for="childSchool">School / College Name</label>
+        <input type="text" id="childSchool" placeholder="e.g. FutureIN Academy" autocomplete="organization">
+      </div>
+      <div id="nameErr" style="color:var(--bad); font-weight:700; margin-bottom:12px; font-size:14px;"></div>
+      <button class="big-btn" id="startBtn">Begin WAEC Quiz 🚀</button>
+    </div>
+  </section>
+
+  <!-- INTERACTIVE QUIZ MODE (Card-by-card) -->
+  <main class="q-area hidden" id="interactiveQuiz">
+    <div class="qnum">
+      <span id="sectionBadge" class="section-badge">Section A: Word Processing</span>
+      <span id="qNum">Question 1 of 30</span>
+    </div>
+
+    <div class="question">
+      <h1 id="qText">Question text loading...</h1>
+      <button class="say" id="sayBtn" title="Read aloud" aria-label="Read question aloud">🗣️</button>
+    </div>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="feedback" id="feedback"></div>
+    <button class="next hidden" id="nextBtn">Next Question ▶</button>
+  </main>
+
+  <!-- EXAM SHEET MODE (All 30 Questions at once) -->
+  <main class="hidden" id="examSheetView">
+    <div class="exam-view">
+      <div class="exam-header">
+        <h2 style="margin:0 0 8px; color:var(--navy); font-size:26px;">WAEC Standard Objective Quiz</h2>
+        <p style="margin:0; color:var(--soft); font-size:16px;">Computer Studies: Word Processing & Spreadsheets · 30 Questions</p>
+      </div>
+
+      <div id="examContainer"></div>
+
+      <div style="text-align:center; margin-top:32px; border-top:2px solid var(--border); padding-top:24px;">
+        <button class="big-btn" id="submitExamBtn" style="max-width:380px;">Submit All Answers 🏁</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- END / RESULT SCREEN -->
+  <section class="screen hidden" id="endScreen">
+    <div style="font-size:72px;">🏆</div>
+    <h1 style="color:var(--navy);" id="endTitle">Exam Completed!</h1>
+    <p id="endSubtitle">Great effort! Here is your official WAEC performance summary.</p>
+
+    <div class="input-card" style="text-align:center;">
+      <div style="font-size:14px; font-weight:700; color:var(--soft); text-transform:uppercase; letter-spacing:1px;">Your Official Score</div>
+      <div style="font-size:clamp(44px,8vw,72px); font-weight:800; color:var(--blue); margin:8px 0;" id="finalScoreText">0 / 30</div>
+      <div style="font-size:20px; font-weight:700; color:var(--good);" id="gradeText">Distinction (A1)</div>
+      
+      <div id="gamifyBadgeZone" style="margin:16px 0;"></div>
+      
+      <p style="color:var(--soft); font-size:15px; margin:12px 0 20px;" id="durationSummary">Time spent: 12m 45s</p>
+
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <button class="big-btn" id="reviewBtn" style="flex:1; min-width:200px; background:var(--navy);">Review Answers 📝</button>
+        <button class="big-btn" id="againBtn" style="flex:1; min-width:200px; background:var(--good);">Retake Quiz 🔄</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ================= 30 WAEC QUESTIONS DATA ================= */
+const RAW_QUIZ_DATA = [
+  {"q": "What is the default file extension for documents created in Microsoft Word 2007 and later?", "opts": ["A) .doc", "B) .docx", "C) .txt", "D) .rtf"], "ans": "B", "section": "Section A: Word Processing", "explanation": "Microsoft Word 2007 and newer uses the OpenXML format with the .docx extension."},
+  {"q": "Which keyboard shortcut is used to undo the last action in MS Word?", "opts": ["A) Ctrl + Z", "B) Ctrl + Y", "C) Ctrl + U", "D) Ctrl + X"], "ans": "A", "section": "Section A: Word Processing", "explanation": "Ctrl + Z is the universal keyboard shortcut for Undo."},
+  {"q": "The feature used to send the same letter to multiple recipients is called:", "opts": ["A) Macros", "B) Hyperlink", "C) Mail Merge", "D) AutoFormat"], "ans": "C", "section": "Section A: Word Processing", "explanation": "Mail Merge creates multiple personalized letters or envelopes from a data source."},
+  {"q": "Which alignment justifies the text on both the left and right margins?", "opts": ["A) Left Align", "B) Center", "C) Right Align", "D) Justify"], "ans": "D", "section": "Section A: Word Processing", "explanation": "Justify distributes text evenly between margins, aligning to both left and right."},
+  {"q": "Where is the zoom slider typically located in the MS Word window?", "opts": ["A) Title bar", "B) Status bar", "C) Ribbon", "D) Quick Access Toolbar"], "ans": "B", "section": "Section A: Word Processing", "explanation": "The zoom slider is situated in the lower-right corner of the Status bar."},
+  {"q": "To move the cursor to the beginning of a document, you press:", "opts": ["A) Home", "B) Ctrl + Home", "C) Page Up", "D) Alt + Home"], "ans": "B", "section": "Section A: Word Processing", "explanation": "Ctrl + Home immediately moves the cursor to the very start of the document."},
+  {"q": "The intersection of a row and a column in a Word table is called a:", "opts": ["A) Block", "B) Grid", "C) Cell", "D) Box"], "ans": "C", "section": "Section A: Word Processing", "explanation": "The intersection of any row and column is called a Cell."},
+  {"q": "What is the shortcut key to print a document?", "opts": ["A) Ctrl + P", "B) Shift + P", "C) Alt + P", "D) Windows + P"], "ans": "A", "section": "Section A: Word Processing", "explanation": "Ctrl + P opens the Print dialog / backstage view."},
+  {"q": "Which tab in the Ribbon contains the Header and Footer commands?", "opts": ["A) Home", "B) Insert", "C) Page Layout", "D) View"], "ans": "B", "section": "Section A: Word Processing", "explanation": "Header and Footer tools are located on the Insert tab."},
+  {"q": "Which key combination makes the selected text bold?", "opts": ["A) Ctrl + B", "B) Alt + B", "C) Shift + B", "D) Tab + B"], "ans": "A", "section": "Section A: Word Processing", "explanation": "Ctrl + B toggles bold formatting."},
+  {"q": "The Thesaurus tool in MS Word is primarily used for:", "opts": ["A) Spelling checks", "B) Grammar corrections", "C) Finding synonyms and antonyms", "D) Language translation"], "ans": "C", "section": "Section A: Word Processing", "explanation": "A thesaurus helps find alternative words with similar (synonyms) or opposite (antonyms) meanings."},
+  {"q": "What is the default font style in Microsoft Word 2013 and later?", "opts": ["A) Arial", "B) Times New Roman", "C) Calibri", "D) Tahoma"], "ans": "C", "section": "Section A: Word Processing", "explanation": "Calibri (11 pt) is the default font style for Word 2013, 2016, and 2019."},
+  {"q": "Portrait and Landscape are examples of:", "opts": ["A) Page Orientation", "B) Page Size", "C) Page Margin", "D) Page Setup"], "ans": "A", "section": "Section A: Word Processing", "explanation": "Page orientation defines whether the document is displayed vertically (Portrait) or horizontally (Landscape)."},
+  {"q": "A Drop Cap is used in a document to:", "opts": ["A) Drop all capital letters", "B) Begin a paragraph with a large dropped initial capital letter", "C) Convert text to small caps", "D) Remove capitalization"], "ans": "B", "section": "Section A: Word Processing", "explanation": "A Drop Cap creates a decorative, enlarged capital letter at the beginning of a paragraph."},
+  {"q": "The expression x² is an example of:", "opts": ["A) Subscript", "B) Superscript", "C) Strikethrough", "D) Small caps"], "ans": "B", "section": "Section A: Word Processing", "explanation": "Superscript positions the character slightly above the baseline, such as exponents (x²)."},
+  {"q": "What is the default file extension for an Excel spreadsheet?", "opts": ["A) .xls / .xlsx", "B) .doc / .docx", "C) .ppt / .pptx", "D) .exe"], "ans": "A", "section": "Section B: Spreadsheets", "explanation": "Modern Excel workbooks use .xlsx (and legacy workbooks use .xls)."},
+  {"q": "A collection of worksheets in Excel is known as a:", "opts": ["A) Workspace", "B) File", "C) Workbook", "D) Folder"], "ans": "C", "section": "Section B: Spreadsheets", "explanation": "An Excel file containing one or more worksheets is called a Workbook."},
+  {"q": "In a spreadsheet, all formulas must begin with which symbol?", "opts": ["A) +", "B) -", "C) =", "D) *"], "ans": "C", "section": "Section B: Spreadsheets", "explanation": "Formulas in Excel must always start with an equal sign (=)."},
+  {"q": "What is the correct cell address for the intersection of row 5 and column B?", "opts": ["A) 5B", "B) B5", "C) B-5", "D) 5-B"], "ans": "B", "section": "Section B: Spreadsheets", "explanation": "Cell addresses always name the column letter first, followed by the row number (B5)."},
+  {"q": "Which built-in function is used to calculate the total of a range of values?", "opts": ["A) ADD()", "B) TOTAL()", "C) SUM()", "D) PLUS()"], "ans": "C", "section": "Section B: Spreadsheets", "explanation": "=SUM() calculates the total of a continuous or discrete range."},
+  {"q": "An absolute cell reference is represented by which symbol?", "opts": ["A) #", "B) $", "C) &", "D) @"], "ans": "B", "section": "Section B: Spreadsheets", "explanation": "The dollar sign ($) locks the column or row (e.g., $A$1) in absolute referencing."},
+  {"q": "How do you highlight an entire column in a spreadsheet?", "opts": ["A) Click the column heading letter", "B) Press Ctrl + C", "C) Press Ctrl + A", "D) Double-click the cell"], "ans": "A", "section": "Section B: Spreadsheets", "explanation": "Clicking the column header letter (such as A, B, or C) selects the whole column."},
+  {"q": "By default, how many worksheets are present in a new Excel 2010 workbook?", "opts": ["A) 1", "B) 2", "C) 3", "D) 4"], "ans": "C", "section": "Section B: Spreadsheets", "explanation": "Excel 2010 opened with 3 worksheets (Sheet1, Sheet2, Sheet3) by default."},
+  {"q": "Which chart type is best for showing proportions or percentages of a whole?", "opts": ["A) Bar chart", "B) Pie chart", "C) Line chart", "D) Scatter plot"], "ans": "B", "section": "Section B: Spreadsheets", "explanation": "Pie charts represent parts of a whole (proportions and percentages)."},
+  {"q": "Which function is used to find the highest number in a range of cells?", "opts": ["A) HIGH()", "B) MAX()", "C) TOP()", "D) UPPER()"], "ans": "B", "section": "Section B: Spreadsheets", "explanation": "=MAX() returns the largest numerical value in a range."},
+  {"q": "What does a cell displaying '######' indicate?", "opts": ["A) A formula error", "B) The column is not wide enough to display the data", "C) The cell is protected", "D) A spelling mistake"], "ans": "B", "section": "Section B: Spreadsheets", "explanation": "###### appears when a number or date exceeds the visible column width."},
+  {"q": "The active cell in a worksheet is indicated by:", "opts": ["A) A red border", "B) A dotted border", "C) A dark, heavy border", "D) Blinking text"], "ans": "C", "section": "Section B: Spreadsheets", "explanation": "The active cell has a thick, dark border highlighting the selection."},
+  {"q": "What does the 'V' in VLOOKUP stand for?", "opts": ["A) Vertical", "B) Visual", "C) Value", "D) Variable"], "ans": "A", "section": "Section B: Spreadsheets", "explanation": "VLOOKUP stands for Vertical Lookup, searching down a column."},
+  {"q": "Which keyboard shortcut is used to select all cells in a worksheet?", "opts": ["A) Ctrl + S", "B) Ctrl + A", "C) Alt + A", "D) Shift + A"], "ans": "B", "section": "Section B: Spreadsheets", "explanation": "Ctrl + A selects the active region or the entire worksheet."},
+  {"q": "To arrange data in a specific order (alphabetical or numerical) is called:", "opts": ["A) Filtering", "B) Sorting", "C) Validating", "D) Formatting"], "ans": "B", "section": "Section B: Spreadsheets", "explanation": "Sorting orders records ascending (A-Z, 0-9) or descending (Z-A, 9-0)."}
+];
+
+const ansIndexMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+
+// Standardize questions format
+const QUESTIONS = RAW_QUIZ_DATA.map((item, index) => {
+  const cleanOptions = item.opts.map(o => o.replace(/^[A-D]\)\s*/, '').trim());
+  const correctIdx = ansIndexMap[item.ans.toUpperCase()] ?? 0;
+  return {
+    index,
+    q: item.q,
+    section: item.section,
+    options: cleanOptions.map((opt, i) => [opt, i === correctIdx ? 1 : 0]),
+    correctIdx,
+    correctLetter: item.ans,
+    explanation: item.explanation
+  };
+});
+
+/* ================= STATE & TIMING ================= */
+const $ = id => document.getElementById(id);
+let studentName = '', studentSchool = '', attemptId = null;
+let currentIdx = 0, stars = 0, answered = false;
+let answersRecord = new Array(QUESTIONS.length).fill(null);
+let resultsRecord = new Array(QUESTIONS.length).fill(null);
+let viewMode = 'interactive'; // 'interactive' or 'sheet'
+let soundOn = true;
+let startTime = 0, timerInterval = null, totalExamSeconds = 45 * 60;
+
+// URL params prefill
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('name')) $('childName').value = urlParams.get('name');
+if (urlParams.get('school')) $('childSchool').value = urlParams.get('school');
+
+/* ================= AUDIO & SYNTHESIS ================= */
+let actx = null;
+function tone(freq, start, dur, type='sine', vol=.18){
+  if (!soundOn) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, actx.currentTime + start);
+    g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + start + dur);
+    o.connect(g).connect(actx.destination);
+    o.start(actx.currentTime + start);
+    o.stop(actx.currentTime + start + dur);
+  } catch(e){}
+}
+const chime = () => [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .08, .25, 'triangle'));
+const buzz = () => { tone(330, 0, .15, 'sawtooth'); tone(262, .14, .25, 'sawtooth'); };
+
+function speak(text){
+  if (!soundOn) return;
+  if (window.Gamify && Gamify.speak) {
+    Gamify.speak(text);
+  } else if ('speechSynthesis' in window) {
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.95; u.pitch = 1.0; u.lang = 'en-GB';
+      speechSynthesis.speak(u);
+    } catch(e){}
+  }
+}
+
+function confetti(){
+  const bits = ['⭐','🎉','🌟','✨','🎓'], colors = ['#2563eb','#f59e0b','#10b981','#8b5cf6','#ec4899'];
+  for (let i = 0; i < 35; i++){
+    const d = document.createElement('div'); d.className = 'confetti';
+    if (i % 3 === 0) { d.textContent = bits[i % bits.length]; d.style.fontSize = (18 + Math.random() * 22) + 'px'; }
+    else { d.style.width = '12px'; d.style.height = '16px'; d.style.borderRadius = '3px'; d.style.background = colors[i % colors.length]; }
+    d.style.left = Math.random() * 100 + 'vw';
+    d.style.animationDuration = (1.5 + Math.random() * 1.8) + 's';
+    d.style.animationDelay = (Math.random() * .4) + 's';
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 4000);
+  }
+}
+
+/* ================= QUIZ LOGIC ================= */
+function drawProgress(){
+  const p = $('progress');
+  if (!p) return;
+  p.innerHTML = QUESTIONS.map((_, i) => {
+    let cls = '';
+    let icon = '';
+    if (i === currentIdx && viewMode === 'interactive') cls = 'now';
+    else if (resultsRecord[i] === true) { cls = 'done'; icon = '✓'; }
+    else if (resultsRecord[i] === false) { cls = 'miss'; icon = '×'; }
+    return `<i class="${cls}">${icon}</i>`;
+  }).join('');
+}
+
+function showInteractiveQuestion(){
+  const q = QUESTIONS[currentIdx];
+  answered = (answersRecord[currentIdx] !== null);
+  
+  $('sectionBadge').textContent = q.section;
+  $('qNum').textContent = `Question ${currentIdx + 1} of ${QUESTIONS.length}`;
+  $('qText').innerHTML = q.q.replace('___', '<span class="blank"></span>');
+  $('feedback').innerHTML = ''; $('feedback').className = 'feedback';
+  $('nextBtn').classList.add('hidden');
+  drawProgress();
+
+  const cards = $('cards');
+  cards.innerHTML = '';
+  
+  q.options.forEach(([optText, isCorrect], i) => {
+    const btn = document.createElement('button');
+    btn.className = 'card';
+    btn.dataset.index = i;
+    btn.dataset.correct = isCorrect;
+    const letter = `<span class="letter">${'ABCD'[i]}</span>`;
+    btn.innerHTML = `${letter}<span>${escapeHtml(optText)}</span>`;
+
+    // If already answered previously
+    if (answersRecord[currentIdx] !== null) {
+      if (answersRecord[currentIdx] === i) {
+        btn.classList.add(isCorrect ? 'right' : 'wrong');
+      } else if (isCorrect) {
+        btn.classList.add('right');
+      } else {
+        btn.classList.add('fade');
+      }
+    }
+
+    btn.onclick = () => selectAnswer(btn, i, isCorrect);
+    cards.appendChild(btn);
+  });
+
+  if (answered) {
+    renderFeedback(q);
+    $('nextBtn').classList.remove('hidden');
+    $('nextBtn').textContent = (currentIdx === QUESTIONS.length - 1) ? 'Finish & Submit 🏁' : 'Next Question ▶';
+  }
+
+  // Voice narration
+  setTimeout(() => speak(q.q), 300);
+}
+
+function selectAnswer(btn, optIdx, isCorrect){
+  if (answered) return;
+  answered = true;
+  answersRecord[currentIdx] = optIdx;
+  resultsRecord[currentIdx] = !!isCorrect;
+
+  if (isCorrect) {
+    stars++;
+    btn.classList.add('right');
+    chime();
+  } else {
+    btn.classList.add('wrong');
+    buzz();
+    // Highlight correct option
+    const rightBtn = $('cards').querySelector('[data-correct="1"]');
+    if (rightBtn) rightBtn.classList.add('right');
+  }
+
+  // Fade other options
+  Array.from($('cards').children).forEach(b => {
+    if (b !== btn && !b.classList.contains('right')) b.classList.add('fade');
+  });
+
+  const q = QUESTIONS[currentIdx];
+  renderFeedback(q);
+
+  $('nextBtn').classList.remove('hidden');
+  $('nextBtn').textContent = (currentIdx === QUESTIONS.length - 1) ? 'Finish & Submit 🏁' : 'Next Question ▶';
+  drawProgress();
+}
+
+function renderFeedback(q){
+  const isRight = resultsRecord[currentIdx];
+  $('feedback').className = 'feedback ' + (isRight ? 'good' : 'try');
+  $('feedback').innerHTML = `
+    <b>${isRight ? 'Correct! 🌟' : 'Review Note:'}</b>
+    <small>${q.explanation || ('Option ' + q.correctLetter + ' is the correct answer.')}</small>
+  `;
+}
+
+function nextQuestion(){
+  if (currentIdx < QUESTIONS.length - 1) {
+    currentIdx++;
+    showInteractiveQuestion();
+  } else {
+    finishQuiz();
+  }
+}
+
+/* ================= EXAM SHEET MODE ================= */
+function renderExamSheet(){
+  const container = $('examContainer');
+  let html = '';
+  
+  let currentSec = '';
+  QUESTIONS.forEach((q, index) => {
+    if (q.section !== currentSec) {
+      currentSec = q.section;
+      html += `<div class="exam-section-title">📂 ${escapeHtml(currentSec)}</div>`;
+    }
+
+    html += `
+      <div class="exam-q-item" id="examQ-${index}">
+        <div class="exam-q-text">
+          <span style="color:var(--blue); margin-right:8px;">${index + 1}.</span>${escapeHtml(q.q)}
+        </div>
+        <div class="exam-opts-grid">
+    `;
+
+    q.options.forEach(([optText], optIdx) => {
+      const letter = 'ABCD'[optIdx];
+      const isSel = (answersRecord[index] === optIdx);
+      html += `
+        <label class="exam-opt-label ${isSel ? 'checked' : ''}" id="examLabel-${index}-${optIdx}">
+          <input type="radio" name="examQ_${index}" value="${optIdx}" ${isSel ? 'checked' : ''} onchange="onExamSheetSelect(${index}, ${optIdx})" style="width:18px; height:18px; accent-color:var(--blue);">
+          <b>${letter})</b> <span>${escapeHtml(optText)}</span>
+        </label>
+      `;
+    });
+
+    html += `</div></div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+window.onExamSheetSelect = function(qIndex, optIdx){
+  answersRecord[qIndex] = optIdx;
+  resultsRecord[qIndex] = (optIdx === QUESTIONS[qIndex].correctIdx);
+  
+  // Highlight chosen label
+  for (let i = 0; i < 4; i++) {
+    const lbl = $(`examLabel-${qIndex}-${i}`);
+    if (lbl) lbl.classList.toggle('checked', i === optIdx);
+  }
+  drawProgress();
+};
+
+/* ================= TIMER & FINISH ================= */
+function startTimer(){
+  startTime = Date.now();
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const remaining = Math.max(0, totalExamSeconds - elapsed);
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    $('timerPill').textContent = `⏱ ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    
+    if (remaining === 0) {
+      clearInterval(timerInterval);
+      alert('Time allowed (45 minutes) has elapsed! Submitting answers now.');
+      finishQuiz();
+    }
+  }, 1000);
+}
+
+async function startQuiz(){
+  const name = $('childName').value.trim();
+  const school = $('childSchool').value.trim() || 'FutureIN Academy';
+  $('nameErr').textContent = '';
+
+  if (name.length < 2) {
+    $('nameErr').textContent = 'Please enter your full name!';
+    $('childName').focus();
+    return;
+  }
+
+  studentName = name;
+  studentSchool = school;
+  currentIdx = 0; stars = 0;
+  answersRecord.fill(null);
+  resultsRecord.fill(null);
+
+  // Register attempt with backend
+  try {
+    const res = await api('POST', '/api/start', { name: studentName, school: studentSchool, classId: 'year-11' });
+    attemptId = res.attemptId;
+  } catch (e) {
+    console.warn('Local offline fallback attempt:', e);
+  }
+
+  if (window.Gamify) Gamify.startQuiz();
+
+  $('startScreen').classList.add('hidden');
+  $('endScreen').classList.add('hidden');
+  
+  startTimer();
+
+  if (viewMode === 'interactive') {
+    $('interactiveQuiz').classList.remove('hidden');
+    $('examSheetView').classList.add('hidden');
+    showInteractiveQuestion();
+  } else {
+    $('examSheetView').classList.remove('hidden');
+    $('interactiveQuiz').classList.add('hidden');
+    renderExamSheet();
+  }
+}
+
+async function finishQuiz(){
+  clearInterval(timerInterval);
+  const durationMs = Math.max(1000, Date.now() - startTime);
+  
+  // Calculate final score
+  let totalCorrect = 0;
+  QUESTIONS.forEach((q, i) => {
+    if (answersRecord[i] === q.correctIdx) totalCorrect++;
+  });
+  stars = totalCorrect;
+
+  // Grade calculation
+  const pct = Math.round((totalCorrect / QUESTIONS.length) * 100);
+  let grade = 'Distinction (A1)';
+  if (pct < 40) grade = 'Needs Practice (F9)';
+  else if (pct < 50) grade = 'Pass (P7/P8)';
+  else if (pct < 65) grade = 'Credit (C4-C6)';
+  else if (pct < 75) grade = 'Good Credit (B2/B3)';
+
+  $('finalScoreText').textContent = `${totalCorrect} / ${QUESTIONS.length}`;
+  $('gradeText').textContent = `${pct}% · ${grade}`;
+  const mins = Math.floor(durationMs / 60000);
+  const secs = Math.floor((durationMs % 60000) / 1000);
+  $('durationSummary').textContent = `Time elapsed: ${mins}m ${secs}s`;
+
+  if (pct >= 50) {
+    confetti();
+    chime();
+  } else {
+    buzz();
+  }
+
+  // Submit attempt to backend
+  const payload = {
+    attemptId,
+    name: studentName,
+    school: studentSchool,
+    classId: 'year-11',
+    score: totalCorrect,
+    total: QUESTIONS.length,
+    durationMs,
+    answers: answersRecord
+  };
+
+  if (typeof saveAndSubmitQuizAttempt === 'function') {
+    saveAndSubmitQuizAttempt(payload);
+  } else if (attemptId) {
+    api('POST', '/api/submit', payload).catch(e => console.warn(e));
+  }
+
+  if (window.Gamify) {
+    Gamify.renderBadges('gamifyBadgeZone', {
+      score: totalCorrect,
+      total: QUESTIONS.length,
+      durationMs
+    });
+  }
+
+  $('interactiveQuiz').classList.add('hidden');
+  $('examSheetView').classList.add('hidden');
+  $('endScreen').classList.remove('hidden');
+  $('endScreen').scrollIntoView({ behavior: 'smooth' });
+}
+
+function reviewAnswers(){
+  viewMode = 'sheet';
+  $('endScreen').classList.add('hidden');
+  $('examSheetView').classList.remove('hidden');
+  renderExamSheet();
+
+  // Mark all correct and incorrect answers on the sheet
+  QUESTIONS.forEach((q, i) => {
+    const sel = answersRecord[i];
+    if (sel !== null) {
+      const chosenLbl = $(`examLabel-${i}-${sel}`);
+      if (sel === q.correctIdx) {
+        if (chosenLbl) chosenLbl.classList.add('correct');
+      } else {
+        if (chosenLbl) chosenLbl.classList.add('incorrect');
+        const correctLbl = $(`examLabel-${i}-${q.correctIdx}`);
+        if (correctLbl) correctLbl.classList.add('correct');
+      }
+    } else {
+      const correctLbl = $(`examLabel-${i}-${q.correctIdx}`);
+      if (correctLbl) correctLbl.classList.add('correct');
+    }
+  });
+
+  // Scroll to first question
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function escapeHtml(s){
+  return String(s || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+}
+
+/* ================= EVENT HANDLERS ================= */
+$('startBtn').onclick = startQuiz;
+$('nextBtn').onclick = nextQuestion;
+$('sayBtn').onclick = () => speak(QUESTIONS[currentIdx].q);
+$('submitExamBtn').onclick = finishQuiz;
+$('reviewBtn').onclick = reviewAnswers;
+$('againBtn').onclick = () => {
+  $('endScreen').classList.add('hidden');
+  $('startScreen').classList.remove('hidden');
+  if (window.Gamify) Gamify.reset();
+};
+
+$('soundBtn').onclick = () => {
+  soundOn = !soundOn;
+  $('soundBtn').textContent = soundOn ? '🔊' : '🔇';
+  if (!soundOn && 'speechSynthesis' in window) speechSynthesis.cancel();
+};
+
+$('toggleViewBtn').onclick = () => {
+  viewMode = (viewMode === 'interactive') ? 'sheet' : 'interactive';
+  $('toggleViewBtn').textContent = (viewMode === 'interactive') ? '📄 Exam Sheet' : '🎮 Arcade Mode';
+  
+  if (!$('startScreen').classList.contains('hidden') || !$('endScreen').classList.contains('hidden')) {
+    return;
+  }
+  
+  if (viewMode === 'interactive') {
+    $('interactiveQuiz').classList.remove('hidden');
+    $('examSheetView').classList.add('hidden');
+    showInteractiveQuestion();
+  } else {
+    $('examSheetView').classList.remove('hidden');
+    $('interactiveQuiz').classList.add('hidden');
+    renderExamSheet();
+  }
+};
+
+// Keyboard shortcuts for A, B, C, D and Enter
+window.addEventListener('keydown', (e) => {
+  if (viewMode !== 'interactive' || $('interactiveQuiz').classList.contains('hidden')) return;
+  const key = e.key.toUpperCase();
+  if (['A', 'B', 'C', 'D'].includes(key)) {
+    const idx = 'ABCD'.indexOf(key);
+    const card = $('cards').children[idx];
+    if (card && !answered) card.click();
+  } else if ((e.key === 'Enter' || e.key === ' ') && answered) {
+    e.preventDefault();
+    nextQuestion();
+  }
+});
+
+// Auto-launch if name query param exists
+if (urlParams.get('name')) {
+  startQuiz();
+}
+
+// Background bubble decorations
+(function(){
+  const c = ['#2563eb','#f59e0b','#10b981','#8b5cf6','#ec4899'];
+  const box = document.querySelector('.bubbles');
+  for (let i = 0; i < 9; i++){
+    const s = document.createElement('span');
+    const size = 35 + Math.random() * 80;
+    Object.assign(s.style, {
+      width: size + 'px', height: size + 'px',
+      left: Math.random() * 95 + 'vw', top: Math.random() * 90 + 'vh',
+      background: c[i % c.length], animationDelay: (Math.random() * 5) + 's'
+    });
+    box.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>
