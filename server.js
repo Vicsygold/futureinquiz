@@ -909,15 +909,16 @@ function schoolLeaderboard() {
   });
 }
 
-function recentAttempts(limit = 25) {
+function recentAttempts(limit = 25, classId = null) {
+  const where = classId && classId !== 'all' ? `AND class_id = ?` : ``;
   const sql = `
     SELECT name, school, class_id, score, total, duration_ms, finished_at
     FROM comp_attempts
-    WHERE finished_at IS NOT NULL
+    WHERE finished_at IS NOT NULL ${where}
     ORDER BY finished_at DESC
     LIMIT ?
   `;
-  return db.prepare(sql).all(limit);
+  return (classId && classId !== 'all') ? db.prepare(sql).all(classId, limit) : db.prepare(sql).all(limit);
 }
 
 function competitionLive(classId) {
@@ -945,7 +946,7 @@ function competitionLive(classId) {
   }));
 
   const schools = compSchoolLeaderboard();
-  const ticker = recentAttempts(25);
+  const ticker = recentAttempts(25, classId);
 
   const stats = db.prepare(`
     SELECT 
@@ -1688,7 +1689,7 @@ async function requestHandler(req, res) {
       const user = sessionUser(req);
       if (!user) return sendJson(res, 401, { error: 'Admin access required to view the live arena.' });
       if (lower === '/api/competition/live') {
-        const classId = url.searchParams.get('classId');
+        const classId = url.searchParams.get('classId') || url.searchParams.get('class');
         syncAttemptsFromSupabase().catch(() => {});
         return sendJson(res, 200, competitionLive(classId));
       }

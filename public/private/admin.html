@@ -369,40 +369,59 @@ C. Apple Interface</pre>
             </div>
           </div>
 
-          <!-- Real-time Live Submissions Feed on Arena View -->
-          <div class="panel" style="display:grid; gap:12px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <!-- Class-by-Class Dedicated Live Competition Results -->
+          <div class="panel" style="display:grid; gap:14px;" id="comp_class_results_section">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
               <div>
                 <h3 style="margin:0; font-family:var(--display); display:flex; align-items:center; gap:8px;">
-                  <span>⚡</span> Recent Quiz Completions & Submissions
-                  <span class="chip live" style="font-size:11px; padding:2px 8px;">LIVE FEED</span>
+                  <span>🎯</span> <span id="comp_results_class_title">Year 1 · Competition Results</span>
+                  <span class="chip live" style="font-size:11px; padding:2px 8px;">CLASS LEADERBOARD</span>
                 </h3>
-                <p class="muted small" style="margin:2px 0 0">Real-time submissions appearing automatically as children complete their quiz.</p>
+                <p class="muted small" style="margin:4px 0 0">Click any class below to see only the children who took part in that class's competition quiz.</p>
               </div>
               <div class="row" style="gap:8px;">
-                <button type="button" class="ghost sm" id="arena_refresh_btn" style="display:inline-flex; align-items:center; gap:4px;">
-                  <span>🔄</span> Refresh Now
+                <button type="button" class="ghost sm" id="comp_class_refresh_btn" style="display:inline-flex; align-items:center; gap:4px;">
+                  <span>🔄</span> Refresh
                 </button>
+                <button type="button" class="ghost sm" id="comp_class_csv_btn">📥 Download Class CSV</button>
                 <button type="button" class="primary sm" id="arena_view_all_btn">View Full Submissions Table →</button>
               </div>
             </div>
+
+            <!-- Class Selector Tabs: Year 1, Year 2, Year 3, Year 4, Year 5, Year 6, Nursery 2, ... All Classes -->
+            <div class="seg" id="comp_results_class_nav" style="max-width:100%; overflow-x:auto; padding:4px 0; gap:6px;">
+              <!-- Dynamically populated via JS -->
+            </div>
+
+            <!-- Class KPI Summary Banner -->
+            <div class="a-stats" style="margin:0;">
+              <div class="a-stat"><div class="n" id="cstat_students">0</div><div class="k">Pupils Competing</div></div>
+              <div class="a-stat"><div class="n" id="cstat_schools">0</div><div class="k">Schools Represented</div></div>
+              <div class="a-stat"><div class="n" id="cstat_top_score">–</div><div class="k">Highest Score</div></div>
+              <div class="a-stat"><div class="n" id="cstat_avg_pct">–</div><div class="k">Average Mastery</div></div>
+            </div>
+
+            <!-- Class Pupils Leaderboard Table -->
             <div class="tablewrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Student Name</th>
+                    <th style="width:60px;">Rank</th>
+                    <th>Pupil Name</th>
                     <th>School</th>
                     <th>Class</th>
                     <th>Score</th>
                     <th>Mastery</th>
                     <th>Duration</th>
-                    <th>Finished At</th>
+                    <th>Submitted At</th>
                   </tr>
                 </thead>
-                <tbody id="admin_live_feed_tbody"></tbody>
+                <tbody id="comp_class_results_tbody"></tbody>
               </table>
             </div>
-            <div class="empty-note" id="admin_live_feed_empty" hidden>No quiz submissions yet. When students complete a quiz, their results appear here instantly!</div>
+            <div class="empty-note" id="comp_class_results_empty" hidden>
+              No competition attempts recorded for this class yet. Click "Start Competition" and have students take the quiz to see their scores here!
+            </div>
           </div>
         </div>
 
@@ -962,6 +981,7 @@ C. Apple Interface</pre>
   let compState = null;
   let compClasses = [];
   let compSel = 'nursery-2';
+  let compResultClass = 'year-1';
   let compQs = [];
   let compSavedJson = '[]';
   let compAttemptsList = [];
@@ -994,7 +1014,7 @@ C. Apple Interface</pre>
     try {
       const [compData, attData, liveData] = await Promise.all([
         api('GET', '/api/admin/competition'),
-        api('GET', '/api/admin/competition/attempts' + ($('comp_attempts_class').value ? '?class=' + $('comp_attempts_class').value : '')),
+        api('GET', '/api/admin/competition/attempts'),
         api('GET', '/api/competition/live')
       ]);
       compState = compData.state;
@@ -1099,13 +1119,13 @@ C. Apple Interface</pre>
     const heatGrid = $('admin_heatmap_grid');
     const students = liveData.topStudents || [];
     const classDefs = [
-      { id: 'nursery-2', label: 'Nursery 2' },
       { id: 'year-1', label: 'Year 1' },
       { id: 'year-2', label: 'Year 2' },
       { id: 'year-3', label: 'Year 3' },
       { id: 'year-4', label: 'Year 4' },
       { id: 'year-5', label: 'Year 5' },
-      { id: 'year-6', label: 'Year 6' }
+      { id: 'year-6', label: 'Year 6' },
+      { id: 'nursery-2', label: 'Nursery 2' }
     ];
     heatGrid.innerHTML = classDefs.map(c => {
       const clsStudents = students.filter(s => s.class_id === c.id);
@@ -1115,7 +1135,7 @@ C. Apple Interface</pre>
       const isBlazing = count > 0 && avgPct >= 80;
 
       return `
-        <div class="a-heat-card ${isBlazing ? 'blazing' : ''}">
+        <div class="a-heat-card ${isBlazing ? 'blazing' : ''}" onclick="selectCompResultClass('${c.id}')" style="cursor:pointer;" title="Click to view ${c.label} competition results below">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span class="chip" style="font-weight:700;">${c.label}</span>
             <span class="tag" style="color:${isBlazing ? 'var(--yellow)' : 'var(--muted)'};">${isBlazing ? '🔥 Blazing' : count ? '⚡ Active' : 'Standby'}</span>
@@ -1124,39 +1144,131 @@ C. Apple Interface</pre>
             <span style="font-size:22px; font-weight:800; font-family:var(--display);">${count} <span style="font-size:12px; color:var(--muted); font-weight:normal;">pupils</span></span>
             <span style="color:var(--yellow); font-weight:700;">⭐ ${stars}</span>
           </div>
-          <div style="font-size:12px; color:var(--muted);">
-            Avg Mastery: <b>${avgPct}%</b>
+          <div style="font-size:12px; color:var(--muted); display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+            <span>Avg Mastery: <b>${avgPct}%</b></span>
+            <span style="font-size:11px; color:var(--cyan); font-weight:600;">View Class →</span>
           </div>
         </div>
       `;
     }).join('');
 
-    // 4. Real-time Submissions Feed on Arena View
-    const feedTbody = $('admin_live_feed_tbody');
-    const ticker = liveData.ticker || [];
-    if (feedTbody) {
-      if (!ticker.length) {
-        feedTbody.innerHTML = '';
-        $('admin_live_feed_empty').hidden = false;
-      } else {
-        $('admin_live_feed_empty').hidden = true;
-        feedTbody.innerHTML = ticker.map((r) => {
-          const pct = Math.round((r.score / r.total) * 100);
-          const pctColor = pct >= 90 ? 'var(--good)' : pct >= 70 ? 'var(--blue)' : 'var(--orange)';
-          return `
-            <tr>
-              <td><b>${esc(r.name)}</b></td>
-              <td>${esc(r.school || 'FutureIN')}</td>
-              <td><span class="chip" style="font-size:12px;">${esc(clsLabel(r.class_id))}</span></td>
-              <td class="num" style="font-weight:700; color:var(--yellow);">⭐ ${r.score} / ${r.total}</td>
-              <td class="num"><b style="color:${pctColor};">${pct}%</b></td>
-              <td class="num">${fmtTime(r.duration_ms)}</td>
-              <td style="color:var(--muted); font-size:12px;">${fmtDate(r.finished_at)}</td>
-            </tr>
-          `;
-        }).join('');
-      }
+    // 4. Render Class-by-Class Results & Navigation Tabs
+    renderCompResultClassTabs();
+    renderCompClassResults();
+  }
+
+  function renderCompResultClassTabs() {
+    const nav = $('comp_results_class_nav');
+    if (!nav) return;
+    nav.innerHTML = '';
+
+    // Preferred sequence: Year 1 to Year 6 first, then Nursery 2, other classes, then All Classes
+    const priorityOrder = ['year-1', 'year-2', 'year-3', 'year-4', 'year-5', 'year-6', 'nursery-2'];
+    const otherClasses = compClasses.filter(c => !priorityOrder.includes(c.id)).map(c => c.id);
+    const classList = [...priorityOrder, ...otherClasses, 'all'];
+
+    classList.forEach((cid) => {
+      const isAll = cid === 'all';
+      const label = isAll ? 'All Classes (Combined)' : clsLabel(cid);
+      const rowsForClass = isAll ? compAttemptsList : compAttemptsList.filter(r => r.class_id === cid);
+      const count = rowsForClass.length;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = (cid === compResultClass ? 'on' : '');
+      btn.innerHTML = `${esc(label)} <span class="tag" style="margin-left:6px; background:${cid === compResultClass ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.1)'}; font-weight:700;">${count}</span>`;
+      btn.onclick = () => {
+        compResultClass = cid;
+        renderCompResultClassTabs();
+        renderCompClassResults();
+      };
+      nav.appendChild(btn);
+    });
+  }
+
+  window.selectCompResultClass = function selectCompResultClass(cid) {
+    compResultClass = cid;
+    renderCompResultClassTabs();
+    renderCompClassResults();
+    const section = $('comp_class_results_section');
+    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  function renderCompClassResults() {
+    const tbody = $('comp_class_results_tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const isAll = compResultClass === 'all';
+    const label = isAll ? 'All Classes (Combined)' : clsLabel(compResultClass);
+    if ($('comp_results_class_title')) {
+      $('comp_results_class_title').textContent = `${label} · Competition Results & Leaderboard`;
     }
+
+    // Filter attempts
+    let rows = isAll ? [...compAttemptsList] : compAttemptsList.filter(r => r.class_id === compResultClass);
+
+    // Sort: Best score percentage first, then shortest duration, then earliest finish
+    rows.sort((a, b) => {
+      const pctA = (a.score / (a.total || 1));
+      const pctB = (b.score / (b.total || 1));
+      if (pctB !== pctA) return pctB - pctA;
+      if (a.duration_ms !== b.duration_ms) return a.duration_ms - b.duration_ms;
+      return a.finished_at - b.finished_at;
+    });
+
+    // Update Quick Stats Bar
+    const uniqueStudents = new Set(rows.map(r => (r.name + '_' + r.school).toLowerCase())).size;
+    const uniqueSchools = new Set(rows.map(r => (r.school || '').toLowerCase())).size;
+    const maxScore = rows.length ? Math.max(...rows.map(r => r.score)) : 0;
+    const maxTotal = rows.length ? (rows.find(r => r.score === maxScore)?.total || rows[0].total) : 0;
+    const avgPct = rows.length ? Math.round(rows.reduce((n, r) => n + (r.score / r.total), 0) / rows.length * 100) : 0;
+
+    if ($('cstat_students')) $('cstat_students').textContent = uniqueStudents;
+    if ($('cstat_schools')) $('cstat_schools').textContent = uniqueSchools;
+    if ($('cstat_top_score')) $('cstat_top_score').textContent = rows.length ? `⭐ ${maxScore} / ${maxTotal}` : '–';
+    if ($('cstat_avg_pct')) $('cstat_avg_pct').textContent = rows.length ? `${avgPct}%` : '–';
+
+    const empty = $('comp_class_results_empty');
+    if (!rows.length) {
+      if (empty) {
+        empty.hidden = false;
+        empty.innerHTML = `No competition attempts recorded for <b>${esc(label)}</b> yet. Click <b>"Start Competition"</b> and have ${esc(label)} students take the quiz to see their scores here!`;
+      }
+      return;
+    }
+    if (empty) empty.hidden = true;
+
+    rows.forEach((r, idx) => {
+      const tr = document.createElement('tr');
+
+      // Rank column with medals for top 3
+      const rankTd = document.createElement('td');
+      if (idx === 0) rankTd.innerHTML = '<span class="medal" style="background:var(--yellow)">1</span>';
+      else if (idx === 1) rankTd.innerHTML = '<span class="medal" style="background:var(--silver)">2</span>';
+      else if (idx === 2) rankTd.innerHTML = '<span class="medal" style="background:var(--bronze)">3</span>';
+      else rankTd.textContent = String(idx + 1);
+      tr.appendChild(rankTd);
+
+      td(tr, r.name, 'fw-bold');
+      td(tr, r.school || 'FutureIN');
+      td(tr, clsLabel(r.class_id));
+      td(tr, `⭐ ${r.score} / ${r.total}`, 'num');
+
+      const pct = Math.round((r.score / r.total) * 100);
+      const pctColor = pct >= 90 ? 'var(--good)' : pct >= 70 ? 'var(--blue)' : 'var(--orange)';
+      const pctTd = document.createElement('td');
+      pctTd.className = 'num';
+      pctTd.innerHTML = `<b style="color:${pctColor};">${pct}%</b>`;
+      tr.appendChild(pctTd);
+
+      td(tr, fmtTime(r.duration_ms), 'num');
+      const timeTd = td(tr, fmtDate(r.finished_at));
+      timeTd.style.color = 'var(--muted)';
+      timeTd.style.fontSize = '12px';
+
+      tbody.appendChild(tr);
+    });
   }
 
   function renderCompControls() {
@@ -1527,10 +1639,25 @@ C. Apple Interface</pre>
   }
 
   $('comp_top_refresh_btn').onclick = (e) => refreshCompetitionManually(e.currentTarget);
-  $('arena_refresh_btn').onclick = (e) => refreshCompetitionManually(e.currentTarget);
+  if ($('comp_class_refresh_btn')) $('comp_class_refresh_btn').onclick = (e) => refreshCompetitionManually(e.currentTarget);
   $('comp_submissions_refresh_btn').onclick = (e) => refreshCompetitionManually(e.currentTarget);
   $('arena_view_all_btn').onclick = () => setCompSubtab('submissions');
   if ($('r_refresh')) $('r_refresh').onclick = () => loadResults();
+
+  if ($('comp_class_csv_btn')) {
+    $('comp_class_csv_btn').onclick = () => {
+      const isAll = compResultClass === 'all';
+      const curClassLabel = isAll ? 'All Classes' : clsLabel(compResultClass);
+      const rows = isAll ? compAttemptsList : compAttemptsList.filter(r => r.class_id === compResultClass);
+      const e = (v) => '"' + String(v).replace(/"/g, '""') + '"';
+      const lines = [['Rank', 'Pupil Name', 'School', 'Class', 'Score', 'Total', 'Percent', 'Time (seconds)', 'Finished'].map(e).join(',')];
+      rows.forEach((r, i) => lines.push([i + 1, r.name, r.school, clsLabel(r.class_id), r.score, r.total, Math.round(r.score / r.total * 100), (r.duration_ms / 1000).toFixed(1), new Date(r.finished_at).toISOString()].map(e).join(',')));
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv' }));
+      a.download = 'futurein-competition-' + (compResultClass || 'all-classes') + '.csv';
+      a.click();
+    };
+  }
 
   window.addEventListener('beforeunload', (e) => { if (dirty() || compDirty()) { e.preventDefault(); e.returnValue = ''; } });
   boot();
