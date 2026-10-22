@@ -633,12 +633,56 @@ function seedYear6() {
 }
 seedYear6();
 
+function seedYear11() {
+  try {
+    const existing = q.questionsFor.all('year-11');
+    if (existing.length === 0) {
+      const year11Qs = [
+        { text: 'What is the default file extension for documents created in Microsoft Word 2007 and later?', options: ['.doc', '.docx', '.txt', '.rtf'], answer: 1 },
+        { text: 'Which keyboard shortcut is used to undo the last action in MS Word?', options: ['Ctrl + Z', 'Ctrl + Y', 'Ctrl + U', 'Ctrl + X'], answer: 0 },
+        { text: 'The feature used to send the same letter to multiple recipients is called:', options: ['Macros', 'Hyperlink', 'Mail Merge', 'AutoFormat'], answer: 2 },
+        { text: 'Which alignment justifies the text on both the left and right margins?', options: ['Left Align', 'Center', 'Right Align', 'Justify'], answer: 3 },
+        { text: 'Where is the zoom slider typically located in the MS Word window?', options: ['Title bar', 'Status bar', 'Ribbon', 'Quick Access Toolbar'], answer: 1 },
+        { text: 'To move the cursor to the beginning of a document, you press:', options: ['Home', 'Ctrl + Home', 'Page Up', 'Alt + Home'], answer: 1 },
+        { text: 'The intersection of a row and a column in a Word table is called a:', options: ['Block', 'Grid', 'Cell', 'Box'], answer: 2 },
+        { text: 'What is the shortcut key to print a document?', options: ['Ctrl + P', 'Shift + P', 'Alt + P', 'Windows + P'], answer: 0 },
+        { text: 'Which tab in the Ribbon contains the Header and Footer commands?', options: ['Home', 'Insert', 'Page Layout', 'View'], answer: 1 },
+        { text: 'Which key combination makes the selected text bold?', options: ['Ctrl + B', 'Alt + B', 'Shift + B', 'Tab + B'], answer: 0 },
+        { text: 'The Thesaurus tool in MS Word is primarily used for:', options: ['Spelling checks', 'Grammar corrections', 'Finding synonyms and antonyms', 'Language translation'], answer: 2 },
+        { text: 'What is the default font style in Microsoft Word 2013 and later?', options: ['Arial', 'Times New Roman', 'Calibri', 'Tahoma'], answer: 2 },
+        { text: 'Portrait and Landscape are examples of:', options: ['Page Orientation', 'Page Size', 'Page Margin', 'Page Setup'], answer: 0 },
+        { text: 'A Drop Cap is used in a document to:', options: ['Drop all capital letters', 'Begin a paragraph with a large dropped initial capital letter', 'Convert text to small caps', 'Remove capitalization'], answer: 1 },
+        { text: 'The expression x² is an example of:', options: ['Subscript', 'Superscript', 'Strikethrough', 'Small caps'], answer: 1 },
+        { text: 'What is the default file extension for an Excel spreadsheet?', options: ['.xls / .xlsx', '.doc / .docx', '.ppt / .pptx', '.exe'], answer: 0 },
+        { text: 'A collection of worksheets in Excel is known as a:', options: ['Workspace', 'File', 'Workbook', 'Folder'], answer: 2 },
+        { text: 'In a spreadsheet, all formulas must begin with which symbol?', options: ['+', '-', '=', '*'], answer: 2 },
+        { text: 'What is the correct cell address for the intersection of row 5 and column B?', options: ['5B', 'B5', 'B-5', '5-B'], answer: 1 },
+        { text: 'Which built-in function is used to calculate the total of a range of values?', options: ['ADD()', 'TOTAL()', 'SUM()', 'PLUS()'], answer: 2 },
+        { text: 'An absolute cell reference is represented by which symbol?', options: ['#', '$', '&', '@'], answer: 1 },
+        { text: 'How do you highlight an entire column in a spreadsheet?', options: ['Click the column heading letter', 'Press Ctrl + C', 'Press Ctrl + A', 'Double-click the cell'], answer: 0 },
+        { text: 'By default, how many worksheets are present in a new Excel 2010 workbook?', options: ['1', '2', '3', '4'], answer: 2 },
+        { text: 'Which chart type is best for showing proportions or percentages of a whole?', options: ['Bar chart', 'Pie chart', 'Line chart', 'Scatter plot'], answer: 1 },
+        { text: 'Which function is used to find the highest number in a range of cells?', options: ['HIGH()', 'MAX()', 'TOP()', 'UPPER()'], answer: 1 },
+        { text: 'What does a cell displaying "######" indicate?', options: ['A formula error', 'The column is not wide enough to display the data', 'The cell is protected', 'A spelling mistake'], answer: 1 },
+        { text: 'The active cell in a worksheet is indicated by:', options: ['A red border', 'A dotted border', 'A dark, heavy border', 'Blinking text'], answer: 2 },
+        { text: 'What does the "V" in VLOOKUP stand for?', options: ['Vertical', 'Visual', 'Value', 'Variable'], answer: 0 },
+        { text: 'Which keyboard shortcut is used to select all cells in a worksheet?', options: ['Ctrl + S', 'Ctrl + A', 'Alt + A', 'Shift + A'], answer: 1 },
+        { text: 'To arrange data in a specific order (alphabetical or numerical) is called:', options: ['Filtering', 'Sorting', 'Validating', 'Formatting'], answer: 1 }
+      ];
+      db.exec('BEGIN');
+      year11Qs.forEach((x, i) => q.insertQuestion.run('year-11', i, x.text, JSON.stringify(x.options), x.answer));
+      q.setPublished.run('year-11', 1, Date.now());
+      db.exec('COMMIT');
+    }
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+  }
+}
+seedYear11();
+
 // ---------- Phase 3: Dedicated Competition Questions Seeding ----------
 function seedCompetitionQuestions() {
   try {
-    const totalComp = db.prepare(`SELECT COUNT(*) as c FROM comp_questions`).get();
-    if (totalComp && totalComp.c > 0) return;
-
     const competitionBank = {
       'nursery-2': [
         { text: 'Which computer part looks like a small animal and clicks?', options: ['Mouse', 'Keyboard', 'Monitor', 'Printer'], answer: 0 },
@@ -723,6 +767,38 @@ function seedCompetitionQuestions() {
         { text: 'Autonomous robotic rovers exploring the surface of Mars use AI for ___', options: ['Self-navigation and terrain hazard avoidance', 'Playing video games', 'Browsing social media', 'Printing documents'], answer: 0 },
         { text: 'Ethical use of AI in school means ___', options: ['Using AI to learn, brainstorm and cite tools responsibly', 'Submitting AI essays as your own', 'Using AI without permission', 'Ignoring accuracy checks'], answer: 0 },
         { text: 'Which field of computer science teaches machines to learn patterns from data?', options: ['Machine Learning', 'Mechanical Engineering', 'Desktop Publishing', 'Graphic Design'], answer: 0 }
+      ],
+      'year-11': [
+        { text: 'What is the default file extension for documents created in Microsoft Word 2007 and later?', options: ['.docx', '.doc', '.txt', '.rtf'], answer: 0 },
+        { text: 'Which keyboard shortcut is used to undo the last action in MS Word?', options: ['Ctrl + Z', 'Ctrl + Y', 'Ctrl + U', 'Ctrl + X'], answer: 0 },
+        { text: 'The feature used to send the same letter to multiple recipients is called:', options: ['Mail Merge', 'Macros', 'Hyperlink', 'AutoFormat'], answer: 0 },
+        { text: 'Which alignment justifies the text on both the left and right margins?', options: ['Justify', 'Left Align', 'Center', 'Right Align'], answer: 0 },
+        { text: 'Where is the zoom slider typically located in the MS Word window?', options: ['Status bar', 'Title bar', 'Ribbon', 'Quick Access Toolbar'], answer: 0 },
+        { text: 'To move the cursor to the beginning of a document, you press:', options: ['Ctrl + Home', 'Home', 'Page Up', 'Alt + Home'], answer: 0 },
+        { text: 'The intersection of a row and a column in a Word table is called a:', options: ['Cell', 'Block', 'Grid', 'Box'], answer: 0 },
+        { text: 'What is the shortcut key to print a document?', options: ['Ctrl + P', 'Shift + P', 'Alt + P', 'Windows + P'], answer: 0 },
+        { text: 'Which tab in the Ribbon contains the Header and Footer commands?', options: ['Insert', 'Home', 'Page Layout', 'View'], answer: 0 },
+        { text: 'Which key combination makes the selected text bold?', options: ['Ctrl + B', 'Alt + B', 'Shift + B', 'Tab + B'], answer: 0 },
+        { text: 'The Thesaurus tool in MS Word is primarily used for:', options: ['Finding synonyms and antonyms', 'Spelling checks', 'Grammar corrections', 'Language translation'], answer: 0 },
+        { text: 'What is the default font style in Microsoft Word 2013 and later?', options: ['Calibri', 'Arial', 'Times New Roman', 'Tahoma'], answer: 0 },
+        { text: 'Portrait and Landscape are examples of:', options: ['Page Orientation', 'Page Size', 'Page Margin', 'Page Setup'], answer: 0 },
+        { text: 'A Drop Cap is used in a document to:', options: ['Begin a paragraph with a large dropped initial capital letter', 'Drop all capital letters', 'Convert text to small caps', 'Remove capitalization'], answer: 0 },
+        { text: 'The expression x² is an example of:', options: ['Superscript', 'Subscript', 'Strikethrough', 'Small caps'], answer: 0 },
+        { text: 'What is the default file extension for an Excel spreadsheet?', options: ['.xls / .xlsx', '.doc / .docx', '.ppt / .pptx', '.exe'], answer: 0 },
+        { text: 'A collection of worksheets in Excel is known as a:', options: ['Workbook', 'Workspace', 'File', 'Folder'], answer: 0 },
+        { text: 'In a spreadsheet, all formulas must begin with which symbol?', options: ['=', '+', '-', '*'], answer: 0 },
+        { text: 'What is the correct cell address for the intersection of row 5 and column B?', options: ['B5', '5B', 'B-5', '5-B'], answer: 0 },
+        { text: 'Which built-in function is used to calculate the total of a range of values?', options: ['SUM()', 'ADD()', 'TOTAL()', 'PLUS()'], answer: 0 },
+        { text: 'An absolute cell reference is represented by which symbol?', options: ['$', '#', '&', '@'], answer: 0 },
+        { text: 'How do you highlight an entire column in a spreadsheet?', options: ['Click the column heading letter', 'Press Ctrl + C', 'Press Ctrl + A', 'Double-click the cell'], answer: 0 },
+        { text: 'By default, how many worksheets are present in a new Excel 2010 workbook?', options: ['3', '1', '2', '4'], answer: 0 },
+        { text: 'Which chart type is best for showing proportions or percentages of a whole?', options: ['Pie chart', 'Bar chart', 'Line chart', 'Scatter plot'], answer: 0 },
+        { text: 'Which function is used to find the highest number in a range of cells?', options: ['MAX()', 'HIGH()', 'TOP()', 'UPPER()'], answer: 0 },
+        { text: 'What does a cell displaying "######" indicate?', options: ['The column is not wide enough to display the data', 'A formula error', 'The cell is protected', 'A spelling mistake'], answer: 0 },
+        { text: 'The active cell in a worksheet is indicated by:', options: ['A dark, heavy border', 'A red border', 'A dotted border', 'Blinking text'], answer: 0 },
+        { text: 'What does the "V" in VLOOKUP stand for?', options: ['Vertical', 'Visual', 'Value', 'Variable'], answer: 0 },
+        { text: 'Which keyboard shortcut is used to select all cells in a worksheet?', options: ['Ctrl + A', 'Ctrl + S', 'Alt + A', 'Shift + A'], answer: 0 },
+        { text: 'To arrange data in a specific order (alphabetical or numerical) is called:', options: ['Sorting', 'Filtering', 'Validating', 'Formatting'], answer: 0 }
       ]
     };
 

@@ -152,6 +152,7 @@
           <span class="muted small">Link for this class</span>
           <code id="q_link"></code>
           <button class="ghost sm" type="button" id="q_copy">Copy link</button>
+          <a class="ghost sm" id="q_open" target="_blank" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px;">Open quiz ↗</a>
         </div>
 
         <div class="panel a-import">
@@ -635,6 +636,7 @@ C. Apple Interface</pre>
     $('q_publish').textContent = published ? 'Unpublish' : 'Publish quiz';
     $('q_publish').className = published ? 'ghost' : 'primary';
     $('q_link').textContent = linkFor(sel);
+    if ($('q_open')) $('q_open').href = linkFor(sel);
   }
   function drawQuestions() {
     const list = $('q_list'); list.innerHTML = '';
@@ -973,7 +975,10 @@ C. Apple Interface</pre>
       const code = document.createElement('code'); code.textContent = linkFor(c.id); code.style.color = 'var(--yellow)'; td(tr, code);
       const b = document.createElement('button'); b.type = 'button'; b.className = 'ghost sm'; b.textContent = 'Copy link';
       b.onclick = async () => { try { await navigator.clipboard.writeText(linkFor(c.id)); b.textContent = 'Copied'; } catch (e) { b.textContent = 'Select & copy'; } setTimeout(() => b.textContent = 'Copy link', 1800); };
-      td(tr, b); body.appendChild(tr);
+      const openA = document.createElement('a'); openA.className = 'ghost sm'; openA.textContent = 'Open ↗'; openA.target = '_blank'; openA.href = linkFor(c.id); openA.style.textDecoration = 'none'; openA.style.marginLeft = '6px';
+      const actsCell = document.createElement('td'); actsCell.append(b, openA);
+      tr.appendChild(actsCell);
+      body.appendChild(tr);
     });
   }
 
