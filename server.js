@@ -633,6 +633,84 @@ function seedYear6() {
 }
 seedYear6();
 
+function seedYear7() {
+  try {
+    const existing = q.questionsFor.all('year-7');
+    if (existing.length === 0) {
+      const year7Qs = [
+        { text: 'Which part of the computer is known as the "brain" and performs calculations and logical operations?', options: ['Hard Disk Drive', 'Central Processing Unit (CPU)', 'Monitor', 'Keyboard'], answer: 1 },
+        { text: 'Which of the following is strictly an INPUT device used to capture physical photos or documents into digital form?', options: ['Scanner', 'Printer', 'Monitor', 'Projector'], answer: 0 },
+        { text: 'What does the acronym "RAM" stand for in computer memory?', options: ['Read Access Method', 'Rapid Action Memory', 'Random Access Memory', 'Remote Audio Module'], answer: 2 },
+        { text: 'Which type of software controls the computer hardware and allows applications to run?', options: ['Web Browser', 'Operating System', 'Word Processor', 'Spreadsheet'], answer: 1 },
+        { text: 'What is the smallest basic unit of digital data in computing?', options: ['Byte', 'Kilobyte', 'Bit', 'Megabyte'], answer: 2 },
+        { text: 'How many bits make up one single byte?', options: ['4 bits', '8 bits', '16 bits', '32 bits'], answer: 1 },
+        { text: 'Which ancient calculating device used beads sliding on rods for arithmetic operations?', options: ['Abacus', 'Slide Rule', 'Napier Bones', 'Pascaline'], answer: 0 },
+        { text: 'Who is widely regarded as the "Father of Computers" for designing the Analytical Engine?', options: ['Alan Turing', 'Blaise Pascal', 'John von Neumann', 'Charles Babbage'], answer: 3 },
+        { text: 'Which of these is permanent, non-volatile primary memory that stores initial startup instructions?', options: ['RAM', 'ROM (Read Only Memory)', 'Cache Memory', 'Virtual Memory'], answer: 1 },
+        { text: 'What is the standard keyboard shortcut used to COPY highlighted text or items?', options: ['Ctrl + C', 'Ctrl + V', 'Ctrl + X', 'Ctrl + Z'], answer: 0 },
+        { text: 'What is the standard keyboard shortcut used to PASTE copied text or items?', options: ['Ctrl + P', 'Ctrl + S', 'Ctrl + V', 'Ctrl + C'], answer: 2 },
+        { text: 'Which symbol is essential in every email address to separate the username from the domain name?', options: ['#', '@', '$', '&'], answer: 1 },
+        { text: 'A worldwide global network connecting millions of computers together across the planet is the ___', options: ['Intranet', 'Local Area Network', 'Internet', 'Bluetooth'], answer: 2 },
+        { text: 'Which software application is specifically used to view and navigate web pages?', options: ['Web Browser (e.g. Chrome, Edge)', 'Search Engine', 'Spreadsheet', 'Media Player'], answer: 0 },
+        { text: 'In word processing, what does clicking the "B" button on the formatting toolbar do?', options: ['Changes font to Blue', 'Makes text Bold (darker and thicker)', 'Underlines text', 'Converts to Bullet points'], answer: 1 },
+        { text: 'Which storage medium uses laser beams to read and write data on a shiny spinning disc?', options: ['Magnetic Hard Drive', 'Optical Disc (CD / DVD)', 'Solid State Drive', 'Flash Drive'], answer: 1 },
+        { text: 'What do we call raw, unorganized facts and figures before they are processed by a computer?', options: ['Information', 'Knowledge', 'Data', 'Output'], answer: 2 },
+        { text: 'Processed data that is organized, meaningful, and useful for decision making is known as ___', options: ['Information', 'Raw Code', 'Hardware', 'Algorithm'], answer: 0 },
+        { text: 'Which keyboard key is pressed to delete characters located to the left of the blinking cursor?', options: ['Delete', 'Backspace', 'Enter', 'Spacebar'], answer: 1 },
+        { text: 'Which of the following is recommended for good computer ergonomics?', options: ['Slouching deep in the chair', 'Keeping monitor screen at eye level with back supported', 'Placing screen in complete darkness', 'Reaching far away to type'], answer: 1 }
+      ];
+      db.exec('BEGIN');
+      year7Qs.forEach((x, i) => q.insertQuestion.run('year-7', i, x.text, JSON.stringify(x.options), x.answer));
+      q.setPublished.run('year-7', 1, Date.now());
+      db.exec('COMMIT');
+      console.log('[SEED] Successfully seeded Year 7 question bank.');
+    }
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+    console.warn('[SEED] Year 7 seed notice:', e.message);
+  }
+}
+seedYear7();
+
+function seedYear8() {
+  try {
+    const existing = q.questionsFor.all('year-8');
+    if (existing.length === 0) {
+      const year8Qs = [
+        { text: 'What does the "ALU" component inside the Central Processing Unit stand for?', options: ['Advanced Link Utility', 'Arithmetic Logic Unit', 'Automatic Linear Unit', 'Access Level User'], answer: 1 },
+        { text: 'Which CPU unit directs data flow and coordinates the operations of all computer components?', options: ['Control Unit (CU)', 'Arithmetic Logic Unit (ALU)', 'Cache Memory', 'System Bus'], answer: 0 },
+        { text: 'Which number system uses base-16 and contains digits 0–9 and letters A–F?', options: ['Binary', 'Decimal', 'Hexadecimal', 'Octal'], answer: 2 },
+        { text: 'What is the binary representation of the decimal number 5?', options: ['110', '101', '011', '100'], answer: 1 },
+        { text: 'Which network topology connects all client computers to a single central switch or hub?', options: ['Bus Topology', 'Ring Topology', 'Star Topology', 'Mesh Topology'], answer: 2 },
+        { text: 'What kind of network covers a small localized geographical area like a school lab or office building?', options: ['LAN (Local Area Network)', 'WAN (Wide Area Network)', 'MAN (Metropolitan Area Network)', 'PAN (Personal Area Network)'], answer: 0 },
+        { text: 'Which high-speed storage device uses flash memory chips instead of moving magnetic platters?', options: ['Hard Disk Drive (HDD)', 'Solid State Drive (SSD)', 'Floppy Disk', 'Magnetic Tape'], answer: 1 },
+        { text: 'What is the main printed circuit board that connects the CPU, RAM, and all other components together?', options: ['Motherboard', 'Expansion Card', 'Sound Card', 'Power Supply'], answer: 0 },
+        { text: 'Which system utility rearranges fragmented files on a hard disk to improve access speed?', options: ['Antivirus', 'Disk Defragmenter', 'File Compression', 'Task Scheduler'], answer: 1 },
+        { text: 'What does the letter "S" stand for in the web protocol "https://"?', options: ['System', 'Standard', 'Secure (encrypted)', 'Speed'], answer: 2 },
+        { text: 'A visual diagram representing an algorithm step-by-step with geometric shapes and arrows is a ___', options: ['Pseudocode', 'Flowchart', 'Wireframe', 'Schematic'], answer: 1 },
+        { text: 'In a standard flowchart, which geometric shape represents a decision point (Yes/No)?', options: ['Rectangle', 'Oval', 'Diamond', 'Parallelogram'], answer: 2 },
+        { text: 'In spreadsheet software like Microsoft Excel, which character MUST begin every formula?', options: ['=', '+', '@', '#'], answer: 0 },
+        { text: 'In an Excel spreadsheet, which formula correctly calculates the sum of cells from A1 to A10?', options: ['=ADD(A1:A10)', '=SUM(A1:A10)', '=TOTAL(A1:A10)', '=COUNT(A1:A10)'], answer: 1 },
+        { text: 'What cyber attack tricks users into revealing confidential passwords via fraudulent emails or websites?', options: ['Trojan Horse', 'DDoS', 'Phishing', 'Spyware'], answer: 2 },
+        { text: 'A network security barrier that monitors and filters traffic between trusted and untrusted networks is a ___', options: ['Firewall', 'Modem', 'Switch', 'Repeater'], answer: 0 },
+        { text: 'Which of the following is an open-source operating system widely used in servers and software development?', options: ['Microsoft Windows', 'Apple macOS', 'Linux', 'iOS'], answer: 2 },
+        { text: 'Approximately how many Megabytes (MB) are in 1 Gigabyte (GB)?', options: ['100 MB', '1024 MB', '500 MB', '10000 MB'], answer: 1 },
+        { text: 'In computer programming, a named container in memory used to store values that can change is a ___', options: ['Constant', 'Variable', 'Function', 'Loop'], answer: 1 },
+        { text: 'What legal framework protects creators from unauthorized copying of their software, music, and writing?', options: ['Copyright and Intellectual Property', 'Creative Commons Zero', 'Public Domain', 'Fair Use Only'], answer: 0 }
+      ];
+      db.exec('BEGIN');
+      year8Qs.forEach((x, i) => q.insertQuestion.run('year-8', i, x.text, JSON.stringify(x.options), x.answer));
+      q.setPublished.run('year-8', 1, Date.now());
+      db.exec('COMMIT');
+      console.log('[SEED] Successfully seeded Year 8 question bank.');
+    }
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+    console.warn('[SEED] Year 8 seed notice:', e.message);
+  }
+}
+seedYear8();
+
 function seedYear11() {
   try {
     const existing = q.questionsFor.all('year-11');
@@ -767,6 +845,50 @@ function seedCompetitionQuestions() {
         { text: 'Autonomous robotic rovers exploring the surface of Mars use AI for ___', options: ['Self-navigation and terrain hazard avoidance', 'Playing video games', 'Browsing social media', 'Printing documents'], answer: 0 },
         { text: 'Ethical use of AI in school means ___', options: ['Using AI to learn, brainstorm and cite tools responsibly', 'Submitting AI essays as your own', 'Using AI without permission', 'Ignoring accuracy checks'], answer: 0 },
         { text: 'Which field of computer science teaches machines to learn patterns from data?', options: ['Machine Learning', 'Mechanical Engineering', 'Desktop Publishing', 'Graphic Design'], answer: 0 }
+      ],
+      'year-7': [
+        { text: 'Which part of the computer is known as the "brain" and performs calculations and logical operations?', options: ['Central Processing Unit (CPU)', 'Hard Disk Drive', 'Monitor', 'Keyboard'], answer: 0 },
+        { text: 'Which of the following is strictly an INPUT device used to capture physical photos or documents into digital form?', options: ['Scanner', 'Printer', 'Monitor', 'Projector'], answer: 0 },
+        { text: 'What does the acronym "RAM" stand for in computer memory?', options: ['Random Access Memory', 'Read Access Method', 'Rapid Action Memory', 'Remote Audio Module'], answer: 0 },
+        { text: 'Which type of software controls the computer hardware and allows applications to run?', options: ['Operating System', 'Web Browser', 'Word Processor', 'Spreadsheet'], answer: 0 },
+        { text: 'What is the smallest basic unit of digital data in computing?', options: ['Bit', 'Byte', 'Kilobyte', 'Megabyte'], answer: 0 },
+        { text: 'How many bits make up one single byte?', options: ['8 bits', '4 bits', '16 bits', '32 bits'], answer: 0 },
+        { text: 'Which ancient calculating device used beads sliding on rods for arithmetic operations?', options: ['Abacus', 'Slide Rule', 'Napier Bones', 'Pascaline'], answer: 0 },
+        { text: 'Who is widely regarded as the "Father of Computers" for designing the Analytical Engine?', options: ['Charles Babbage', 'Alan Turing', 'Blaise Pascal', 'John von Neumann'], answer: 0 },
+        { text: 'Which of these is permanent, non-volatile primary memory that stores initial startup instructions?', options: ['ROM (Read Only Memory)', 'RAM', 'Cache Memory', 'Virtual Memory'], answer: 0 },
+        { text: 'What is the standard keyboard shortcut used to COPY highlighted text or items?', options: ['Ctrl + C', 'Ctrl + V', 'Ctrl + X', 'Ctrl + Z'], answer: 0 },
+        { text: 'What is the standard keyboard shortcut used to PASTE copied text or items?', options: ['Ctrl + V', 'Ctrl + P', 'Ctrl + S', 'Ctrl + C'], answer: 0 },
+        { text: 'Which symbol is essential in every email address to separate the username from the domain name?', options: ['@', '#', '$', '&'], answer: 0 },
+        { text: 'A worldwide global network connecting millions of computers together across the planet is the ___', options: ['Internet', 'Intranet', 'Local Area Network', 'Bluetooth'], answer: 0 },
+        { text: 'Which software application is specifically used to view and navigate web pages?', options: ['Web Browser (e.g. Chrome, Edge)', 'Search Engine', 'Spreadsheet', 'Media Player'], answer: 0 },
+        { text: 'In word processing, what does clicking the "B" button on the formatting toolbar do?', options: ['Makes text Bold (darker and thicker)', 'Changes font to Blue', 'Underlines text', 'Converts to Bullet points'], answer: 0 },
+        { text: 'Which storage medium uses laser beams to read and write data on a shiny spinning disc?', options: ['Optical Disc (CD / DVD)', 'Magnetic Hard Drive', 'Solid State Drive', 'Flash Drive'], answer: 0 },
+        { text: 'What do we call raw, unorganized facts and figures before they are processed by a computer?', options: ['Data', 'Information', 'Knowledge', 'Output'], answer: 0 },
+        { text: 'Processed data that is organized, meaningful, and useful for decision making is known as ___', options: ['Information', 'Raw Code', 'Hardware', 'Algorithm'], answer: 0 },
+        { text: 'Which keyboard key is pressed to delete characters located to the left of the blinking cursor?', options: ['Backspace', 'Delete', 'Enter', 'Spacebar'], answer: 0 },
+        { text: 'Which of the following is recommended for good computer ergonomics?', options: ['Keeping monitor screen at eye level with back supported', 'Slouching deep in the chair', 'Placing screen in complete darkness', 'Reaching far away to type'], answer: 0 }
+      ],
+      'year-8': [
+        { text: 'What does the "ALU" component inside the Central Processing Unit stand for?', options: ['Arithmetic Logic Unit', 'Advanced Link Utility', 'Automatic Linear Unit', 'Access Level User'], answer: 0 },
+        { text: 'Which CPU unit directs data flow and coordinates the operations of all computer components?', options: ['Control Unit (CU)', 'Arithmetic Logic Unit (ALU)', 'Cache Memory', 'System Bus'], answer: 0 },
+        { text: 'Which number system uses base-16 and contains digits 0–9 and letters A–F?', options: ['Hexadecimal', 'Binary', 'Decimal', 'Octal'], answer: 0 },
+        { text: 'What is the binary representation of the decimal number 5?', options: ['101', '110', '011', '100'], answer: 0 },
+        { text: 'Which network topology connects all client computers to a single central switch or hub?', options: ['Star Topology', 'Bus Topology', 'Ring Topology', 'Mesh Topology'], answer: 0 },
+        { text: 'What kind of network covers a small localized geographical area like a school lab or office building?', options: ['LAN (Local Area Network)', 'WAN (Wide Area Network)', 'MAN (Metropolitan Area Network)', 'PAN (Personal Area Network)'], answer: 0 },
+        { text: 'Which high-speed storage device uses flash memory chips instead of moving magnetic platters?', options: ['Solid State Drive (SSD)', 'Hard Disk Drive (HDD)', 'Floppy Disk', 'Magnetic Tape'], answer: 0 },
+        { text: 'What is the main printed circuit board that connects the CPU, RAM, and all other components together?', options: ['Motherboard', 'Expansion Card', 'Sound Card', 'Power Supply'], answer: 0 },
+        { text: 'Which system utility rearranges fragmented files on a hard disk to improve access speed?', options: ['Disk Defragmenter', 'Antivirus', 'File Compression', 'Task Scheduler'], answer: 0 },
+        { text: 'What does the letter "S" stand for in the web protocol "https://"?', options: ['Secure (encrypted)', 'System', 'Standard', 'Speed'], answer: 0 },
+        { text: 'A visual diagram representing an algorithm step-by-step with geometric shapes and arrows is a ___', options: ['Flowchart', 'Pseudocode', 'Wireframe', 'Schematic'], answer: 0 },
+        { text: 'In a standard flowchart, which geometric shape represents a decision point (Yes/No)?', options: ['Diamond', 'Rectangle', 'Oval', 'Parallelogram'], answer: 0 },
+        { text: 'In spreadsheet software like Microsoft Excel, which character MUST begin every formula?', options: ['=', '+', '@', '#'], answer: 0 },
+        { text: 'In an Excel spreadsheet, which formula correctly calculates the sum of cells from A1 to A10?', options: ['=SUM(A1:A10)', '=ADD(A1:A10)', '=TOTAL(A1:A10)', '=COUNT(A1:A10)'], answer: 0 },
+        { text: 'What cyber attack tricks users into revealing confidential passwords via fraudulent emails or websites?', options: ['Phishing', 'Trojan Horse', 'DDoS', 'Spyware'], answer: 0 },
+        { text: 'A network security barrier that monitors and filters traffic between trusted and untrusted networks is a ___', options: ['Firewall', 'Modem', 'Switch', 'Repeater'], answer: 0 },
+        { text: 'Which of the following is an open-source operating system widely used in servers and software development?', options: ['Linux', 'Microsoft Windows', 'Apple macOS', 'iOS'], answer: 0 },
+        { text: 'Approximately how many Megabytes (MB) are in 1 Gigabyte (GB)?', options: ['1024 MB', '100 MB', '500 MB', '10000 MB'], answer: 0 },
+        { text: 'In computer programming, a named container in memory used to store values that can change is a ___', options: ['Variable', 'Constant', 'Function', 'Loop'], answer: 0 },
+        { text: 'What legal framework protects creators from unauthorized copying of their software, music, and writing?', options: ['Copyright and Intellectual Property', 'Creative Commons Zero', 'Public Domain', 'Fair Use Only'], answer: 0 }
       ],
       'year-11': [
         { text: 'What is the default file extension for documents created in Microsoft Word 2007 and later?', options: ['.docx', '.doc', '.txt', '.rtf'], answer: 0 },
@@ -1801,6 +1923,8 @@ async function requestHandler(req, res) {
     if (lower === '/year-4' || lower === '/quiz/year-4' || lower === '/year4' || lower === '/quiz/year4') return sendFile(res, path.join(PUBLIC_DIR, 'year-4.html'));
     if (lower === '/year-5' || lower === '/quiz/year-5' || lower === '/year5' || lower === '/quiz/year5') return sendFile(res, path.join(PUBLIC_DIR, 'year-5.html'));
     if (lower === '/year-6' || lower === '/quiz/year-6' || lower === '/year6' || lower === '/quiz/year6') return sendFile(res, path.join(PUBLIC_DIR, 'year-6.html'));
+    if (lower === '/year-7' || lower === '/quiz/year-7' || lower === '/year7' || lower === '/quiz/year7') return sendFile(res, path.join(PUBLIC_DIR, 'year-7.html'));
+    if (lower === '/year-8' || lower === '/quiz/year-8' || lower === '/year8' || lower === '/quiz/year8') return sendFile(res, path.join(PUBLIC_DIR, 'year-8.html'));
     if (lower === '/year-11' || lower === '/quiz/year-11' || lower === '/year11' || lower === '/quiz/year11') return sendFile(res, path.join(PUBLIC_DIR, 'year-11.html'));
     const ym = lower.match(/^\/(?:quiz\/)?year-?([0-9]+)$/);
     if (ym && fs.existsSync(path.join(PUBLIC_DIR, `year-${ym[1]}.html`))) {

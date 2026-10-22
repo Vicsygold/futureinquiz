@@ -306,7 +306,7 @@
     chime();
 
     // Map each class directly to its standalone interactive quiz page
-    const directQuizzes = ['nursery-2', 'year-1', 'year-2', 'year-3', 'year-4', 'year-5', 'year-6', 'year-11'];
+    const directQuizzes = ['nursery-2', 'year-1', 'year-2', 'year-3', 'year-4', 'year-5', 'year-6', 'year-7', 'year-8', 'year-11'];
     if (directQuizzes.includes(classId)) {
       location.href = '/quiz/' + classId + '?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school);
       return;
@@ -373,6 +373,7 @@
         school: st.school,
         classId: st.cls,
         answers: st.answers,
+        total: st.qs.length,
         durationMs: Math.max(1000, Date.now() - st.t0)
       };
       let d = null;
