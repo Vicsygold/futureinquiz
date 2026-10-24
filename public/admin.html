@@ -375,16 +375,16 @@ C. Apple Interface</pre>
             <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
               <div>
                 <h3 style="margin:0; font-family:var(--display); display:flex; align-items:center; gap:8px;">
-                  <span>🎯</span> <span id="comp_results_class_title">Year 1 · Competition Results</span>
-                  <span class="chip live" style="font-size:11px; padding:2px 8px;">CLASS LEADERBOARD</span>
+                  <span>🎯</span> <span id="comp_results_class_title">Lower Primary · Competition Results</span>
+                  <span class="chip live" style="font-size:11px; padding:2px 8px;">CATEGORY LEADERBOARD</span>
                 </h3>
-                <p class="muted small" style="margin:4px 0 0">Click any class below to see only the children who took part in that class's competition quiz.</p>
+                <p class="muted small" style="margin:4px 0 0">Click any category below to see only the children who took part in that category's competition quiz.</p>
               </div>
               <div class="row" style="gap:8px;">
                 <button type="button" class="ghost sm" id="comp_class_refresh_btn" style="display:inline-flex; align-items:center; gap:4px;">
                   <span>🔄</span> Refresh
                 </button>
-                <button type="button" class="ghost sm" id="comp_class_csv_btn">📥 Download Class CSV</button>
+                <button type="button" class="ghost sm" id="comp_class_csv_btn">📥 Download Category CSV</button>
                 <button type="button" class="primary sm" id="arena_view_all_btn">View Full Submissions Table →</button>
               </div>
             </div>
@@ -410,7 +410,7 @@ C. Apple Interface</pre>
                     <th style="width:60px;">Rank</th>
                     <th>Pupil Name</th>
                     <th>School</th>
-                    <th>Class</th>
+                    <th>Category</th>
                     <th>Score</th>
                     <th>Mastery</th>
                     <th>Duration</th>
@@ -502,7 +502,7 @@ C. Apple Interface</pre>
                   <th>Rank</th>
                   <th>Student Name</th>
                   <th>School</th>
-                  <th>Class</th>
+                  <th>Category</th>
                   <th>Score</th>
                   <th>Duration</th>
                   <th>Submitted At</th>
@@ -529,7 +529,13 @@ C. Apple Interface</pre>
 
   const base = () => (window.QUIZ_BASE_URL || location.origin);
   const linkFor = (id) => base() + '/quiz/' + id;
-  const clsLabel = (id) => (classes.find((c) => c.id === id) || {}).label || id;
+  const CAT_LABELS = {
+    'lower-primary': 'Lower Primary',
+    'upper-primary': 'Upper Primary',
+    'junior-secondary': 'Junior Secondary',
+    'senior-secondary': 'Senior Secondary'
+  };
+  const clsLabel = (id) => CAT_LABELS[id] || (compClasses.find((c) => c.id === id) || {}).label || (classes.find((c) => c.id === id) || {}).label || id;
   const fmtTime = (ms) => { const s = ms / 1000; return s < 60 ? s.toFixed(1) + 's' : Math.floor(s / 60) + 'm ' + String(Math.round(s % 60)).padStart(2, '0') + 's'; };
   const fmtDate = (t) => new Date(t).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const dirty = () => JSON.stringify(qs) !== savedJson;
@@ -985,8 +991,8 @@ C. Apple Interface</pre>
   /* ---------- Phase 3: Dedicated Competition Mode Controller ---------- */
   let compState = null;
   let compClasses = [];
-  let compSel = 'nursery-2';
-  let compResultClass = 'year-1';
+  let compSel = 'lower-primary';
+  let compResultClass = 'lower-primary';
   let compQs = [];
   let compSavedJson = '[]';
   let compAttemptsList = [];
@@ -1124,19 +1130,10 @@ C. Apple Interface</pre>
     const heatGrid = $('admin_heatmap_grid');
     const students = liveData.topStudents || [];
     const classDefs = [
-      { id: 'year-1', label: 'Year 1' },
-      { id: 'year-2', label: 'Year 2' },
-      { id: 'year-3', label: 'Year 3' },
-      { id: 'year-4', label: 'Year 4' },
-      { id: 'year-5', label: 'Year 5' },
-      { id: 'year-6', label: 'Year 6' },
-      { id: 'year-7', label: 'Year 7' },
-      { id: 'year-8', label: 'Year 8' },
-      { id: 'year-9', label: 'Year 9' },
-      { id: 'year-10', label: 'Year 10' },
-      { id: 'year-11', label: 'Year 11' },
-      { id: 'year-12', label: 'Year 12' },
-      { id: 'nursery-2', label: 'Nursery 2' }
+      { id: 'lower-primary', label: 'Lower Primary (Years 1-3)' },
+      { id: 'upper-primary', label: 'Upper Primary (Years 4-6)' },
+      { id: 'junior-secondary', label: 'Junior Secondary (Years 7-9)' },
+      { id: 'senior-secondary', label: 'Senior Secondary (Years 10-12)' }
     ];
     heatGrid.innerHTML = classDefs.map(c => {
       const clsStudents = students.filter(s => s.class_id === c.id);
@@ -1173,14 +1170,14 @@ C. Apple Interface</pre>
     if (!nav) return;
     nav.innerHTML = '';
 
-    // Preferred sequence: Year 1 to Year 12, then Nursery 2, other classes, then All Classes
-    const priorityOrder = ['year-1', 'year-2', 'year-3', 'year-4', 'year-5', 'year-6', 'year-7', 'year-8', 'year-9', 'year-10', 'year-11', 'year-12', 'nursery-2'];
+    // Preferred sequence: 4 categories, other classes, then All Categories
+    const priorityOrder = ['lower-primary', 'upper-primary', 'junior-secondary', 'senior-secondary'];
     const otherClasses = compClasses.filter(c => !priorityOrder.includes(c.id)).map(c => c.id);
     const classList = [...priorityOrder, ...otherClasses, 'all'];
 
     classList.forEach((cid) => {
       const isAll = cid === 'all';
-      const label = isAll ? 'All Classes (Combined)' : clsLabel(cid);
+      const label = isAll ? 'All Categories (Combined)' : clsLabel(cid);
       const rowsForClass = isAll ? compAttemptsList : compAttemptsList.filter(r => r.class_id === cid);
       const count = rowsForClass.length;
 
@@ -1211,7 +1208,7 @@ C. Apple Interface</pre>
     tbody.innerHTML = '';
 
     const isAll = compResultClass === 'all';
-    const label = isAll ? 'All Classes (Combined)' : clsLabel(compResultClass);
+    const label = isAll ? 'All Categories (Combined)' : clsLabel(compResultClass);
     if ($('comp_results_class_title')) {
       $('comp_results_class_title').textContent = `${label} · Competition Results & Leaderboard`;
     }
@@ -1382,7 +1379,7 @@ C. Apple Interface</pre>
     tabs.innerHTML = '';
     const attSelect = $('comp_attempts_class');
     const curAttVal = attSelect.value;
-    attSelect.innerHTML = '<option value="">All Classes (combined)</option>';
+    attSelect.innerHTML = '<option value="">All Categories (combined)</option>';
 
     compClasses.forEach((c) => {
       const btn = document.createElement('button');
@@ -1658,7 +1655,7 @@ C. Apple Interface</pre>
   if ($('comp_class_csv_btn')) {
     $('comp_class_csv_btn').onclick = () => {
       const isAll = compResultClass === 'all';
-      const curClassLabel = isAll ? 'All Classes' : clsLabel(compResultClass);
+      const curClassLabel = isAll ? 'All Categories' : clsLabel(compResultClass);
       const rows = isAll ? compAttemptsList : compAttemptsList.filter(r => r.class_id === compResultClass);
       const e = (v) => '"' + String(v).replace(/"/g, '""') + '"';
       const lines = [['Rank', 'Pupil Name', 'School', 'Class', 'Score', 'Total', 'Percent', 'Time (seconds)', 'Finished'].map(e).join(',')];

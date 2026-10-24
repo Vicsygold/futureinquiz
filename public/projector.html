@@ -664,15 +664,12 @@
 
     <div class="arena-controls">
       <!-- Grade Filter -->
-      <select class="arena-select" id="classFilter" title="Filter by grade">
-        <option value="all">🏆 All Grades & Classes</option>
-        <option value="nursery-2">Nursery 2</option>
-        <option value="year-1">Year 1</option>
-        <option value="year-2">Year 2</option>
-        <option value="year-3">Year 3</option>
-        <option value="year-4">Year 4</option>
-        <option value="year-5">Year 5</option>
-        <option value="year-6">Year 6</option>
+      <select class="arena-select" id="classFilter" title="Filter by competition category">
+        <option value="all">🏆 All Categories</option>
+        <option value="lower-primary">Lower Primary (Years 1 - 3)</option>
+        <option value="upper-primary">Upper Primary (Years 4 - 6)</option>
+        <option value="junior-secondary">Junior Secondary (Years 7 - 9)</option>
+        <option value="senior-secondary">Senior Secondary (Years 10 - 12)</option>
       </select>
 
       <!-- Refresh Speed -->
@@ -1147,7 +1144,13 @@
 
     tbody.innerHTML = students.map((st, idx) => {
       const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
-      const clsLabel = st.class_id ? st.class_id.replace('-', ' ').toUpperCase() : 'ALL';
+      const CAT_MAP = {
+        'lower-primary': 'LOWER PRIMARY',
+        'upper-primary': 'UPPER PRIMARY',
+        'junior-secondary': 'JUNIOR SEC',
+        'senior-secondary': 'SENIOR SEC'
+      };
+      const clsLabel = CAT_MAP[st.class_id] || (st.class_id ? st.class_id.replace('-', ' ').toUpperCase() : 'ALL');
       const key = `${st.name}_${st.school}_${st.class_id}`.toLowerCase();
       const currentRank = idx + 1;
       currentRanksMap.set(key, currentRank);
@@ -1357,13 +1360,10 @@
     if (!grid) return;
 
     const classDefs = [
-      { id: 'nursery-2', label: 'Nursery 2' },
-      { id: 'year-1', label: 'Year 1' },
-      { id: 'year-2', label: 'Year 2' },
-      { id: 'year-3', label: 'Year 3' },
-      { id: 'year-4', label: 'Year 4' },
-      { id: 'year-5', label: 'Year 5' },
-      { id: 'year-6', label: 'Year 6' }
+      { id: 'lower-primary', label: 'Lower Primary' },
+      { id: 'upper-primary', label: 'Upper Primary' },
+      { id: 'junior-secondary', label: 'Junior Secondary' },
+      { id: 'senior-secondary', label: 'Senior Secondary' }
     ];
 
     grid.innerHTML = classDefs.map(c => {

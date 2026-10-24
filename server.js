@@ -30,6 +30,14 @@ const CLASSES = [
 ];
 const CLASS_BY_ID = new Map(CLASSES.map((c) => [c.id, c]));
 
+const COMPETITION_CATEGORIES = [
+  { id: 'lower-primary', label: 'Lower Primary' },
+  { id: 'upper-primary', label: 'Upper Primary' },
+  { id: 'junior-secondary', label: 'Junior Secondary' },
+  { id: 'senior-secondary', label: 'Senior Secondary' },
+];
+const COMP_CAT_BY_ID = new Map(COMPETITION_CATEGORIES.map((c) => [c.id, c]));
+
 // ---------- Database ----------
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 const db = new DatabaseSync(DB_PATH);
@@ -880,240 +888,104 @@ seedYear12();
 function seedCompetitionQuestions() {
   try {
     const competitionBank = {
-      'nursery-2': [
-        { text: 'Which computer part looks like a small animal and clicks?', options: ['Mouse', 'Keyboard', 'Monitor', 'Printer'], answer: 0 },
-        { text: 'We look at pictures and videos on the computer ___', options: ['Monitor / Screen', 'Keyboard', 'Cable', 'Mouse'], answer: 0 },
-        { text: 'Which computer part has lots of letter and number buttons?', options: ['Keyboard', 'Speaker', 'Webcam', 'Mouse'], answer: 0 },
-        { text: 'Which machine prints our drawings onto real paper?', options: ['Printer', 'Monitor', 'Mouse', 'CPU'], answer: 0 },
-        { text: 'Which computer can you fold like a book and carry anywhere?', options: ['Laptop', 'Desktop Tower', 'Television', 'Refrigerator'], answer: 0 },
-        { text: 'We hear music and voices from the computer using ___', options: ['Speakers or Headphones', 'Keyboard', 'Mouse', 'Printer'], answer: 0 },
-        { text: 'Which button do you press to turn the computer on?', options: ['Power button', 'Spacebar', 'Volume key', 'Delete key'], answer: 0 },
-        { text: 'A small computer you can hold in your hand is a ___', options: ['Smartphone or Tablet', 'Tower unit', 'Big monitor', 'Printer'], answer: 0 },
-        { text: 'What is our friendly robot mascot\'s name?', options: ['Sparky', 'Spiky', 'Rocky', 'Shadow'], answer: 0 },
-        { text: 'Always keep drinks and water ___ from the computer.', options: ['Far away', 'Inside the screen', 'On the keyboard', 'Under the mouse'], answer: 0 }
+      'lower-primary': [
+        { text: 'Which computer part looks like a small mouse and is clicked to select items on screen?', options: ['Mouse', 'Keyboard', 'Printer', 'Monitor'], answer: 0 },
+        { text: 'What do we use to see pictures, games, and videos on a computer?', options: ['Monitor / Screen', 'Keyboard', 'Cable', 'Power plug'], answer: 0 },
+        { text: 'Which computer part has keys with letters, numbers, and symbols used for typing words?', options: ['Keyboard', 'Mouse', 'Speaker', 'Webcam'], answer: 0 },
+        { text: 'Which machine produces physical copies of our drawings and text onto paper?', options: ['Printer', 'Monitor', 'Mouse', 'CPU'], answer: 0 },
+        { text: 'The Central Processing Unit (CPU) is known as the computer\'s ___', options: ['Brain', 'Eyes', 'Ears', 'Feet'], answer: 0 },
+        { text: 'Which device helps you hear sounds and music from a computer?', options: ['Speakers / Headphones', 'Scanner', 'Printer', 'Microphone'], answer: 0 },
+        { text: 'Which device allows you to record your speaking voice into the computer?', options: ['Microphone', 'Speaker', 'Monitor', 'Mouse'], answer: 0 },
+        { text: 'What is the longest key on the computer keyboard used to make spaces between words?', options: ['Spacebar', 'Enter key', 'Shift key', 'Backspace'], answer: 0 },
+        { text: 'Which key on the keyboard moves the blinking cursor to a brand new line?', options: ['Enter key', 'Spacebar', 'Caps Lock', 'Escape'], answer: 0 },
+        { text: 'To type CAPITAL letters continuously without holding Shift, which key do you turn on?', options: ['Caps Lock', 'Tab', 'Ctrl', 'Alt'], answer: 0 },
+        { text: 'Which small blinking symbol on screen marks where your next typed letter will appear?', options: ['Cursor', 'Icon', 'Folder', 'Window'], answer: 0 },
+        { text: 'A portable computer that you can fold closed and easily carry in a backpack is a ___', options: ['Laptop', 'Desktop Tower', 'Mainframe', 'Server'], answer: 0 },
+        { text: 'Which rule keeps your computer lab and equipment safe?', options: ['Keep drinks and food away from the computer', 'Bang on the keyboard keys hard', 'Pull on all the cables', 'Leave computers out in the rain'], answer: 0 },
+        { text: 'What should you do if an unfamiliar pop-up appears on screen asking for personal info?', options: ['Tell a teacher or parent immediately', 'Type your home address', 'Click everything quickly', 'Turn off the lights'], answer: 0 },
+        { text: 'Which small pictures on the computer desktop represent apps, files, or folders?', options: ['Icons', 'Cables', 'Sockets', 'Chips'], answer: 0 },
+        { text: 'Double-clicking with the left mouse button is commonly used to ___', options: ['Open an app or folder', 'Turn off the power', 'Delete the computer', 'Eject paper'], answer: 0 },
+        { text: 'Which key erases letters to the left of the blinking cursor?', options: ['Backspace', 'Spacebar', 'Enter', 'Shift'], answer: 0 },
+        { text: 'Which device is an INPUT device used to capture physical photos into the computer?', options: ['Scanner', 'Printer', 'Monitor', 'Projector'], answer: 0 },
+        { text: 'A touch-screen device bigger than a phone that you hold with two hands to play learning games is a ___', options: ['Tablet', 'Keyboard', 'Modem', 'Floppy disk'], answer: 0 },
+        { text: 'Computers run on which kind of energy?', options: ['Electricity', 'Water', 'Gasoline', 'Wind only'], answer: 0 }
       ],
-      'year-1': [
-        { text: 'Which of these is an INPUT device used to point and click?', options: ['Mouse', 'Monitor', 'Speaker', 'Printer'], answer: 0 },
-        { text: 'The longest key on the whole computer keyboard is the ___', options: ['Spacebar', 'Enter key', 'Shift key', 'Backspace'], answer: 0 },
-        { text: 'Which device displays the visual result of your work?', options: ['Monitor', 'Keyboard', 'Microphone', 'Mouse'], answer: 0 },
-        { text: 'Computers are ___ machines that help us work and learn.', options: ['Electronic', 'Wooden', 'Mechanical', 'Solar-only'], answer: 0 },
-        { text: 'Tapping twice quickly on a mouse button is called a ___', options: ['Double click', 'Right click', 'Scroll click', 'Triple tap'], answer: 0 },
-        { text: 'Which part of a computer system is called the "Brain"?', options: ['CPU / System Unit', 'Monitor', 'Keyboard', 'Printer'], answer: 0 },
-        { text: 'Which key do you press to start typing on a brand new line?', options: ['Enter / Return', 'Spacebar', 'Caps Lock', 'Escape'], answer: 0 },
-        { text: 'A tiny portable drive used to save pictures and files is a ___', options: ['USB Flash drive', 'Floppy disk', 'Mouse pad', 'Keyboard cover'], answer: 0 },
-        { text: 'Computers connected together across the whole world form the ___', options: ['Internet', 'Intranet', 'Bluetooth', 'Cable wire'], answer: 0 },
-        { text: 'Which tool allows you to speak your voice into the computer?', options: ['Microphone', 'Speaker', 'Monitor', 'Mouse'], answer: 0 }
+      'upper-primary': [
+        { text: 'In block coding (like Scratch), a sequence of blocks snapped together to perform actions is called a ___', options: ['Script / Program', 'Sprite', 'Costume', 'Backdrop'], answer: 0 },
+        { text: 'The characters or movable objects that perform actions on the Scratch stage are called ___', options: ['Sprites', 'Pixels', 'Blocks', 'Nodes'], answer: 0 },
+        { text: 'In programming, a named memory container used to store numbers or text that can change (like a player\'s score) is a ___', options: ['Variable', 'Constant', 'Loop', 'Comment'], answer: 0 },
+        { text: 'Making decisions in computer code using "IF ... THEN" statements is called ___', options: ['Conditional logic', 'Infinite looping', 'Variable naming', 'Hardcoding'], answer: 0 },
+        { text: 'A programming instruction that repeats a group of steps over and over until finished is a ___', options: ['Loop', 'Bug', 'Branch', 'Variable'], answer: 0 },
+        { text: 'Finding and fixing mistakes in your computer program or algorithm is called ___', options: ['Debugging', 'Compiling', 'Hacking', 'Browsing'], answer: 0 },
+        { text: 'Which computer memory is temporary, volatile, and wiped clean when the computer is turned off?', options: ['RAM (Random Access Memory)', 'ROM (Read Only Memory)', 'Hard Disk', 'Flash Drive'], answer: 0 },
+        { text: 'What does the worldwide network connecting millions of computing devices together called?', options: ['Internet', 'Intranet', 'Bluetooth', 'Local Bus'], answer: 0 },
+        { text: 'Which application is specifically designed to browse and view websites on the Internet?', options: ['Web Browser (e.g. Chrome, Edge)', 'Word Processor', 'Spreadsheet', 'Media Player'], answer: 0 },
+        { text: 'What kind of cyber attack uses fake messages or emails to trick students into giving away passwords?', options: ['Phishing', 'Debugging', 'Streaming', 'Coding'], answer: 0 },
+        { text: 'Which sensor on an educational robot allows it to measure distance to a wall or obstacle?', options: ['Ultrasonic / Distance sensor', 'Speaker', 'Battery gauge', 'LED light'], answer: 0 },
+        { text: 'A machine that senses its environment, computes decisions, and performs physical movements is a ___', options: ['Robot', 'Typewriter', 'Monitor', 'Calculator'], answer: 0 },
+        { text: 'Saving your school files to remote servers accessible from anywhere via the internet is known as ___', options: ['Cloud Storage', 'RAM Memory', 'Desktop Shortcut', 'Floppy Backup'], answer: 0 },
+        { text: 'Which of these pieces of information should you NEVER share with strangers on the internet?', options: ['Your full home address and passwords', 'Your favorite hobby', 'Your favorite school subject', 'Your favorite animal'], answer: 0 },
+        { text: 'AI systems that can create original stories, code, drawings, or music are called ___', options: ['Generative AI', 'Analog AI', 'Static Computing', 'Rule-based firmware'], answer: 0 },
+        { text: 'The prompt or instructions given to an AI tool to generate an answer is known as a ___', options: ['Prompt', 'Token', 'Cable', 'Register'], answer: 0 },
+        { text: 'What is the standard keyboard shortcut used to COPY highlighted text?', options: ['Ctrl + C', 'Ctrl + V', 'Ctrl + Z', 'Ctrl + S'], answer: 0 },
+        { text: 'What is the standard keyboard shortcut used to PASTE copied text?', options: ['Ctrl + V', 'Ctrl + C', 'Ctrl + P', 'Ctrl + X'], answer: 0 },
+        { text: 'A step-by-step set of precise instructions designed to accomplish a specific task is an ___', options: ['Algorithm', 'Icon', 'Hardware', 'Pixel'], answer: 0 },
+        { text: 'Who is historically recognized as the world\'s very first computer programmer for her work on Charles Babbage\'s engine?', options: ['Ada Lovelace', 'Alan Turing', 'Grace Hopper', 'Steve Jobs'], answer: 0 }
       ],
-      'year-2': [
-        { text: 'What does CPU stand for?', options: ['Central Processing Unit', 'Computer Power Unit', 'Central Print Utility', 'Core Processor User'], answer: 0 },
-        { text: 'Which keyboard key turns all your letters into CAPITAL letters?', options: ['Caps Lock', 'Shift', 'Backspace', 'Tab'], answer: 0 },
-        { text: 'Which of these is used to hear private audio without disturbing others?', options: ['Headphones', 'Projector', 'Speakers', 'Microphone'], answer: 0 },
-        { text: 'Ancient counting frames with sliding wooden beads are called ___', options: ['Abacus', 'Pascaline', 'Difference Engine', 'Napier Bones'], answer: 0 },
-        { text: 'The proper and safe way to turn off a computer is by clicking ___', options: ['Start → Shut Down', 'Pulling the wall plug', 'Switching off the socket directly', 'Pressing Delete'], answer: 0 },
-        { text: 'Which of these is an OUTPUT device?', options: ['Printer', 'Keyboard', 'Microphone', 'Mouse'], answer: 0 },
-        { text: 'Which key is pressed to erase the letter just behind your cursor?', options: ['Backspace', 'Spacebar', 'Enter', 'Shift'], answer: 0 },
-        { text: 'A computer virus is a harmful type of ___', options: ['Software program', 'Hardware part', 'Keyboard key', 'Power cable'], answer: 0 },
-        { text: 'Which component holds all the main chips and circuits together?', options: ['Motherboard', 'Mousepad', 'Monitor frame', 'Webcam stand'], answer: 0 },
-        { text: 'To save your document quickly, which shortcut can you press?', options: ['Ctrl + S', 'Ctrl + P', 'Ctrl + Z', 'Ctrl + C'], answer: 0 }
-      ],
-      'year-3': [
-        { text: 'Computer memory that loses its contents when power is turned off is ___', options: ['RAM (Random Access Memory)', 'ROM (Read Only Memory)', 'Hard Disk', 'USB Flash'], answer: 0 },
-        { text: 'Which memory chip holds permanent startup instructions that never erase?', options: ['ROM', 'RAM', 'Cache', 'Virtual memory'], answer: 0 },
-        { text: 'A worldwide web address starting with "https://" is called a ___', options: ['URL (Uniform Resource Locator)', 'CPU', 'LAN', 'RAM'], answer: 0 },
-        { text: 'Which software application is used to browse websites on the internet?', options: ['Web Browser', 'Operating System', 'Word Processor', 'Calculator'], answer: 0 },
-        { text: 'Which of these creates a strong, safe password for your accounts?', options: ['Letters, numbers, and symbols mixed', 'Your simple first name', '123456', 'The word password'], answer: 0 },
-        { text: 'Which cable is most commonly used to connect monitors and TVs today?', options: ['HDMI Cable', 'Audio Jack', 'Power Cord', 'VGA Only'], answer: 0 },
-        { text: 'Physical parts of the computer you can see and touch are called ___', options: ['Hardware', 'Software', 'Peopleware', 'Firmware'], answer: 0 },
-        { text: 'Programs and applications that give instructions to the hardware are ___', options: ['Software', 'Hardware', 'Cables', 'Peripherals'], answer: 0 },
-        { text: 'Which tool allows you to search for information across the whole web?', options: ['Search Engine (e.g. Google)', 'Paint', 'Notepad', 'File Explorer'], answer: 0 },
-        { text: 'What is the speed of modern computer processors measured in?', options: ['Gigahertz (GHz)', 'Kilograms (kg)', 'Meters (m)', 'Liters (L)'], answer: 0 }
-      ],
-      'year-4': [
-        { text: 'Computers process all information using a code made of only 0s and 1s called ___', options: ['Binary system', 'Decimal system', 'Hexadecimal', 'Roman numerals'], answer: 0 },
-        { text: 'A step-by-step set of precise instructions to solve a problem is an ___', options: ['Algorithm', 'Antivirus', 'Attachment', 'Array'], answer: 0 },
-        { text: 'A single binary digit (0 or 1) is called a ___', options: ['Bit', 'Byte', 'Kilobyte', 'Pixel'], answer: 0 },
-        { text: 'How many bits make up one full byte of data?', options: ['8 bits', '4 bits', '16 bits', '2 bits'], answer: 0 },
-        { text: 'Connecting computers in one classroom or building creates a ___', options: ['LAN (Local Area Network)', 'WAN (Wide Area Network)', 'MAN', 'PAN'], answer: 0 },
-        { text: 'Repeating a set of computer instructions until a goal is reached is a ___', options: ['Loop', 'Variable', 'Bug', 'Branch'], answer: 0 },
-        { text: 'Finding and fixing mistakes in your computer program is called ___', options: ['Debugging', 'Compiling', 'Hacking', 'Browsing'], answer: 0 },
-        { text: 'Which wireless technology connects laptops and phones to the internet?', options: ['Wi-Fi', 'Bluetooth', 'Infrared', 'NFC'], answer: 0 },
-        { text: 'Which safety tool scans and removes malicious files from your system?', options: ['Antivirus software', 'Webcam', 'Spreadsheet', 'Screen saver'], answer: 0 },
-        { text: 'Who is recognized as the world\'s very first computer programmer?', options: ['Ada Lovelace', 'Charles Babbage', 'Alan Turing', 'Steve Jobs'], answer: 0 }
-      ],
-      'year-5': [
-        { text: 'In block-based coding (like Scratch), blocks snapped together create a ___', options: ['Script / Program', 'Sprite', 'Stage', 'Costume'], answer: 0 },
-        { text: 'A placeholder container in code that stores changing values (like score) is a ___', options: ['Variable', 'Function', 'Constant', 'Loop'], answer: 0 },
-        { text: 'Making decisions in code using IF and THEN logic is called ___', options: ['Conditional execution', 'Infinite repetition', 'Variable typing', 'Hardcoding'], answer: 0 },
-        { text: 'Machines that sense their environment, compute decisions and take action are ___', options: ['Robots', 'Typewriters', 'Monitors', 'Calculators'], answer: 0 },
-        { text: 'Storing your files securely on remote servers across the internet is ___', options: ['Cloud storage', 'Floppy backup', 'RAM memory', 'Desktop shortcut'], answer: 0 },
-        { text: 'Sending fake emails to trick users into revealing secret passwords is ___', options: ['Phishing', 'Coding', 'Browsing', 'Streaming'], answer: 0 },
-        { text: 'The characters or objects that move and act in Scratch are called ___', options: ['Sprites', 'Pixels', 'Blocks', 'Nodes'], answer: 0 },
-        { text: 'Which sensor allows a mobile robot to detect distance to an obstacle?', options: ['Ultrasonic / Distance sensor', 'Speaker', 'LED light', 'Battery'], answer: 0 },
-        { text: 'Which of these is considered private personal information you should NEVER share online?', options: ['Home address and passwords', 'Favorite color', 'Favorite cartoon', 'School subject'], answer: 0 },
-        { text: 'An uninterrupted infinite loop in programming runs ___', options: ['Forever until stopped', 'Exactly once', 'Only 10 times', 'Only on Mondays'], answer: 0 }
-      ],
-      'year-6': [
-        { text: 'AI systems that generate new creative text, stories, or images are called ___', options: ['Generative AI', 'Analog AI', 'Static Computing', 'Rule-based firmware'], answer: 0 },
-        { text: 'The specific instructions or questions given to an AI model are called ___', options: ['Prompts', 'Scripts', 'Tokens', 'Registers'], answer: 0 },
-        { text: 'A computer system programmed to emulate the decision-making of a human expert is an ___', options: ['Expert system', 'Operating system', 'Search engine', 'Utility disk'], answer: 0 },
-        { text: 'What is the primary language computers directly understand at the hardware level?', options: ['Machine Code (Binary)', 'Python', 'English', 'HTML'], answer: 0 },
-        { text: 'Which AI technology converts written stories and text into natural human speech?', options: ['Text-To-Speech (TTS)', 'Speech-To-Text', 'Optical Character Recognition', 'Computer Vision'], answer: 0 },
-        { text: 'When using AI to help brainstorm story ideas, what makes the final work original?', options: ['Your personal creativity & human editing', 'Copying word-for-word', 'Using a faster computer', 'Printing on glossy paper'], answer: 0 },
-        { text: 'Which career focuses on protecting school and corporate networks from cyber attacks?', options: ['Cybersecurity Specialist', 'Hardware Manufacturer', 'Data Entry Clerk', 'Animator'], answer: 0 },
-        { text: 'Autonomous robotic rovers exploring the surface of Mars use AI for ___', options: ['Self-navigation and terrain hazard avoidance', 'Playing video games', 'Browsing social media', 'Printing documents'], answer: 0 },
-        { text: 'Ethical use of AI in school means ___', options: ['Using AI to learn, brainstorm and cite tools responsibly', 'Submitting AI essays as your own', 'Using AI without permission', 'Ignoring accuracy checks'], answer: 0 },
-        { text: 'Which field of computer science teaches machines to learn patterns from data?', options: ['Machine Learning', 'Mechanical Engineering', 'Desktop Publishing', 'Graphic Design'], answer: 0 }
-      ],
-      'year-7': [
-        { text: 'Which part of the computer is known as the "brain" and performs calculations and logical operations?', options: ['Central Processing Unit (CPU)', 'Hard Disk Drive', 'Monitor', 'Keyboard'], answer: 0 },
-        { text: 'Which of the following is strictly an INPUT device used to capture physical photos or documents into digital form?', options: ['Scanner', 'Printer', 'Monitor', 'Projector'], answer: 0 },
-        { text: 'What does the acronym "RAM" stand for in computer memory?', options: ['Random Access Memory', 'Read Access Method', 'Rapid Action Memory', 'Remote Audio Module'], answer: 0 },
-        { text: 'Which type of software controls the computer hardware and allows applications to run?', options: ['Operating System', 'Web Browser', 'Word Processor', 'Spreadsheet'], answer: 0 },
-        { text: 'What is the smallest basic unit of digital data in computing?', options: ['Bit', 'Byte', 'Kilobyte', 'Megabyte'], answer: 0 },
-        { text: 'How many bits make up one single byte?', options: ['8 bits', '4 bits', '16 bits', '32 bits'], answer: 0 },
-        { text: 'Which ancient calculating device used beads sliding on rods for arithmetic operations?', options: ['Abacus', 'Slide Rule', 'Napier Bones', 'Pascaline'], answer: 0 },
-        { text: 'Who is widely regarded as the "Father of Computers" for designing the Analytical Engine?', options: ['Charles Babbage', 'Alan Turing', 'Blaise Pascal', 'John von Neumann'], answer: 0 },
-        { text: 'Which of these is permanent, non-volatile primary memory that stores initial startup instructions?', options: ['ROM (Read Only Memory)', 'RAM', 'Cache Memory', 'Virtual Memory'], answer: 0 },
-        { text: 'What is the standard keyboard shortcut used to COPY highlighted text or items?', options: ['Ctrl + C', 'Ctrl + V', 'Ctrl + X', 'Ctrl + Z'], answer: 0 },
-        { text: 'What is the standard keyboard shortcut used to PASTE copied text or items?', options: ['Ctrl + V', 'Ctrl + P', 'Ctrl + S', 'Ctrl + C'], answer: 0 },
-        { text: 'Which symbol is essential in every email address to separate the username from the domain name?', options: ['@', '#', '$', '&'], answer: 0 },
-        { text: 'A worldwide global network connecting millions of computers together across the planet is the ___', options: ['Internet', 'Intranet', 'Local Area Network', 'Bluetooth'], answer: 0 },
-        { text: 'Which software application is specifically used to view and navigate web pages?', options: ['Web Browser (e.g. Chrome, Edge)', 'Search Engine', 'Spreadsheet', 'Media Player'], answer: 0 },
-        { text: 'In word processing, what does clicking the "B" button on the formatting toolbar do?', options: ['Makes text Bold (darker and thicker)', 'Changes font to Blue', 'Underlines text', 'Converts to Bullet points'], answer: 0 },
-        { text: 'Which storage medium uses laser beams to read and write data on a shiny spinning disc?', options: ['Optical Disc (CD / DVD)', 'Magnetic Hard Drive', 'Solid State Drive', 'Flash Drive'], answer: 0 },
-        { text: 'What do we call raw, unorganized facts and figures before they are processed by a computer?', options: ['Data', 'Information', 'Knowledge', 'Output'], answer: 0 },
-        { text: 'Processed data that is organized, meaningful, and useful for decision making is known as ___', options: ['Information', 'Raw Code', 'Hardware', 'Algorithm'], answer: 0 },
-        { text: 'Which keyboard key is pressed to delete characters located to the left of the blinking cursor?', options: ['Backspace', 'Delete', 'Enter', 'Spacebar'], answer: 0 },
-        { text: 'Which of the following is recommended for good computer ergonomics?', options: ['Keeping monitor screen at eye level with back supported', 'Slouching deep in the chair', 'Placing screen in complete darkness', 'Reaching far away to type'], answer: 0 }
-      ],
-      'year-8': [
-        { text: 'What does the "ALU" component inside the Central Processing Unit stand for?', options: ['Arithmetic Logic Unit', 'Advanced Link Utility', 'Automatic Linear Unit', 'Access Level User'], answer: 0 },
-        { text: 'Which CPU unit directs data flow and coordinates the operations of all computer components?', options: ['Control Unit (CU)', 'Arithmetic Logic Unit (ALU)', 'Cache Memory', 'System Bus'], answer: 0 },
+      'junior-secondary': [
+        { text: 'Which CPU unit carries out all mathematical calculations and logical decision-making?', options: ['Arithmetic Logic Unit (ALU)', 'Control Unit (CU)', 'Cache Memory', 'System Bus'], answer: 0 },
+        { text: 'Which CPU unit directs data flow and coordinates operations of all computer hardware?', options: ['Control Unit (CU)', 'Arithmetic Logic Unit (ALU)', 'Accumulator', 'RAM'], answer: 0 },
+        { text: 'In binary addition, what is the value of 1 + 1 in binary notation?', options: ['10', '2', '11', '01'], answer: 0 },
+        { text: 'What is the decimal equivalent of the binary number 00001100?', options: ['12', '8', '14', '6'], answer: 0 },
         { text: 'Which number system uses base-16 and contains digits 0–9 and letters A–F?', options: ['Hexadecimal', 'Binary', 'Decimal', 'Octal'], answer: 0 },
-        { text: 'What is the binary representation of the decimal number 5?', options: ['101', '110', '011', '100'], answer: 0 },
-        { text: 'Which network topology connects all client computers to a single central switch or hub?', options: ['Star Topology', 'Bus Topology', 'Ring Topology', 'Mesh Topology'], answer: 0 },
-        { text: 'What kind of network covers a small localized geographical area like a school lab or office building?', options: ['LAN (Local Area Network)', 'WAN (Wide Area Network)', 'MAN (Metropolitan Area Network)', 'PAN (Personal Area Network)'], answer: 0 },
-        { text: 'Which high-speed storage device uses flash memory chips instead of moving magnetic platters?', options: ['Solid State Drive (SSD)', 'Hard Disk Drive (HDD)', 'Floppy Disk', 'Magnetic Tape'], answer: 0 },
-        { text: 'What is the main printed circuit board that connects the CPU, RAM, and all other components together?', options: ['Motherboard', 'Expansion Card', 'Sound Card', 'Power Supply'], answer: 0 },
-        { text: 'Which system utility rearranges fragmented files on a hard disk to improve access speed?', options: ['Disk Defragmenter', 'Antivirus', 'File Compression', 'Task Scheduler'], answer: 0 },
-        { text: 'What does the letter "S" stand for in the web protocol "https://"?', options: ['Secure (encrypted)', 'System', 'Standard', 'Speed'], answer: 0 },
-        { text: 'A visual diagram representing an algorithm step-by-step with geometric shapes and arrows is a ___', options: ['Flowchart', 'Pseudocode', 'Wireframe', 'Schematic'], answer: 0 },
-        { text: 'In a standard flowchart, which geometric shape represents a decision point (Yes/No)?', options: ['Diamond', 'Rectangle', 'Oval', 'Parallelogram'], answer: 0 },
-        { text: 'In spreadsheet software like Microsoft Excel, which character MUST begin every formula?', options: ['=', '+', '@', '#'], answer: 0 },
-        { text: 'In an Excel spreadsheet, which formula correctly calculates the sum of cells from A1 to A10?', options: ['=SUM(A1:A10)', '=ADD(A1:A10)', '=TOTAL(A1:A10)', '=COUNT(A1:A10)'], answer: 0 },
-        { text: 'What cyber attack tricks users into revealing confidential passwords via fraudulent emails or websites?', options: ['Phishing', 'Trojan Horse', 'DDoS', 'Spyware'], answer: 0 },
-        { text: 'A network security barrier that monitors and filters traffic between trusted and untrusted networks is a ___', options: ['Firewall', 'Modem', 'Switch', 'Repeater'], answer: 0 },
-        { text: 'Which of the following is an open-source operating system widely used in servers and software development?', options: ['Linux', 'Microsoft Windows', 'Apple macOS', 'iOS'], answer: 0 },
-        { text: 'Approximately how many Megabytes (MB) are in 1 Gigabyte (GB)?', options: ['1024 MB', '100 MB', '500 MB', '10000 MB'], answer: 0 },
-        { text: 'In computer programming, a named container in memory used to store values that can change is a ___', options: ['Variable', 'Constant', 'Function', 'Loop'], answer: 0 },
-        { text: 'What legal framework protects creators from unauthorized copying of their software, music, and writing?', options: ['Copyright and Intellectual Property', 'Creative Commons Zero', 'Public Domain', 'Fair Use Only'], answer: 0 }
+        { text: 'In the Von Neumann architecture, which register holds the memory address of the next instruction to fetch?', options: ['Program Counter (PC)', 'Accumulator (ACC)', 'Memory Data Register (MDR)', 'Current Instruction Register (CIR)'], answer: 0 },
+        { text: 'Which network topology connects all nodes to a single central hub or switch?', options: ['Star Topology', 'Bus Topology', 'Ring Topology', 'Mesh Topology'], answer: 0 },
+        { text: 'What type of computer network is restricted to a small local area like a single school building or computer lab?', options: ['LAN (Local Area Network)', 'WAN (Wide Area Network)', 'MAN (Metropolitan Area Network)', 'PAN (Personal Area Network)'], answer: 0 },
+        { text: 'In a flowchart, which geometric shape is standardly used to represent an IF/THEN decision?', options: ['Diamond', 'Rectangle', 'Oval', 'Parallelogram'], answer: 0 },
+        { text: 'In spreadsheet software (like Excel), which symbol must begin every formula?', options: ['=', '+', '@', '#'], answer: 0 },
+        { text: 'Which Excel formula calculates the total sum of cell values from B1 to B20?', options: ['=SUM(B1:B20)', '=ADD(B1:B20)', '=TOTAL(B1:B20)', '=COUNT(B1:B20)'], answer: 0 },
+        { text: 'In Python, which built-in function is used to display output text on the console?', options: ['print()', 'output()', 'echo()', 'display()'], answer: 0 },
+        { text: 'What will the Python expression "17 % 5" evaluate to?', options: ['2 (the remainder)', '3', '3.4', '0'], answer: 0 },
+        { text: 'What is the primary key in a relational database table?', options: ['A field that uniquely identifies every individual record', 'A password used to open the database', 'The largest number in a table', 'A foreign connection link'], answer: 0 },
+        { text: 'Which international query language is used to retrieve, update, and manage data in relational databases?', options: ['SQL (Structured Query Language)', 'HTML', 'Python', 'CSS'], answer: 0 },
+        { text: 'What hardware or software barrier monitors and filters network traffic based on security rules?', options: ['Firewall', 'Modem', 'Switch', 'Repeater'], answer: 0 },
+        { text: 'What security measure requires users to verify identity with a password plus a phone code?', options: ['Two-Factor Authentication (2FA)', 'Single Sign-On (SSO)', 'Captcha', 'Antivirus'], answer: 0 },
+        { text: 'Which search algorithm checks each element sequentially one by one from start to end?', options: ['Linear Search', 'Binary Search', 'Hash Lookup', 'Bubble Search'], answer: 0 },
+        { text: 'What condition is strictly required before a Binary Search can be conducted on a list?', options: ['The list must be sorted in order', 'The list must contain only numbers', 'The list must have an even number of elements', 'The list must be stored online'], answer: 0 },
+        { text: 'The digital trail of activities, posts, and websites you leave behind while using the internet is your ___', options: ['Digital Footprint', 'IP Pathway', 'Cache Archive', 'Cookie Token'], answer: 0 }
       ],
-      'year-11': [
-        { text: 'What is the default file extension for documents created in Microsoft Word 2007 and later?', options: ['.docx', '.doc', '.txt', '.rtf'], answer: 0 },
-        { text: 'Which keyboard shortcut is used to undo the last action in MS Word?', options: ['Ctrl + Z', 'Ctrl + Y', 'Ctrl + U', 'Ctrl + X'], answer: 0 },
-        { text: 'The feature used to send the same letter to multiple recipients is called:', options: ['Mail Merge', 'Macros', 'Hyperlink', 'AutoFormat'], answer: 0 },
-        { text: 'Which alignment justifies the text on both the left and right margins?', options: ['Justify', 'Left Align', 'Center', 'Right Align'], answer: 0 },
-        { text: 'Where is the zoom slider typically located in the MS Word window?', options: ['Status bar', 'Title bar', 'Ribbon', 'Quick Access Toolbar'], answer: 0 },
-        { text: 'To move the cursor to the beginning of a document, you press:', options: ['Ctrl + Home', 'Home', 'Page Up', 'Alt + Home'], answer: 0 },
-        { text: 'The intersection of a row and a column in a Word table is called a:', options: ['Cell', 'Block', 'Grid', 'Box'], answer: 0 },
-        { text: 'What is the shortcut key to print a document?', options: ['Ctrl + P', 'Shift + P', 'Alt + P', 'Windows + P'], answer: 0 },
-        { text: 'Which tab in the Ribbon contains the Header and Footer commands?', options: ['Insert', 'Home', 'Page Layout', 'View'], answer: 0 },
-        { text: 'Which key combination makes the selected text bold?', options: ['Ctrl + B', 'Alt + B', 'Shift + B', 'Tab + B'], answer: 0 },
-        { text: 'The Thesaurus tool in MS Word is primarily used for:', options: ['Finding synonyms and antonyms', 'Spelling checks', 'Grammar corrections', 'Language translation'], answer: 0 },
-        { text: 'What is the default font style in Microsoft Word 2013 and later?', options: ['Calibri', 'Arial', 'Times New Roman', 'Tahoma'], answer: 0 },
-        { text: 'Portrait and Landscape are examples of:', options: ['Page Orientation', 'Page Size', 'Page Margin', 'Page Setup'], answer: 0 },
-        { text: 'A Drop Cap is used in a document to:', options: ['Begin a paragraph with a large dropped initial capital letter', 'Drop all capital letters', 'Convert text to small caps', 'Remove capitalization'], answer: 0 },
-        { text: 'The expression x² is an example of:', options: ['Superscript', 'Subscript', 'Strikethrough', 'Small caps'], answer: 0 },
-        { text: 'What is the default file extension for an Excel spreadsheet?', options: ['.xls / .xlsx', '.doc / .docx', '.ppt / .pptx', '.exe'], answer: 0 },
-        { text: 'A collection of worksheets in Excel is known as a:', options: ['Workbook', 'Workspace', 'File', 'Folder'], answer: 0 },
-        { text: 'In a spreadsheet, all formulas must begin with which symbol?', options: ['=', '+', '-', '*'], answer: 0 },
-        { text: 'What is the correct cell address for the intersection of row 5 and column B?', options: ['B5', '5B', 'B-5', '5-B'], answer: 0 },
-        { text: 'Which built-in function is used to calculate the total of a range of values?', options: ['SUM()', 'ADD()', 'TOTAL()', 'PLUS()'], answer: 0 },
-        { text: 'An absolute cell reference is represented by which symbol?', options: ['$', '#', '&', '@'], answer: 0 },
-        { text: 'How do you highlight an entire column in a spreadsheet?', options: ['Click the column heading letter', 'Press Ctrl + C', 'Press Ctrl + A', 'Double-click the cell'], answer: 0 },
-        { text: 'By default, how many worksheets are present in a new Excel 2010 workbook?', options: ['3', '1', '2', '4'], answer: 0 },
-        { text: 'Which chart type is best for showing proportions or percentages of a whole?', options: ['Pie chart', 'Bar chart', 'Line chart', 'Scatter plot'], answer: 0 },
-        { text: 'Which function is used to find the highest number in a range of cells?', options: ['MAX()', 'HIGH()', 'TOP()', 'UPPER()'], answer: 0 },
-        { text: 'What does a cell displaying "######" indicate?', options: ['The column is not wide enough to display the data', 'A formula error', 'The cell is protected', 'A spelling mistake'], answer: 0 },
-        { text: 'The active cell in a worksheet is indicated by:', options: ['A dark, heavy border', 'A red border', 'A dotted border', 'Blinking text'], answer: 0 },
-        { text: 'What does the "V" in VLOOKUP stand for?', options: ['Vertical', 'Visual', 'Value', 'Variable'], answer: 0 },
-        { text: 'Which keyboard shortcut is used to select all cells in a worksheet?', options: ['Ctrl + A', 'Ctrl + S', 'Alt + A', 'Shift + A'], answer: 0 },
-        { text: 'To arrange data in a specific order (alphabetical or numerical) is called:', options: ['Sorting', 'Filtering', 'Validating', 'Formatting'], answer: 0 }
-      ],
-      'year-9': [
-        { text: 'Which of the following best defines an "Algorithm" in computer science?', options: ['A step-by-step set of instructions to solve a problem', 'The physical hardware inside a computer', 'A malicious program that damages files', 'The speed of an internet connection'], answer: 0 },
-        { text: 'In binary addition, what is the result of adding 1 + 1?', options: ['10 (binary for 2)', '2', '11', '01'], answer: 0 },
-        { text: 'What is the decimal (base-10) equivalent of the 8-bit binary number 00001010?', options: ['10', '8', '12', '16'], answer: 0 },
-        { text: 'In the Von Neumann architecture, which special register holds the memory address of the next instruction to be fetched?', options: ['Program Counter (PC)', 'Accumulator (ACC)', 'Memory Data Register (MDR)', 'Current Instruction Register (CIR)'], answer: 0 },
-        { text: 'What does the CPU clock speed measured in Gigahertz (GHz) indicate?', options: ['The number of fetch-decode-execute cycles the CPU can execute per second', 'The amount of storage on the hard drive', 'The speed of the internet connection', 'The time it takes to boot the computer'], answer: 0 },
-        { text: 'In Python programming, which data type is best suited to store a student\'s test score with a decimal point (e.g. 87.5)?', options: ['Floating point (float)', 'Integer (int)', 'Boolean (bool)', 'String (str)'], answer: 0 },
-        { text: 'What will the following Python code output: print(15 // 4)?', options: ['3', '3.75', '4', '3 remainder 3'], answer: 0 },
-        { text: 'Which computational thinking technique involves breaking a complex problem down into smaller, manageable sub-problems?', options: ['Decomposition', 'Abstraction', 'Pattern Recognition', 'Evaluation'], answer: 0 },
-        { text: 'Which computational thinking technique involves focusing only on the essential details and ignoring unnecessary information?', options: ['Abstraction', 'Decomposition', 'Automation', 'Iteration'], answer: 0 },
-        { text: 'What is the unique numerical address assigned to every device connected to the Internet called?', options: ['IP Address', 'MAC Address', 'URL Link', 'Domain Name'], answer: 0 },
-        { text: 'Which network system translates human-friendly web addresses like www.futurein.org into machine-readable IP addresses?', options: ['DNS (Domain Name System)', 'DHCP', 'FTP', 'SMTP'], answer: 0 },
-        { text: 'In HTML, which tag is correctly used to create a clickable hyperlink to another web page?', options: ['<a>', '<link>', '<href>', '<url>'], answer: 0 },
-        { text: 'In CSS styling, which property is used to change the text color of an HTML element?', options: ['color', 'font-color', 'text-style', 'background-color'], answer: 0 },
-        { text: 'In a relational database table, what is a column that uniquely identifies each individual record called?', options: ['Primary Key', 'Foreign Key', 'Candidate Index', 'Composite Key'], answer: 0 },
-        { text: 'Which database command language is the international standard used to query and manipulate relational databases?', options: ['SQL (Structured Query Language)', 'HTML', 'Python', 'XML'], answer: 0 },
-        { text: 'What type of malware secretly records keyboard strokes to steal usernames and passwords?', options: ['Keylogger (Spyware)', 'Ransomware', 'Adware', 'Worm'], answer: 0 },
-        { text: 'What security practice requires a user to provide two different forms of identification before gaining account access?', options: ['Two-Factor Authentication (2FA)', 'Single Sign-On (SSO)', 'Captcha Verification', 'Password Recovery'], answer: 0 },
-        { text: 'The trail of data you leave behind whenever you use the internet, browse websites, or post online is known as your ___', options: ['Digital Footprint', 'IP Pathway', 'Cache Registry', 'Cookie Monster'], answer: 0 },
-        { text: 'Which search algorithm inspects each item in a list one by one from the beginning until the target item is found?', options: ['Linear Search', 'Binary Search', 'Hash Lookup', 'Bubble Search'], answer: 0 },
-        { text: 'What condition MUST be met before a Binary Search algorithm can be performed on a list?', options: ['The list must be sorted in order', 'The list must contain only numbers', 'The list must have an even number of items', 'The list must be stored in the cloud'], answer: 0 }
-      ],
-      'year-10': [
-        { text: 'Which software translator converts source code into machine code line-by-line and executes it immediately?', options: ['Interpreter', 'Compiler', 'Assembler', 'Linker'], answer: 0 },
-        { text: 'What is the key advantage of a Compiler over an Interpreter?', options: ['Compiled code produces an executable file that runs faster without needing source code', 'Compilers execute code line by line with no memory', 'Compilers never report syntax errors', 'Compilers are only used for text formatting'], answer: 0 },
-        { text: 'Which logic gate outputs TRUE (1) only when BOTH of its inputs are TRUE (1)?', options: ['AND Gate', 'OR Gate', 'NOT Gate', 'XOR Gate'], answer: 0 },
-        { text: 'What is the output of an XOR (Exclusive OR) gate when both inputs are 1?', options: ['0', '1', 'Undefined', '2'], answer: 0 },
-        { text: 'How many unique characters can standard 7-bit ASCII represent?', options: ['128', '64', '256', '65,536'], answer: 0 },
-        { text: 'Why was Unicode developed to replace standard ASCII?', options: ['To support symbols and writing systems of all languages worldwide using 16/32 bits', 'To make file sizes smaller', 'To remove vowels from text', 'To encrypt all text messages'], answer: 0 },
-        { text: 'In digital sound representation, what does the "Sampling Rate" refer to?', options: ['The number of audio samples captured per second (measured in Hz)', 'The volume of the sound wave', 'The physical length of the audio cable', 'The number of speakers playing the sound'], answer: 0 },
-        { text: 'What is the total number of colors that can be represented with an 8-bit color depth per pixel?', options: ['256 colors', '16 colors', '64 colors', '16.7 million colors'], answer: 0 },
-        { text: 'In packet switching networks, what does each data packet contain in its header?', options: ['Source IP, destination IP, packet sequence number, and checksum', 'The user\'s credit card number', 'The browser history', 'The monitor resolution'], answer: 0 },
-        { text: 'Which protocol is responsible for securely transmitting encrypted web pages between a client and a web server?', options: ['HTTPS (using SSL/TLS)', 'HTTP', 'FTP', 'POP3'], answer: 0 },
-        { text: 'What type of malicious attack floods a target server with bogus traffic to knock it offline?', options: ['DDoS (Distributed Denial of Service)', 'SQL Injection', 'Phishing', 'Brute Force'], answer: 0 },
-        { text: 'What is the primary purpose of a SQL injection attack?', options: ['To exploit unsanitized user inputs to manipulate and access database records', 'To physically damage the hard disk drive', 'To speed up database searches', 'To change the color scheme of a website'], answer: 0 },
-        { text: 'In SQL, which query clause filters query results to include only records matching a specific condition?', options: ['WHERE', 'GROUP BY', 'ORDER BY', 'SELECT'], answer: 0 },
-        { text: 'What is the worst-case time complexity of the Linear Search algorithm for a list of n elements?', options: ['O(n)', 'O(1)', 'O(log n)', 'O(n²)'], answer: 0 },
-        { text: 'What is the average time complexity of the Binary Search algorithm for a list of n elements?', options: ['O(log n)', 'O(1)', 'O(n)', 'O(n²)'], answer: 0 },
-        { text: 'In sorting algorithms, which comparison sort repeatedly steps through the list, swaps adjacent elements that are out of order, until sorted?', options: ['Bubble Sort', 'Merge Sort', 'Quick Sort', 'Binary Sort'], answer: 0 },
-        { text: 'In Object-Oriented Programming (OOP), what is the blueprint or template from which individual objects are created?', options: ['Class', 'Method', 'Property', 'Variable'], answer: 0 },
-        { text: 'What OOP principle bundles data (attributes) and methods that operate on that data within a single unit and restricts direct outside access?', options: ['Encapsulation', 'Inheritance', 'Polymorphism', 'Recursion'], answer: 0 },
-        { text: 'Which type of secondary storage relies on microscopic magnetic charge patterns on spinning aluminum platters?', options: ['Hard Disk Drive (HDD)', 'Solid State Drive (SSD)', 'DVD-ROM', 'USB Flash Drive'], answer: 0 },
-        { text: 'The environmental issue caused by discarded electronics containing toxic materials like lead and mercury is known as ___', options: ['E-Waste (Electronic Waste)', 'Digital Smog', 'Cyber Pollution', 'Carbon Footprint'], answer: 0 }
-      ],
-      'year-12': [
-        { text: 'In the Von Neumann CPU cycle, what happens during the "Decode" stage?', options: ['The Control Unit interprets the opcode and addressing mode in the Current Instruction Register (CIR)', 'Data is read from the hard disk', 'The ALU computes arithmetic logic', 'Results are written back to main memory'], answer: 0 },
-        { text: 'Which CPU register stores the result of the most recent mathematical or logic operation executed by the ALU?', options: ['Accumulator (ACC)', 'Memory Address Register (MAR)', 'Program Counter (PC)', 'Stack Pointer (SP)'], answer: 0 },
-        { text: 'Which data structure operates on a Last-In, First-Out (LIFO) access order?', options: ['Stack', 'Queue', 'Linked List', 'Binary Tree'], answer: 0 },
-        { text: 'In a Queue data structure (FIFO), from which end are new items inserted?', options: ['Rear / Tail', 'Front / Head', 'Middle', 'Top'], answer: 0 },
-        { text: 'What is the best-case and worst-case time complexity of Merge Sort on an array of n elements?', options: ['O(n log n) in all cases', 'O(n) best case, O(n²) worst case', 'O(1) best case, O(n) worst case', 'O(n²) in all cases'], answer: 0 },
-        { text: 'Which algorithm design paradigm divides a problem into subproblems, solves each recursively, and combines the solutions (e.g. Merge Sort)?', options: ['Divide and Conquer', 'Greedy Approach', 'Dynamic Programming', 'Brute Force'], answer: 0 },
-        { text: 'What is the primary purpose of Operating System virtual memory?', options: ['To use secondary storage (pagefile/swap) to extend physical RAM when RAM is exhausted', 'To simulate 3D virtual reality headsets', 'To speed up CPU clock cycles', 'To encrypt network traffic'], answer: 0 },
-        { text: 'In OS memory management, what is "Paging"?', options: ['Physical memory is divided into fixed-size frames and logical memory into pages of equal size', 'Programs are printed onto paper pages', 'Web pages are downloaded simultaneously', 'The CPU switches power modes'], answer: 0 },
-        { text: 'What is an OS interrupt in computer architecture?', options: ['A signal emitted by hardware or software alerting the CPU to immediately suspend its current task and handle an event', 'A physical break in the motherboard wire', 'A power outage event', 'A corrupted storage sector'], answer: 0 },
-        { text: 'In asymmetric public-key cryptography, which key is used to decrypt a message that was encrypted using the recipient\'s public key?', options: ['The recipient\'s private key', 'The sender\'s public key', 'The sender\'s private key', 'A shared symmetric secret key'], answer: 0 },
-        { text: 'What is the role of a Digital Certificate issued by a Certificate Authority (CA) in HTTPS?', options: ['It authenticates the web server\'s identity and binds its public key to the domain', 'It pays for web hosting fees', 'It accelerates download speeds', 'It replaces the need for a firewall'], answer: 0 },
-        { text: 'In the Software Development Life Cycle (SDLC), what distinguishes the Agile methodology from the traditional Waterfall model?', options: ['Agile uses iterative sprints with continuous user feedback, while Waterfall follows rigid sequential phases', 'Agile requires no testing', 'Waterfall is only used for mobile apps', 'Agile never writes documentation'], answer: 0 },
-        { text: 'In database design, what is the goal of First Normal Form (1NF)?', options: ['Ensuring all column values are atomic (no repeating groups or multi-valued fields) with a primary key', 'Removing all foreign keys', 'Combining all tables into a single giant table', 'Encrypting every table column'], answer: 0 },
-        { text: 'In relational database theory, what does Third Normal Form (3NF) eliminate?', options: ['Transitive dependencies (non-key attributes depending on other non-key attributes)', 'Partial dependencies', 'Primary keys', 'Indexes'], answer: 0 },
-        { text: 'In database transactions, what does the "A" in ACID properties stand for?', options: ['Atomicity (all changes in a transaction succeed or all roll back)', 'Authentication', 'Asynchronous', 'Availability'], answer: 0 },
-        { text: 'In machine learning, what type of learning trains models using labeled input-output pairs?', options: ['Supervised Learning', 'Unsupervised Learning', 'Reinforcement Learning', 'Heuristic Learning'], answer: 0 },
-        { text: 'In assembly language, what does an "Opcode" (operation code) specify?', options: ['The specific operation or instruction to be performed by the processor (e.g., ADD, MOV, JMP)', 'The name of the programmer', 'The memory address location', 'The file size in bytes'], answer: 0 },
-        { text: 'In assembly addressing modes, what is "Immediate Addressing"?', options: ['The operand value itself is directly specified in the instruction rather than an address', 'The address points to a register', 'The CPU waits 0 cycles', 'The instruction is cached in L1'], answer: 0 },
-        { text: 'In modern cloud computing architecture, what is "Serverless Computing" (e.g. AWS Lambda)?', options: ['An execution model where the cloud provider dynamically manages server allocation and provisioning on demand', 'Computing without any physical computers existing', 'Computers operating completely without internet', 'A local desktop application'], answer: 0 },
-        { text: 'What is the fundamental unit of information in quantum computing that can exist in a superposition of states?', options: ['Qubit (Quantum Bit)', 'Bit', 'Byte', 'Flop'], answer: 0 }
+      'senior-secondary': [
+        { text: 'Which software translator translates high-level code into machine code line-by-line and executes it immediately?', options: ['Interpreter', 'Compiler', 'Assembler', 'Linker'], answer: 0 },
+        { text: 'What is the main operational advantage of compiled programs over interpreted programs?', options: ['Compiled executables run significantly faster and do not require the original source code to execute', 'Compilers use zero RAM memory', 'Compilers never produce syntax errors', 'Compilers work only with text formatting'], answer: 0 },
+        { text: 'Which logic gate outputs TRUE (1) if and only if BOTH input signals are TRUE (1)?', options: ['AND Gate', 'OR Gate', 'NOT Gate', 'XOR Gate'], answer: 0 },
+        { text: 'What is the output of a 2-input XOR (Exclusive OR) gate when both inputs are 1?', options: ['0', '1', 'Undefined', '2'], answer: 0 },
+        { text: 'Why was Unicode developed as the modern standard over 7-bit/8-bit ASCII?', options: ['To support characters and symbols from all living languages across the globe using 16/32 bits', 'To decrease all file sizes', 'To eliminate punctuation from computer files', 'To encrypt web traffic'], answer: 0 },
+        { text: 'In digital audio recording, what does the "Sampling Rate" (measured in Hz) specify?', options: ['The number of audio frequency measurements recorded per second', 'The volume loudness of the speaker', 'The length of the audio file in bytes', 'The number of audio channels'], answer: 0 },
+        { text: 'In packet-switched computer networks, what information is included in each packet\'s header?', options: ['Source IP, destination IP, packet sequence number, and checksum error data', 'The computer monitor resolution', 'The user credit card number', 'The browser homepage'], answer: 0 },
+        { text: 'Which cryptographic protocol encrypts web traffic and secures HTTPS communications using digital certificates?', options: ['TLS / SSL', 'FTP', 'SMTP', 'DHCP'], answer: 0 },
+        { text: 'In Object-Oriented Programming (OOP), what is the blueprint from which objects are instantiated?', options: ['Class', 'Method', 'Variable', 'Module'], answer: 0 },
+        { text: 'Which OOP pillar involves bundling attributes and methods together and hiding internal state from outside direct modification?', options: ['Encapsulation', 'Inheritance', 'Polymorphism', 'Abstraction'], answer: 0 },
+        { text: 'What is the average and worst-case time complexity of Merge Sort on an array of n items?', options: ['O(n log n)', 'O(n²)', 'O(n)', 'O(1)'], answer: 0 },
+        { text: 'What is the worst-case time complexity of a Linear Search on an unsorted list of n elements?', options: ['O(n)', 'O(log n)', 'O(1)', 'O(n log n)'], answer: 0 },
+        { text: 'What is the average time complexity of a Binary Search on a sorted array of n elements?', options: ['O(log n)', 'O(n)', 'O(1)', 'O(n²)'], answer: 0 },
+        { text: 'Which data structure adheres strictly to the Last-In, First-Out (LIFO) protocol?', options: ['Stack', 'Queue', 'Linked List', 'Array'], answer: 0 },
+        { text: 'In an Operating System, what mechanism enables physical RAM to be extended using designated hard disk storage space?', options: ['Virtual Memory (Paging / Swap)', 'Overclocking', 'Defragmentation', 'System Bus Multiplexing'], answer: 0 },
+        { text: 'In asymmetric cryptography, which cryptographic key is kept secret and used to decrypt messages encrypted by the sender?', options: ['The recipient\'s Private Key', 'The sender\'s Public Key', 'A shared symmetric secret key', 'The Certificate Authority key'], answer: 0 },
+        { text: 'In relational database design, what does Third Normal Form (3NF) eliminate?', options: ['Transitive dependencies (non-key fields depending on other non-key fields)', 'Primary keys', 'Foreign key relationships', 'Atomic attributes'], answer: 0 },
+        { text: 'In database transactions, what does the "A" in the ACID guarantee signify?', options: ['Atomicity (all operations within the transaction succeed, or the entire transaction is rolled back)', 'Authentication', 'Asynchrony', 'Accessibility'], answer: 0 },
+        { text: 'In the Software Development Life Cycle (SDLC), what key feature distinguishes Agile from traditional Waterfall development?', options: ['Agile relies on iterative short sprints with continuous stakeholder feedback rather than rigid sequential stages', 'Agile prohibits testing', 'Waterfall is exclusive to web development', 'Agile produces no documentation'], answer: 0 },
+        { text: 'In machine learning, what category of learning involves training an algorithm using labeled training data with known correct outputs?', options: ['Supervised Learning', 'Unsupervised Learning', 'Reinforcement Learning', 'Heuristic Learning'], answer: 0 }
       ]
     };
 
     db.exec('BEGIN');
     for (const [classId, questions] of Object.entries(competitionBank)) {
-      q.deleteCompQuestions.run(classId);
-      questions.forEach((x, i) => {
-        q.insertCompQuestion.run(classId, i, x.text, JSON.stringify(x.options), x.answer);
-      });
+      const existing = q.compQuestionsFor.all(classId);
+      if (existing.length === 0) {
+        questions.forEach((x, i) => {
+          q.insertCompQuestion.run(classId, i, x.text, JSON.stringify(x.options), x.answer);
+        });
+      }
     }
     db.exec('COMMIT');
     console.log('[COMPETITION] Seeded competition question banks successfully.');
@@ -1128,7 +1000,7 @@ function regradeZeroAttempts() {
   try {
     const zeroAttempts = db.prepare(`SELECT id, name, school, class_id, answers, total, score, started_at, finished_at, duration_ms, answer_key FROM attempts WHERE score = 0 AND answers IS NOT NULL AND answers != '[]'`).all();
     for (const att of zeroAttempts) {
-      const cls = CLASS_BY_ID.get(att.class_id);
+      const cls = COMP_CAT_BY_ID.get(att.class_id) || CLASS_BY_ID.get(att.class_id);
       if (!cls) continue;
       const questions = q.questionsFor.all(cls.id);
       if (questions.length > 0) {
@@ -1231,7 +1103,7 @@ function getCompetitionState() {
 function compClassSummary() {
   const counts = Object.fromEntries(q.compCounts.all().map((r) => [r.class_id, r.n]));
   const attempts = Object.fromEntries(q.compAttemptCounts.all().map((r) => [r.class_id, r.n]));
-  return CLASSES.map((c) => ({
+  return COMPETITION_CATEGORIES.map((c) => ({
     ...c,
     questions: counts[c.id] || 0,
     attempts: attempts[c.id] || 0,
@@ -1708,7 +1580,7 @@ async function submitQuiz(req, res) {
   // Resilient fallback: Server restarted or attemptId lost/expired during the quiz, but student finished!
   const name = clean(body.name);
   const school = clean(body.school);
-  const cls = CLASS_BY_ID.get(String(body.classId || ''));
+  const cls = COMP_CAT_BY_ID.get(String(body.classId || '')) || CLASS_BY_ID.get(String(body.classId || ''));
   if (name.length >= 2 && school.length >= 2 && cls) {
     const id = attemptId || crypto.randomUUID();
     const questions = q.questionsFor.all(cls.id);
@@ -1798,11 +1670,11 @@ async function startCompAttempt(req, res) {
   }
   const name = clean(body.name);
   const school = clean(body.school);
-  const cls = CLASS_BY_ID.get(String(body.classId || ''));
+  const cls = COMP_CAT_BY_ID.get(String(body.classId || '')) || CLASS_BY_ID.get(String(body.classId || ''));
   if (name.length < 2 || school.length < 2) {
     return sendJson(res, 400, { error: 'Please enter your name and school.' });
   }
-  if (!cls) return sendJson(res, 400, { error: 'Please select your class.' });
+  if (!cls) return sendJson(res, 400, { error: 'Please select your competition category.' });
 
   let questions = q.compQuestionsFor.all(cls.id);
   if (questions.length === 0) {
@@ -2062,15 +1934,15 @@ async function adminRoutes(req, res, p, url) {
   }
   if (p === '/api/admin/competition/questions' && req.method === 'GET') {
     const classId = String(url.searchParams.get('class') || '').trim();
-    const cls = CLASS_BY_ID.get(classId);
-    if (!cls) return sendJson(res, 400, { error: 'Unknown class' });
+    const cls = COMP_CAT_BY_ID.get(classId) || CLASS_BY_ID.get(classId);
+    if (!cls) return sendJson(res, 400, { error: 'Unknown competition category or class' });
     const rows = q.compQuestionsFor.all(cls.id).map(r => ({ text: r.text, options: JSON.parse(r.options), answer: r.answer }));
     return sendJson(res, 200, { classId: cls.id, classLabel: cls.label, questions: rows });
   }
   if (p === '/api/admin/competition/questions' && req.method === 'PUT') {
     const body = await readBody(req);
-    const cls = CLASS_BY_ID.get(String(body.classId || ''));
-    if (!cls) return sendJson(res, 400, { error: 'Unknown class' });
+    const cls = COMP_CAT_BY_ID.get(String(body.classId || '')) || CLASS_BY_ID.get(String(body.classId || ''));
+    if (!cls) return sendJson(res, 400, { error: 'Unknown competition category or class' });
     const v = validateQuestions(body.questions);
     if (v.error) return sendJson(res, 400, { error: v.error });
     db.exec('BEGIN');
