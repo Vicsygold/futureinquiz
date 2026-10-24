@@ -656,6 +656,8 @@ function escapeHtml(s){
 
 /* ================= EVENT HANDLERS ================= */
 $('startBtn').onclick = startQuiz;
+$('childName').addEventListener('keydown', (e) => { if (e.key === 'Enter') startQuiz(); });
+$('childSchool').addEventListener('keydown', (e) => { if (e.key === 'Enter') startQuiz(); });
 $('nextBtn').onclick = nextQuestion;
 $('sayBtn').onclick = () => speak(QUESTIONS[currentIdx].q);
 $('submitExamBtn').onclick = finishQuiz;

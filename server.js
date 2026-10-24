@@ -759,6 +759,123 @@ function seedYear11() {
 }
 seedYear11();
 
+function seedYear9() {
+  try {
+    const existing = q.questionsFor.all('year-9');
+    if (existing.length === 0) {
+      const year9Qs = [
+        { text: 'Which of the following best defines an "Algorithm" in computer science?', options: ['A step-by-step set of instructions to solve a problem', 'The physical hardware inside a computer', 'A malicious program that damages files', 'The speed of an internet connection'], answer: 0 },
+        { text: 'In binary addition, what is the result of adding 1 + 1?', options: ['2', '10 (binary for 2)', '11', '01'], answer: 1 },
+        { text: 'What is the decimal (base-10) equivalent of the 8-bit binary number 00001010?', options: ['8', '10', '12', '16'], answer: 1 },
+        { text: 'In the Von Neumann architecture, which special register holds the memory address of the next instruction to be fetched?', options: ['Accumulator (ACC)', 'Program Counter (PC)', 'Memory Data Register (MDR)', 'Current Instruction Register (CIR)'], answer: 1 },
+        { text: 'What does the CPU clock speed measured in Gigahertz (GHz) indicate?', options: ['The number of fetch-decode-execute cycles the CPU can execute per second', 'The amount of storage on the hard drive', 'The speed of the internet connection', 'The time it takes to boot the computer'], answer: 0 },
+        { text: 'In Python programming, which data type is best suited to store a student\'s test score with a decimal point (e.g. 87.5)?', options: ['Integer (int)', 'Boolean (bool)', 'Floating point (float)', 'String (str)'], answer: 2 },
+        { text: 'What will the following Python code output: print(15 // 4)?', options: ['3.75', '3', '4', '3 remainder 3'], answer: 1 },
+        { text: 'Which computational thinking technique involves breaking a complex problem down into smaller, manageable sub-problems?', options: ['Decomposition', 'Abstraction', 'Pattern Recognition', 'Evaluation'], answer: 0 },
+        { text: 'Which computational thinking technique involves focusing only on the essential details and ignoring unnecessary information?', options: ['Decomposition', 'Abstraction', 'Automation', 'Iteration'], answer: 1 },
+        { text: 'What is the unique numerical address assigned to every device connected to the Internet called?', options: ['MAC Address', 'IP Address', 'URL Link', 'Domain Name'], answer: 1 },
+        { text: 'Which network system translates human-friendly web addresses like www.futurein.org into machine-readable IP addresses?', options: ['DNS (Domain Name System)', 'DHCP', 'FTP', 'SMTP'], answer: 0 },
+        { text: 'In HTML, which tag is correctly used to create a clickable hyperlink to another web page?', options: ['<link>', '<href>', '<a>', '<url>'], answer: 2 },
+        { text: 'In CSS styling, which property is used to change the text color of an HTML element?', options: ['font-color', 'color', 'text-style', 'background-color'], answer: 1 },
+        { text: 'In a relational database table, what is a column that uniquely identifies each individual record called?', options: ['Foreign Key', 'Primary Key', 'Candidate Index', 'Composite Key'], answer: 1 },
+        { text: 'Which database command language is the international standard used to query and manipulate relational databases?', options: ['HTML', 'SQL (Structured Query Language)', 'Python', 'XML'], answer: 1 },
+        { text: 'What type of malware secretly records keyboard strokes to steal usernames and passwords?', options: ['Ransomware', 'Keylogger (Spyware)', 'Adware', 'Worm'], answer: 1 },
+        { text: 'What security practice requires a user to provide two different forms of identification before gaining account access?', options: ['Single Sign-On (SSO)', 'Two-Factor Authentication (2FA)', 'Captcha Verification', 'Password Recovery'], answer: 1 },
+        { text: 'The trail of data you leave behind whenever you use the internet, browse websites, or post online is known as your ___', options: ['Digital Footprint', 'IP Pathway', 'Cache Registry', 'Cookie Monster'], answer: 0 },
+        { text: 'Which search algorithm inspects each item in a list one by one from the beginning until the target item is found?', options: ['Binary Search', 'Linear Search', 'Hash Lookup', 'Bubble Search'], answer: 1 },
+        { text: 'What condition MUST be met before a Binary Search algorithm can be performed on a list?', options: ['The list must be sorted in order', 'The list must contain only numbers', 'The list must have an even number of items', 'The list must be stored in the cloud'], answer: 0 }
+      ];
+      db.exec('BEGIN');
+      year9Qs.forEach((x, i) => q.insertQuestion.run('year-9', i, x.text, JSON.stringify(x.options), x.answer));
+      q.setPublished.run('year-9', 1, Date.now());
+      db.exec('COMMIT');
+      console.log('[SEED] Successfully seeded Year 9 question bank.');
+    }
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+    console.warn('[SEED] Year 9 seed notice:', e.message);
+  }
+}
+seedYear9();
+
+function seedYear10() {
+  try {
+    const existing = q.questionsFor.all('year-10');
+    if (existing.length === 0) {
+      const year10Qs = [
+        { text: 'Which software translator converts source code into machine code line-by-line and executes it immediately?', options: ['Compiler', 'Interpreter', 'Assembler', 'Linker'], answer: 1 },
+        { text: 'What is the key advantage of a Compiler over an Interpreter?', options: ['Compiled code produces an executable file that runs faster without needing source code', 'Compilers execute code line by line with no memory', 'Compilers never report syntax errors', 'Compilers are only used for text formatting'], answer: 0 },
+        { text: 'Which logic gate outputs TRUE (1) only when BOTH of its inputs are TRUE (1)?', options: ['OR Gate', 'AND Gate', 'NOT Gate', 'XOR Gate'], answer: 1 },
+        { text: 'What is the output of an XOR (Exclusive OR) gate when both inputs are 1?', options: ['0', '1', 'Undefined', '2'], answer: 0 },
+        { text: 'How many unique characters can standard 7-bit ASCII represent?', options: ['64', '128', '256', '65,536'], answer: 1 },
+        { text: 'Why was Unicode developed to replace standard ASCII?', options: ['To support symbols and writing systems of all languages worldwide using 16/32 bits', 'To make file sizes smaller', 'To remove vowels from text', 'To encrypt all text messages'], answer: 0 },
+        { text: 'In digital sound representation, what does the "Sampling Rate" refer to?', options: ['The volume of the sound wave', 'The number of audio samples captured per second (measured in Hz)', 'The physical length of the audio cable', 'The number of speakers playing the sound'], answer: 1 },
+        { text: 'What is the total number of colors that can be represented with an 8-bit color depth per pixel?', options: ['16 colors', '64 colors', '256 colors', '16.7 million colors'], answer: 2 },
+        { text: 'In packet switching networks, what does each data packet contain in its header?', options: ['Source IP, destination IP, packet sequence number, and checksum', 'The user\'s credit card number', 'The browser history', 'The monitor resolution'], answer: 0 },
+        { text: 'Which protocol is responsible for securely transmitting encrypted web pages between a client and a web server?', options: ['HTTP', 'HTTPS (using SSL/TLS)', 'FTP', 'POP3'], answer: 1 },
+        { text: 'What type of malicious attack floods a target server with bogus traffic to knock it offline?', options: ['DDoS (Distributed Denial of Service)', 'SQL Injection', 'Phishing', 'Brute Force'], answer: 0 },
+        { text: 'What is the primary purpose of a SQL injection attack?', options: ['To exploit unsanitized user inputs to manipulate and access database records', 'To physically damage the hard disk drive', 'To speed up database searches', 'To change the color scheme of a website'], answer: 0 },
+        { text: 'In SQL, which query clause filters query results to include only records matching a specific condition?', options: ['GROUP BY', 'ORDER BY', 'WHERE', 'SELECT'], answer: 2 },
+        { text: 'What is the worst-case time complexity of the Linear Search algorithm for a list of n elements?', options: ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'], answer: 2 },
+        { text: 'What is the average time complexity of the Binary Search algorithm for a list of n elements?', options: ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'], answer: 1 },
+        { text: 'In sorting algorithms, which comparison sort repeatedly steps through the list, swaps adjacent elements that are out of order, until sorted?', options: ['Bubble Sort', 'Merge Sort', 'Quick Sort', 'Binary Sort'], answer: 0 },
+        { text: 'In Object-Oriented Programming (OOP), what is the blueprint or template from which individual objects are created?', options: ['Class', 'Method', 'Property', 'Variable'], answer: 0 },
+        { text: 'What OOP principle bundles data (attributes) and methods that operate on that data within a single unit and restricts direct outside access?', options: ['Inheritance', 'Encapsulation', 'Polymorphism', 'Recursion'], answer: 1 },
+        { text: 'Which type of secondary storage relies on microscopic magnetic charge patterns on spinning aluminum platters?', options: ['Solid State Drive (SSD)', 'Hard Disk Drive (HDD)', 'DVD-ROM', 'USB Flash Drive'], answer: 1 },
+        { text: 'The environmental issue caused by discarded electronics containing toxic materials like lead and mercury is known as ___', options: ['E-Waste (Electronic Waste)', 'Digital Smog', 'Cyber Pollution', 'Carbon Footprint'], answer: 0 }
+      ];
+      db.exec('BEGIN');
+      year10Qs.forEach((x, i) => q.insertQuestion.run('year-10', i, x.text, JSON.stringify(x.options), x.answer));
+      q.setPublished.run('year-10', 1, Date.now());
+      db.exec('COMMIT');
+      console.log('[SEED] Successfully seeded Year 10 question bank.');
+    }
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+    console.warn('[SEED] Year 10 seed notice:', e.message);
+  }
+}
+seedYear10();
+
+function seedYear12() {
+  try {
+    const existing = q.questionsFor.all('year-12');
+    if (existing.length === 0) {
+      const year12Qs = [
+        { text: 'In the Von Neumann CPU cycle, what happens during the "Decode" stage?', options: ['The Control Unit interprets the opcode and addressing mode in the Current Instruction Register (CIR)', 'Data is read from the hard disk', 'The ALU computes arithmetic logic', 'Results are written back to main memory'], answer: 0 },
+        { text: 'Which CPU register stores the result of the most recent mathematical or logic operation executed by the ALU?', options: ['Accumulator (ACC)', 'Memory Address Register (MAR)', 'Program Counter (PC)', 'Stack Pointer (SP)'], answer: 0 },
+        { text: 'Which data structure operates on a Last-In, First-Out (LIFO) access order?', options: ['Queue', 'Stack', 'Linked List', 'Binary Tree'], answer: 1 },
+        { text: 'In a Queue data structure (FIFO), from which end are new items inserted?', options: ['Front / Head', 'Rear / Tail', 'Middle', 'Top'], answer: 1 },
+        { text: 'What is the best-case and worst-case time complexity of Merge Sort on an array of n elements?', options: ['O(n log n) in all cases', 'O(n) best case, O(n²) worst case', 'O(1) best case, O(n) worst case', 'O(n²) in all cases'], answer: 0 },
+        { text: 'Which algorithm design paradigm divides a problem into subproblems, solves each recursively, and combines the solutions (e.g. Merge Sort)?', options: ['Greedy Approach', 'Divide and Conquer', 'Dynamic Programming', 'Brute Force'], answer: 1 },
+        { text: 'What is the primary purpose of Operating System virtual memory?', options: ['To use secondary storage (pagefile/swap) to extend physical RAM when RAM is exhausted', 'To simulate 3D virtual reality headsets', 'To speed up CPU clock cycles', 'To encrypt network traffic'], answer: 0 },
+        { text: 'In OS memory management, what is "Paging"?', options: ['Physical memory is divided into fixed-size frames and logical memory into pages of equal size', 'Programs are printed onto paper pages', 'Web pages are downloaded simultaneously', 'The CPU switches power modes'], answer: 0 },
+        { text: 'What is an OS interrupt in computer architecture?', options: ['A signal emitted by hardware or software alerting the CPU to immediately suspend its current task and handle an event', 'A physical break in the motherboard wire', 'A power outage event', 'A corrupted storage sector'], answer: 0 },
+        { text: 'In asymmetric public-key cryptography, which key is used to decrypt a message that was encrypted using the recipient\'s public key?', options: ['The recipient\'s private key', 'The sender\'s public key', 'The sender\'s private key', 'A shared symmetric secret key'], answer: 0 },
+        { text: 'What is the role of a Digital Certificate issued by a Certificate Authority (CA) in HTTPS?', options: ['It authenticates the web server\'s identity and binds its public key to the domain', 'It pays for web hosting fees', 'It accelerates download speeds', 'It replaces the need for a firewall'], answer: 0 },
+        { text: 'In the Software Development Life Cycle (SDLC), what distinguishes the Agile methodology from the traditional Waterfall model?', options: ['Agile uses iterative sprints with continuous user feedback, while Waterfall follows rigid sequential phases', 'Agile requires no testing', 'Waterfall is only used for mobile apps', 'Agile never writes documentation'], answer: 0 },
+        { text: 'In database design, what is the goal of First Normal Form (1NF)?', options: ['Ensuring all column values are atomic (no repeating groups or multi-valued fields) with a primary key', 'Removing all foreign keys', 'Combining all tables into a single giant table', 'Encrypting every table column'], answer: 0 },
+        { text: 'In relational database theory, what does Third Normal Form (3NF) eliminate?', options: ['Partial dependencies', 'Transitive dependencies (non-key attributes depending on other non-key attributes)', 'Primary keys', 'Indexes'], answer: 1 },
+        { text: 'In database transactions, what does the "A" in ACID properties stand for?', options: ['Atomicity (all changes in a transaction succeed or all roll back)', 'Authentication', 'Asynchronous', 'Availability'], answer: 0 },
+        { text: 'In machine learning, what type of learning trains models using labeled input-output pairs?', options: ['Supervised Learning', 'Unsupervised Learning', 'Reinforcement Learning', 'Heuristic Learning'], answer: 0 },
+        { text: 'In assembly language, what does an "Opcode" (operation code) specify?', options: ['The specific operation or instruction to be performed by the processor (e.g., ADD, MOV, JMP)', 'The name of the programmer', 'The memory address location', 'The file size in bytes'], answer: 0 },
+        { text: 'In assembly addressing modes, what is "Immediate Addressing"?', options: ['The operand value itself is directly specified in the instruction rather than an address', 'The address points to a register', 'The CPU waits 0 cycles', 'The instruction is cached in L1'], answer: 0 },
+        { text: 'In modern cloud computing architecture, what is "Serverless Computing" (e.g. AWS Lambda)?', options: ['An execution model where the cloud provider dynamically manages server allocation and provisioning on demand', 'Computing without any physical computers existing', 'Computers operating completely without internet', 'A local desktop application'], answer: 0 },
+        { text: 'What is the fundamental unit of information in quantum computing that can exist in a superposition of states?', options: ['Bit', 'Qubit (Quantum Bit)', 'Byte', 'Flop'], answer: 1 }
+      ];
+      db.exec('BEGIN');
+      year12Qs.forEach((x, i) => q.insertQuestion.run('year-12', i, x.text, JSON.stringify(x.options), x.answer));
+      q.setPublished.run('year-12', 1, Date.now());
+      db.exec('COMMIT');
+      console.log('[SEED] Successfully seeded Year 12 question bank.');
+    }
+  } catch (e) {
+    try { db.exec('ROLLBACK'); } catch {}
+    console.warn('[SEED] Year 12 seed notice:', e.message);
+  }
+}
+seedYear12();
+
 // ---------- Phase 3: Dedicated Competition Questions Seeding ----------
 function seedCompetitionQuestions() {
   try {
@@ -922,6 +1039,72 @@ function seedCompetitionQuestions() {
         { text: 'What does the "V" in VLOOKUP stand for?', options: ['Vertical', 'Visual', 'Value', 'Variable'], answer: 0 },
         { text: 'Which keyboard shortcut is used to select all cells in a worksheet?', options: ['Ctrl + A', 'Ctrl + S', 'Alt + A', 'Shift + A'], answer: 0 },
         { text: 'To arrange data in a specific order (alphabetical or numerical) is called:', options: ['Sorting', 'Filtering', 'Validating', 'Formatting'], answer: 0 }
+      ],
+      'year-9': [
+        { text: 'Which of the following best defines an "Algorithm" in computer science?', options: ['A step-by-step set of instructions to solve a problem', 'The physical hardware inside a computer', 'A malicious program that damages files', 'The speed of an internet connection'], answer: 0 },
+        { text: 'In binary addition, what is the result of adding 1 + 1?', options: ['10 (binary for 2)', '2', '11', '01'], answer: 0 },
+        { text: 'What is the decimal (base-10) equivalent of the 8-bit binary number 00001010?', options: ['10', '8', '12', '16'], answer: 0 },
+        { text: 'In the Von Neumann architecture, which special register holds the memory address of the next instruction to be fetched?', options: ['Program Counter (PC)', 'Accumulator (ACC)', 'Memory Data Register (MDR)', 'Current Instruction Register (CIR)'], answer: 0 },
+        { text: 'What does the CPU clock speed measured in Gigahertz (GHz) indicate?', options: ['The number of fetch-decode-execute cycles the CPU can execute per second', 'The amount of storage on the hard drive', 'The speed of the internet connection', 'The time it takes to boot the computer'], answer: 0 },
+        { text: 'In Python programming, which data type is best suited to store a student\'s test score with a decimal point (e.g. 87.5)?', options: ['Floating point (float)', 'Integer (int)', 'Boolean (bool)', 'String (str)'], answer: 0 },
+        { text: 'What will the following Python code output: print(15 // 4)?', options: ['3', '3.75', '4', '3 remainder 3'], answer: 0 },
+        { text: 'Which computational thinking technique involves breaking a complex problem down into smaller, manageable sub-problems?', options: ['Decomposition', 'Abstraction', 'Pattern Recognition', 'Evaluation'], answer: 0 },
+        { text: 'Which computational thinking technique involves focusing only on the essential details and ignoring unnecessary information?', options: ['Abstraction', 'Decomposition', 'Automation', 'Iteration'], answer: 0 },
+        { text: 'What is the unique numerical address assigned to every device connected to the Internet called?', options: ['IP Address', 'MAC Address', 'URL Link', 'Domain Name'], answer: 0 },
+        { text: 'Which network system translates human-friendly web addresses like www.futurein.org into machine-readable IP addresses?', options: ['DNS (Domain Name System)', 'DHCP', 'FTP', 'SMTP'], answer: 0 },
+        { text: 'In HTML, which tag is correctly used to create a clickable hyperlink to another web page?', options: ['<a>', '<link>', '<href>', '<url>'], answer: 0 },
+        { text: 'In CSS styling, which property is used to change the text color of an HTML element?', options: ['color', 'font-color', 'text-style', 'background-color'], answer: 0 },
+        { text: 'In a relational database table, what is a column that uniquely identifies each individual record called?', options: ['Primary Key', 'Foreign Key', 'Candidate Index', 'Composite Key'], answer: 0 },
+        { text: 'Which database command language is the international standard used to query and manipulate relational databases?', options: ['SQL (Structured Query Language)', 'HTML', 'Python', 'XML'], answer: 0 },
+        { text: 'What type of malware secretly records keyboard strokes to steal usernames and passwords?', options: ['Keylogger (Spyware)', 'Ransomware', 'Adware', 'Worm'], answer: 0 },
+        { text: 'What security practice requires a user to provide two different forms of identification before gaining account access?', options: ['Two-Factor Authentication (2FA)', 'Single Sign-On (SSO)', 'Captcha Verification', 'Password Recovery'], answer: 0 },
+        { text: 'The trail of data you leave behind whenever you use the internet, browse websites, or post online is known as your ___', options: ['Digital Footprint', 'IP Pathway', 'Cache Registry', 'Cookie Monster'], answer: 0 },
+        { text: 'Which search algorithm inspects each item in a list one by one from the beginning until the target item is found?', options: ['Linear Search', 'Binary Search', 'Hash Lookup', 'Bubble Search'], answer: 0 },
+        { text: 'What condition MUST be met before a Binary Search algorithm can be performed on a list?', options: ['The list must be sorted in order', 'The list must contain only numbers', 'The list must have an even number of items', 'The list must be stored in the cloud'], answer: 0 }
+      ],
+      'year-10': [
+        { text: 'Which software translator converts source code into machine code line-by-line and executes it immediately?', options: ['Interpreter', 'Compiler', 'Assembler', 'Linker'], answer: 0 },
+        { text: 'What is the key advantage of a Compiler over an Interpreter?', options: ['Compiled code produces an executable file that runs faster without needing source code', 'Compilers execute code line by line with no memory', 'Compilers never report syntax errors', 'Compilers are only used for text formatting'], answer: 0 },
+        { text: 'Which logic gate outputs TRUE (1) only when BOTH of its inputs are TRUE (1)?', options: ['AND Gate', 'OR Gate', 'NOT Gate', 'XOR Gate'], answer: 0 },
+        { text: 'What is the output of an XOR (Exclusive OR) gate when both inputs are 1?', options: ['0', '1', 'Undefined', '2'], answer: 0 },
+        { text: 'How many unique characters can standard 7-bit ASCII represent?', options: ['128', '64', '256', '65,536'], answer: 0 },
+        { text: 'Why was Unicode developed to replace standard ASCII?', options: ['To support symbols and writing systems of all languages worldwide using 16/32 bits', 'To make file sizes smaller', 'To remove vowels from text', 'To encrypt all text messages'], answer: 0 },
+        { text: 'In digital sound representation, what does the "Sampling Rate" refer to?', options: ['The number of audio samples captured per second (measured in Hz)', 'The volume of the sound wave', 'The physical length of the audio cable', 'The number of speakers playing the sound'], answer: 0 },
+        { text: 'What is the total number of colors that can be represented with an 8-bit color depth per pixel?', options: ['256 colors', '16 colors', '64 colors', '16.7 million colors'], answer: 0 },
+        { text: 'In packet switching networks, what does each data packet contain in its header?', options: ['Source IP, destination IP, packet sequence number, and checksum', 'The user\'s credit card number', 'The browser history', 'The monitor resolution'], answer: 0 },
+        { text: 'Which protocol is responsible for securely transmitting encrypted web pages between a client and a web server?', options: ['HTTPS (using SSL/TLS)', 'HTTP', 'FTP', 'POP3'], answer: 0 },
+        { text: 'What type of malicious attack floods a target server with bogus traffic to knock it offline?', options: ['DDoS (Distributed Denial of Service)', 'SQL Injection', 'Phishing', 'Brute Force'], answer: 0 },
+        { text: 'What is the primary purpose of a SQL injection attack?', options: ['To exploit unsanitized user inputs to manipulate and access database records', 'To physically damage the hard disk drive', 'To speed up database searches', 'To change the color scheme of a website'], answer: 0 },
+        { text: 'In SQL, which query clause filters query results to include only records matching a specific condition?', options: ['WHERE', 'GROUP BY', 'ORDER BY', 'SELECT'], answer: 0 },
+        { text: 'What is the worst-case time complexity of the Linear Search algorithm for a list of n elements?', options: ['O(n)', 'O(1)', 'O(log n)', 'O(n²)'], answer: 0 },
+        { text: 'What is the average time complexity of the Binary Search algorithm for a list of n elements?', options: ['O(log n)', 'O(1)', 'O(n)', 'O(n²)'], answer: 0 },
+        { text: 'In sorting algorithms, which comparison sort repeatedly steps through the list, swaps adjacent elements that are out of order, until sorted?', options: ['Bubble Sort', 'Merge Sort', 'Quick Sort', 'Binary Sort'], answer: 0 },
+        { text: 'In Object-Oriented Programming (OOP), what is the blueprint or template from which individual objects are created?', options: ['Class', 'Method', 'Property', 'Variable'], answer: 0 },
+        { text: 'What OOP principle bundles data (attributes) and methods that operate on that data within a single unit and restricts direct outside access?', options: ['Encapsulation', 'Inheritance', 'Polymorphism', 'Recursion'], answer: 0 },
+        { text: 'Which type of secondary storage relies on microscopic magnetic charge patterns on spinning aluminum platters?', options: ['Hard Disk Drive (HDD)', 'Solid State Drive (SSD)', 'DVD-ROM', 'USB Flash Drive'], answer: 0 },
+        { text: 'The environmental issue caused by discarded electronics containing toxic materials like lead and mercury is known as ___', options: ['E-Waste (Electronic Waste)', 'Digital Smog', 'Cyber Pollution', 'Carbon Footprint'], answer: 0 }
+      ],
+      'year-12': [
+        { text: 'In the Von Neumann CPU cycle, what happens during the "Decode" stage?', options: ['The Control Unit interprets the opcode and addressing mode in the Current Instruction Register (CIR)', 'Data is read from the hard disk', 'The ALU computes arithmetic logic', 'Results are written back to main memory'], answer: 0 },
+        { text: 'Which CPU register stores the result of the most recent mathematical or logic operation executed by the ALU?', options: ['Accumulator (ACC)', 'Memory Address Register (MAR)', 'Program Counter (PC)', 'Stack Pointer (SP)'], answer: 0 },
+        { text: 'Which data structure operates on a Last-In, First-Out (LIFO) access order?', options: ['Stack', 'Queue', 'Linked List', 'Binary Tree'], answer: 0 },
+        { text: 'In a Queue data structure (FIFO), from which end are new items inserted?', options: ['Rear / Tail', 'Front / Head', 'Middle', 'Top'], answer: 0 },
+        { text: 'What is the best-case and worst-case time complexity of Merge Sort on an array of n elements?', options: ['O(n log n) in all cases', 'O(n) best case, O(n²) worst case', 'O(1) best case, O(n) worst case', 'O(n²) in all cases'], answer: 0 },
+        { text: 'Which algorithm design paradigm divides a problem into subproblems, solves each recursively, and combines the solutions (e.g. Merge Sort)?', options: ['Divide and Conquer', 'Greedy Approach', 'Dynamic Programming', 'Brute Force'], answer: 0 },
+        { text: 'What is the primary purpose of Operating System virtual memory?', options: ['To use secondary storage (pagefile/swap) to extend physical RAM when RAM is exhausted', 'To simulate 3D virtual reality headsets', 'To speed up CPU clock cycles', 'To encrypt network traffic'], answer: 0 },
+        { text: 'In OS memory management, what is "Paging"?', options: ['Physical memory is divided into fixed-size frames and logical memory into pages of equal size', 'Programs are printed onto paper pages', 'Web pages are downloaded simultaneously', 'The CPU switches power modes'], answer: 0 },
+        { text: 'What is an OS interrupt in computer architecture?', options: ['A signal emitted by hardware or software alerting the CPU to immediately suspend its current task and handle an event', 'A physical break in the motherboard wire', 'A power outage event', 'A corrupted storage sector'], answer: 0 },
+        { text: 'In asymmetric public-key cryptography, which key is used to decrypt a message that was encrypted using the recipient\'s public key?', options: ['The recipient\'s private key', 'The sender\'s public key', 'The sender\'s private key', 'A shared symmetric secret key'], answer: 0 },
+        { text: 'What is the role of a Digital Certificate issued by a Certificate Authority (CA) in HTTPS?', options: ['It authenticates the web server\'s identity and binds its public key to the domain', 'It pays for web hosting fees', 'It accelerates download speeds', 'It replaces the need for a firewall'], answer: 0 },
+        { text: 'In the Software Development Life Cycle (SDLC), what distinguishes the Agile methodology from the traditional Waterfall model?', options: ['Agile uses iterative sprints with continuous user feedback, while Waterfall follows rigid sequential phases', 'Agile requires no testing', 'Waterfall is only used for mobile apps', 'Agile never writes documentation'], answer: 0 },
+        { text: 'In database design, what is the goal of First Normal Form (1NF)?', options: ['Ensuring all column values are atomic (no repeating groups or multi-valued fields) with a primary key', 'Removing all foreign keys', 'Combining all tables into a single giant table', 'Encrypting every table column'], answer: 0 },
+        { text: 'In relational database theory, what does Third Normal Form (3NF) eliminate?', options: ['Transitive dependencies (non-key attributes depending on other non-key attributes)', 'Partial dependencies', 'Primary keys', 'Indexes'], answer: 0 },
+        { text: 'In database transactions, what does the "A" in ACID properties stand for?', options: ['Atomicity (all changes in a transaction succeed or all roll back)', 'Authentication', 'Asynchronous', 'Availability'], answer: 0 },
+        { text: 'In machine learning, what type of learning trains models using labeled input-output pairs?', options: ['Supervised Learning', 'Unsupervised Learning', 'Reinforcement Learning', 'Heuristic Learning'], answer: 0 },
+        { text: 'In assembly language, what does an "Opcode" (operation code) specify?', options: ['The specific operation or instruction to be performed by the processor (e.g., ADD, MOV, JMP)', 'The name of the programmer', 'The memory address location', 'The file size in bytes'], answer: 0 },
+        { text: 'In assembly addressing modes, what is "Immediate Addressing"?', options: ['The operand value itself is directly specified in the instruction rather than an address', 'The address points to a register', 'The CPU waits 0 cycles', 'The instruction is cached in L1'], answer: 0 },
+        { text: 'In modern cloud computing architecture, what is "Serverless Computing" (e.g. AWS Lambda)?', options: ['An execution model where the cloud provider dynamically manages server allocation and provisioning on demand', 'Computing without any physical computers existing', 'Computers operating completely without internet', 'A local desktop application'], answer: 0 },
+        { text: 'What is the fundamental unit of information in quantum computing that can exist in a superposition of states?', options: ['Qubit (Quantum Bit)', 'Bit', 'Byte', 'Flop'], answer: 0 }
       ]
     };
 
@@ -1993,7 +2176,10 @@ async function requestHandler(req, res) {
     if (lower === '/year-6' || lower === '/quiz/year-6' || lower === '/year6' || lower === '/quiz/year6') return sendFile(res, path.join(PUBLIC_DIR, 'year-6.html'));
     if (lower === '/year-7' || lower === '/quiz/year-7' || lower === '/year7' || lower === '/quiz/year7') return sendFile(res, path.join(PUBLIC_DIR, 'year-7.html'));
     if (lower === '/year-8' || lower === '/quiz/year-8' || lower === '/year8' || lower === '/quiz/year8') return sendFile(res, path.join(PUBLIC_DIR, 'year-8.html'));
+    if (lower === '/year-9' || lower === '/quiz/year-9' || lower === '/year9' || lower === '/quiz/year9') return sendFile(res, path.join(PUBLIC_DIR, 'year-9.html'));
+    if (lower === '/year-10' || lower === '/quiz/year-10' || lower === '/year10' || lower === '/quiz/year10') return sendFile(res, path.join(PUBLIC_DIR, 'year-10.html'));
     if (lower === '/year-11' || lower === '/quiz/year-11' || lower === '/year11' || lower === '/quiz/year11') return sendFile(res, path.join(PUBLIC_DIR, 'year-11.html'));
+    if (lower === '/year-12' || lower === '/quiz/year-12' || lower === '/year12' || lower === '/quiz/year12') return sendFile(res, path.join(PUBLIC_DIR, 'year-12.html'));
     const ym = lower.match(/^\/(?:quiz\/)?year-?([0-9]+)$/);
     if (ym && fs.existsSync(path.join(PUBLIC_DIR, `year-${ym[1]}.html`))) {
       return sendFile(res, path.join(PUBLIC_DIR, `year-${ym[1]}.html`));
